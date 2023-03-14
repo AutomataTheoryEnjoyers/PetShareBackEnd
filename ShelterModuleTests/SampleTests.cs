@@ -8,6 +8,6 @@ public class SampleTests
     [Fact]
     public void ShouldBeZero()
     {
-        0.Should().Be(0);
+        0.Should().Be(1);
     }
 }

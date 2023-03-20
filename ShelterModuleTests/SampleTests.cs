@@ -3,6 +3,7 @@ using Xunit;
 
 namespace ShelterModuleTests;
 
+[Trait("Category", "Unit")]
 public class SampleTests
 {
     [Fact]

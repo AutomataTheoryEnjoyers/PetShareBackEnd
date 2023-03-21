@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ShelterModule.Models;
+using ShelterModule.Models.Shelter;
 using ShelterModule.Services.Interfaces;
 
 namespace ShelterModule.Controllers;

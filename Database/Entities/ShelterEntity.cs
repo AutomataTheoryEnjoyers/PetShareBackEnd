@@ -11,5 +11,5 @@ public sealed class ShelterEntity
     public required string FullShelterName { get; init; }
     public required string PhoneNumber { get; init; }
     public required string Email { get; init; }
-    public required bool IsAuthorized { get; set; }
+    public required bool? IsAuthorized { get; set; }
 }

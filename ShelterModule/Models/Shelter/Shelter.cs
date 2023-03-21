@@ -1,18 +1,15 @@
 ﻿using Database.Entities;
 
-namespace ShelterModule.Models;
+namespace ShelterModule.Models.Shelter;
 
 public sealed class Shelter : User
 {
-    // public required Guid Id { get; init; }
-
-    // public required string Name { get; init; }
-
-    public required bool IsAuthorized { get; init; }
+    public required bool? IsAuthorized { get; set; } = null;
+    // true - authorized 
+    // false - blocked
+    // null - unauthorized unblocked
 
     public required string FullShelterName { get; init; }
-
-
 
     public ShelterEntity ToEntity()
     {

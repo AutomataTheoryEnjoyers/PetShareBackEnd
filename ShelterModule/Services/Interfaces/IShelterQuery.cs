@@ -1,4 +1,4 @@
-﻿using ShelterModule.Models;
+﻿using ShelterModule.Models.Shelter;
 
 namespace ShelterModule.Services.Interfaces
 {

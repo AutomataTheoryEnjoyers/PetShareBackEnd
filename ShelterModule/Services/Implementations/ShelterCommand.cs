@@ -1,6 +1,6 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
-using ShelterModule.Models;
+using ShelterModule.Models.Shelter;
 using ShelterModule.Services.Interfaces;
 
 namespace ShelterModule.Services.Implementations;
@@ -26,7 +26,7 @@ public sealed class ShelterCommand : IShelterCommand
         await _context.SaveChangesAsync();
     }
 
-    public async Task<Shelter?> SetAuthorizationAsync(Guid id, bool isAuthorized)
+    public async Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized)
     {
         var entity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == id);
         if (entity is null)
@@ -37,9 +37,8 @@ public sealed class ShelterCommand : IShelterCommand
         return Shelter.FromEntity(entity);
     }
 
-    public Task UpdateByIdAsync(Guid id, Shelter typeObject)
-    {
-        // TO DO: Get then update all changable fields than update and save changes 
-        throw new NotImplementedException();
-    }
+    //public Task<Shelter> UpdateByIdAsync(Guid id, Shelter typeObject)
+    //{
+    //    throw new NotImplementedException();
+    //}
 }

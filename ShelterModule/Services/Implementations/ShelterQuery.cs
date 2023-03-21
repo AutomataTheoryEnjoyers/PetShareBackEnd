@@ -1,6 +1,6 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
-using ShelterModule.Models;
+using ShelterModule.Models.Shelter;
 using ShelterModule.Services.Interfaces;
 
 namespace ShelterModule.Services.Implementations;

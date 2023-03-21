@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShelterModule.Models;
+namespace ShelterModule.Models.Shelter;
 
 public sealed class ShelterCreationRequest
 {
     [Required]
     [MaxLength(20)]
     public string UserName { get; init; } = null!;
-    
+
     [Required]
     public string FullShelterName { get; init; } = null!;
     [Required]

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models;
-using ShelterModule.Services;
+using ShelterModule.Services.Interfaces;
 
 namespace ShelterModule.Controllers;
 
@@ -8,10 +8,10 @@ namespace ShelterModule.Controllers;
 [Route("shelters")]
 public sealed class ShelterController : ControllerBase
 {
-    private readonly ShelterCommand _command;
-    private readonly ShelterQuery _query;
+    private readonly IShelterCommand _command;
+    private readonly IShelterQuery _query;
 
-    public ShelterController(ShelterQuery query, ShelterCommand command)
+    public ShelterController(IShelterQuery query, IShelterCommand command)
     {
         _query = query;
         _command = command;

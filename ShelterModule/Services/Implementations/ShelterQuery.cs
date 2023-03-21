@@ -1,10 +1,11 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models;
+using ShelterModule.Services.Interfaces;
 
-namespace ShelterModule.Services;
+namespace ShelterModule.Services.Implementations;
 
-public sealed class ShelterQuery
+public sealed class ShelterQuery :IShelterQuery
 {
     private readonly PetShareDbContext _context;
 

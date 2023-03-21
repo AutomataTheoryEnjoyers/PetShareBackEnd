@@ -2,20 +2,27 @@
 
 namespace ShelterModule.Models;
 
-public sealed class Shelter
+public sealed class Shelter : User
 {
-    public required Guid Id { get; init; }
+    // public required Guid Id { get; init; }
 
-    public required string Name { get; init; }
+    // public required string Name { get; init; }
 
     public required bool IsAuthorized { get; init; }
+
+    public required string FullShelterName { get; init; }
+
+
 
     public ShelterEntity ToEntity()
     {
         return new ShelterEntity
         {
             Id = Id,
-            Name = Name,
+            UserName = UserName,
+            FullShelterName = FullShelterName,
+            PhoneNumber = PhoneNumber,
+            Email = Email,
             IsAuthorized = IsAuthorized
         };
     }
@@ -25,7 +32,10 @@ public sealed class Shelter
         return new Shelter
         {
             Id = entity.Id,
-            Name = entity.Name,
+            UserName = entity.UserName,
+            FullShelterName = entity.FullShelterName,
+            PhoneNumber = entity.PhoneNumber,
+            Email = entity.Email,
             IsAuthorized = entity.IsAuthorized
         };
     }
@@ -35,7 +45,10 @@ public sealed class Shelter
         return new ShelterResponse
         {
             Id = Id,
-            Name = Name,
+            UserName = UserName,
+            FullShelterName = FullShelterName,
+            PhoneNumber = PhoneNumber,
+            Email = Email,
             IsAuthorized = IsAuthorized
         };
     }
@@ -45,7 +58,10 @@ public sealed class Shelter
         return new Shelter
         {
             Id = Guid.NewGuid(),
-            Name = request.Name,
+            UserName = request.UserName,
+            FullShelterName = request.FullShelterName,
+            PhoneNumber = request.PhoneNumber,
+            Email = request.Email,
             IsAuthorized = false
         };
     }

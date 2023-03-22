@@ -17,7 +17,7 @@ jobs:
       mssql:
         image: mcr.microsoft.com/mssql/server:2019-latest
         env:
-          SA_PASSWORD: test-db-password
+          MSSQL_SA_PASSWORD: Test-db-password-1
           ACCEPT_EULA: 'Y'
         ports:
           - 1433:1433
@@ -35,4 +35,4 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       env:
-        ConnectionStringTemplate: "Server=localhost,1433;Initial Catalog=TestDb;DataBase={0};User Id=sa;Password=test-db-password;Encrypt=false;"
+        ConnectionStringTemplate: "Server=localhost,1433;DataBase={0};User Id=sa;Password=Test-db-password-1;"

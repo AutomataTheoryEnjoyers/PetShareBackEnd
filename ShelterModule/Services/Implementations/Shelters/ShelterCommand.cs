@@ -22,8 +22,12 @@ public sealed class ShelterCommand : IShelterCommand
 
     public async Task RemoveAsync(Shelter typeObject)
     {
-        _context.Remove(typeObject);
-        await _context.SaveChangesAsync();
+        var entityToRemove = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == typeObject.Id);
+        if( entityToRemove != null)
+        {
+            _context.Remove(entityToRemove);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized)

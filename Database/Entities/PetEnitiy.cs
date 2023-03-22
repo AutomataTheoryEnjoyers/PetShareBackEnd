@@ -7,8 +7,9 @@ namespace Database.Entities
         [Key]
         public required Guid Id { get; init; }
 
-        // foreign key 
-        public required ShelterEntity Shelter { get; init; } = null!;
+        // foreign key
+        [Required]
+        public ShelterEntity Shelter { get; init; } = null!;
         public required Guid ShelterId { get; init; }
 
         // fields

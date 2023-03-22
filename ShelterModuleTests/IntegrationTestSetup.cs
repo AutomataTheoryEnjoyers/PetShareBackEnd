@@ -12,6 +12,11 @@ using ShelterModule;
 
 namespace ShelterModuleTests;
 
+/// <summary>
+///     This class provides utilities needed in integration (and sometimes unit) tests. If some services need to be
+///     replaced with mock implementation or removed before test, this class should be inherited, and necessary changes
+///     should be made in <see cref="ConfigureServices" /> override.
+/// </summary>
 public class IntegrationTestSetup : WebApplicationFactory<Program>
 {
     public FlurlClient CreateFlurlClient()
@@ -26,6 +31,15 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         return string.Format(template, $"PetShare-tests-{Guid.NewGuid()}");
     }
 
+    /// <summary>
+    ///     Construct a unique connection string to test database, creates it, and returns a wrapper that provides
+    ///     access to it. This wrapper should be disposed after the test is executed, which deletes the database.
+    /// </summary>
+    /// <remarks>
+    ///     To create a <see cref="PetShareDbContext" /> from <see cref="TestDbConnectionString" />, call
+    ///     <see cref="CreateDbContext" />
+    /// </remarks>
+    /// <returns> <see cref="TestDbConnectionString" /> used to access a unique test database </returns>
     public static TestDbConnectionString CreateTestDatabase()
     {
         return new TestDbConnectionString(CreateConnectionString());
@@ -37,11 +51,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                                                        Options;
         return new PetShareDbContext(options);
     }
-    
-    protected virtual void ConfigureServices(IServiceCollection services)
-    {
-    }
-    
+
+    protected virtual void ConfigureServices(IServiceCollection services) { }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration(configuration =>
@@ -82,8 +94,6 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
 public sealed class TestDbConnectionString : IDisposable
 {
-    public string ConnectionString { get; }
-
     public TestDbConnectionString(string connectionString)
     {
         ConnectionString = connectionString;
@@ -91,6 +101,8 @@ public sealed class TestDbConnectionString : IDisposable
         using var context = new PetShareDbContext(options);
         context.Database.EnsureCreated();
     }
+
+    public string ConnectionString { get; }
 
     public void Dispose()
     {

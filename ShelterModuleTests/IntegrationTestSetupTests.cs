@@ -17,7 +17,7 @@ public sealed class IntegrationTestSetupTests
     {
         using var connection = IntegrationTestSetup.CreateTestDatabase();
         await using var context = IntegrationTestSetup.CreateDbContext(connection);
-        
+
         context.Shelters.Should().BeEmpty();
 
         context.Shelters.Add(new ShelterEntity

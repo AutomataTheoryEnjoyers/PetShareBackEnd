@@ -21,7 +21,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
     private static string CreateConnectionString()
     {
-        return $"Server=localhost;DataBase=PetShare-test-{Guid.NewGuid()};TrustServerCertificate=true";
+        var template = Environment.GetEnvironmentVariable("ConnectionStringTemplate")
+                       ?? "Server=localhost;DataBase={0};TrustServerCertificate=true";
+        return string.Format(template, $"PetShare-tests-{Guid.NewGuid()}");
     }
 
     public static TestDbConnectionString CreateTestDatabase()

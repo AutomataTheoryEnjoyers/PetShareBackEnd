@@ -1,9 +1,8 @@
 ﻿using ShelterModule.Models.Shelters;
 
-namespace ShelterModule.Services.Interfaces.Shelters
+namespace ShelterModule.Services.Interfaces.Shelters;
+
+public interface IShelterCommand : ICommand<Shelter>
 {
-    public interface IShelterCommand : ICommand<Shelter>
-    {
-        public Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized);
-    }
+    public Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized);
 }

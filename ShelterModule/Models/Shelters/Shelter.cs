@@ -4,7 +4,7 @@ namespace ShelterModule.Models.Shelters;
 
 public sealed class Shelter : User
 {
-    public required bool? IsAuthorized { get; set; } = null;
+    public required bool? IsAuthorized { get; set; }
     // true - authorized 
     // false - blocked
     // null - unauthorized unblocked
@@ -61,7 +61,7 @@ public sealed class Shelter : User
             FullShelterName = request.FullShelterName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
-            IsAuthorized = false
+            IsAuthorized = null
         };
     }
 }

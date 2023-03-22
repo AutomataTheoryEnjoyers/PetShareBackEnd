@@ -2,25 +2,24 @@
 using ShelterModule.Models.Pets;
 using ShelterModule.Services.Interfaces.Pets;
 
-namespace ShelterModule.Services.Implementations.Pets
+namespace ShelterModule.Services.Implementations.Pets;
+
+public class PetCommand : IPetCommand
 {
-    public class PetCommand : IPetCommand
+    private readonly PetShareDbContext _dbContext;
+
+    public PetCommand(PetShareDbContext dbContext)
     {
-        private readonly PetShareDbContext _dbContext;
+        _dbContext = dbContext;
+    }
 
-        public PetCommand(PetShareDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+    public Task AddAsync(Pet typeObject)
+    {
+        throw new NotImplementedException();
+    }
 
-        public Task AddAsync(Pet typeObject)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task RemoveAsync(Pet typeObject)
-        {
-            throw new NotImplementedException();
-        }
+    public Task RemoveAsync(Pet typeObject)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -27,7 +27,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
     private static string CreateConnectionString()
     {
         var template = Environment.GetEnvironmentVariable("ConnectionStringTemplate")
-                       ?? "Server=localhost;DataBase={0};TrustServerCertificate=true";
+                       ?? "Server=localhost;Integrated Security=true;DataBase={0};TrustServerCertificate=true;";
         return string.Format(template, $"PetShare-tests-{Guid.NewGuid()}");
     }
 

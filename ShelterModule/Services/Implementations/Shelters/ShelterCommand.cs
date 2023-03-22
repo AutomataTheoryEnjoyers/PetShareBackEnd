@@ -23,7 +23,7 @@ public sealed class ShelterCommand : IShelterCommand
     public async Task RemoveAsync(Shelter typeObject)
     {
         var entityToRemove = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == typeObject.Id);
-        if( entityToRemove != null)
+        if (entityToRemove != null)
         {
             _context.Remove(entityToRemove);
             await _context.SaveChangesAsync();

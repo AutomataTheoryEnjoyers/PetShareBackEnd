@@ -52,8 +52,8 @@ public class Program
                                                                               GetConnectionString(PetShareDbContext.
                                                                                                       DbConnectionStringName)));
 
-        services.AddScoped<IShelterQuery,ShelterQuery>();
-        services.AddScoped<IShelterCommand,ShelterCommand>();
+        services.AddScoped<IShelterQuery, ShelterQuery>();
+        services.AddScoped<IShelterCommand, ShelterCommand>();
         services.AddScoped<IPetQuery, PetQuery>();
         services.AddScoped<IPetCommand, PetCommand>();
     }

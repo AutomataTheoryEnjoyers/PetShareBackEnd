@@ -25,7 +25,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await using var context = _testSetup.Services.GetRequiredService<PetShareDbContext>();
+        using var scope = _testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Shelters.Add(_shelter);
         await context.SaveChangesAsync();
     }
@@ -36,7 +37,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldReturnAllShelters()
+    public async Task GetShouldFetchAllShelters()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelters").GetAsync();
@@ -58,7 +59,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldReturnShelterById()
+    public async Task GetShouldFetchShelterById()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelters", _shelter.Id).GetAsync();
@@ -77,7 +78,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldAddShelter()
+    public async Task PostShouldAddShelter()
     {
         var request = new ShelterCreationRequest
         {
@@ -116,7 +117,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ShouldAuthorizeShelter()
+    public async Task PutShouldAuthorizeShelter()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelters", _shelter.Id).

@@ -1,7 +1,6 @@
-﻿namespace ShelterModule.Models.Pets
-{
-    public sealed class PetResponse
-    {
+﻿namespace ShelterModule.Models.Pets;
 
-    }
+public sealed class PetResponse
+{
+    
 }

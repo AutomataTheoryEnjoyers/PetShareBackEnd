@@ -86,7 +86,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                        IsAuthorized = false
                    }, options => options.Excluding(s => s.Id));
 
-        await using var context = _testSetup.Services.GetRequiredService<PetShareDbContext>();
+        using var scope = _testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Shelters.Should().
                 ContainEquivalentOf(new ShelterEntity
                 {
@@ -115,7 +116,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                        IsAuthorized = true
                    });
 
-        await using var context = _testSetup.Services.GetRequiredService<PetShareDbContext>();
+        using var scope = _testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Shelters.Single(e => e.Id == _shelter.Id).
                 Should().
                 BeEquivalentTo(new ShelterEntity

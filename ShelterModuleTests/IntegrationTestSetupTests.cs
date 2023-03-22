@@ -24,7 +24,10 @@ public sealed class IntegrationTestSetupTests
         {
             Id = Guid.NewGuid(),
             IsAuthorized = false,
-            Name = shelterName
+            UserName = shelterName,
+            FullShelterName = shelterName,
+            Email = "mail@mail.mail",
+            PhoneNumber = "123456789"
         });
         await context.SaveChangesAsync();
     }

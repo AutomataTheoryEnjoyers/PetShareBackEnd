@@ -3,7 +3,7 @@ using Database.Entities;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.Extensions.DependencyInjection;
-using ShelterModule.Models;
+using ShelterModule.Models.Shelters;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -14,8 +14,11 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     private readonly ShelterEntity _shelter = new()
     {
         Id = Guid.NewGuid(),
-        Name = "test-shelter",
-        IsAuthorized = false
+        UserName = "test-shelter",
+        Email = "mail@mail.mail",
+        PhoneNumber = "123456789",
+        FullShelterName = "Test Shelter",
+        IsAuthorized = null
     };
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -45,7 +48,10 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                      new ShelterResponse
                      {
                          Id = _shelter.Id,
-                         Name = _shelter.Name,
+                         UserName = _shelter.UserName,
+                         FullShelterName = _shelter.FullShelterName,
+                         Email = _shelter.Email,
+                         PhoneNumber = _shelter.PhoneNumber,
                          IsAuthorized = _shelter.IsAuthorized
                      }
                  });
@@ -62,7 +68,10 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                  BeEquivalentTo(new ShelterResponse
                  {
                      Id = _shelter.Id,
-                     Name = _shelter.Name,
+                     UserName = _shelter.UserName,
+                     FullShelterName = _shelter.FullShelterName,
+                     Email = _shelter.Email,
+                     PhoneNumber = _shelter.PhoneNumber,
                      IsAuthorized = _shelter.IsAuthorized
                  });
     }
@@ -70,20 +79,26 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     [Fact]
     public async Task ShouldAddShelter()
     {
+        var request = new ShelterCreationRequest
+        {
+            UserName = "new-shelter",
+            FullShelterName = "New Shelter",
+            Email = "cool@website.com",
+            PhoneNumber = "987654321"
+        };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelters").
-                                    PostJsonAsync(new ShelterCreationRequest
-                                    {
-                                        Name = "new-shelter"
-                                    });
+        var response = await client.Request("shelters").PostJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var newShelter = await response.GetJsonAsync<ShelterResponse>();
         newShelter.Should().
                    BeEquivalentTo(new ShelterResponse
                    {
                        Id = Guid.NewGuid(),
-                       Name = "new-shelter",
-                       IsAuthorized = false
+                       UserName = request.UserName,
+                       FullShelterName = request.FullShelterName,
+                       Email = request.Email,
+                       PhoneNumber = request.PhoneNumber,
+                       IsAuthorized = null
                    }, options => options.Excluding(s => s.Id));
 
         using var scope = _testSetup.Services.CreateScope();
@@ -92,8 +107,11 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                 ContainEquivalentOf(new ShelterEntity
                 {
                     Id = newShelter.Id,
-                    Name = "new-shelter",
-                    IsAuthorized = false
+                    UserName = request.UserName,
+                    FullShelterName = request.FullShelterName,
+                    Email = request.Email,
+                    PhoneNumber = request.PhoneNumber,
+                    IsAuthorized = null
                 });
     }
 
@@ -112,7 +130,10 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                    BeEquivalentTo(new ShelterResponse
                    {
                        Id = _shelter.Id,
-                       Name = _shelter.Name,
+                       UserName = _shelter.UserName,
+                       FullShelterName = _shelter.FullShelterName,
+                       Email = _shelter.Email,
+                       PhoneNumber = _shelter.PhoneNumber,
                        IsAuthorized = true
                    });
 
@@ -123,7 +144,10 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                 BeEquivalentTo(new ShelterEntity
                 {
                     Id = _shelter.Id,
-                    Name = _shelter.Name,
+                    UserName = _shelter.UserName,
+                    FullShelterName = _shelter.FullShelterName,
+                    Email = _shelter.Email,
+                    PhoneNumber = _shelter.PhoneNumber,
                     IsAuthorized = true
                 });
     }

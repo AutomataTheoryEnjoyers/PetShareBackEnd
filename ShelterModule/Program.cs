@@ -1,6 +1,9 @@
 using Database;
 using Microsoft.EntityFrameworkCore;
-using ShelterModule.Services;
+using ShelterModule.Services.Implementations.Pets;
+using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces.Pets;
+using ShelterModule.Services.Interfaces.Shelters;
 
 namespace ShelterModule;
 
@@ -48,8 +51,11 @@ public class Program
                                                      options.UseSqlServer(configuration.
                                                                               GetConnectionString(PetShareDbContext.
                                                                                                       DbConnectionStringName)));
-        services.AddScoped<ShelterQuery>();
-        services.AddScoped<ShelterCommand>();
+
+        services.AddScoped<IShelterQuery,ShelterQuery>();
+        services.AddScoped<IShelterCommand,ShelterCommand>();
+        services.AddScoped<IPetQuery, PetQuery>();
+        services.AddScoped<IPetCommand, PetCommand>();
     }
 
     private static void ConfigureOptions(IServiceCollection services) { }

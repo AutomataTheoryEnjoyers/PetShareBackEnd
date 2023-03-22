@@ -35,4 +35,4 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
       env:
-        ConnectionStringTemplate: "Server=localhost,1433;Initial Catalog=TestDb;DataBase={0};User Id=sa;Password=test-db-password;TrustServerCertificate=true;"
+        ConnectionStringTemplate: "Server=localhost,1433;Initial Catalog=TestDb;DataBase={0};User Id=sa;Password=test-db-password;"

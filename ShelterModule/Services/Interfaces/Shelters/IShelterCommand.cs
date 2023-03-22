@@ -1,6 +1,6 @@
-﻿using ShelterModule.Models.Shelter;
+﻿using ShelterModule.Models.Shelters;
 
-namespace ShelterModule.Services.Interfaces
+namespace ShelterModule.Services.Interfaces.Shelters
 {
     public interface IShelterCommand : ICommand<Shelter>
     {

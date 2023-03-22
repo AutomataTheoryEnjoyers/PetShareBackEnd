@@ -1,4 +1,4 @@
-﻿namespace ShelterModule.Models.Shelter;
+﻿namespace ShelterModule.Models.Shelters;
 
 public sealed class ShelterAuthorizationRequest
 {

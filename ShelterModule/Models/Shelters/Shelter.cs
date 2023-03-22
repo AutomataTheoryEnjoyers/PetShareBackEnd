@@ -1,6 +1,6 @@
 ﻿using Database.Entities;
 
-namespace ShelterModule.Models.Shelter;
+namespace ShelterModule.Models.Shelters;
 
 public sealed class Shelter : User
 {
@@ -10,6 +10,8 @@ public sealed class Shelter : User
     // null - unauthorized unblocked
 
     public required string FullShelterName { get; init; }
+
+    // list<Pet> ? 
 
     public ShelterEntity ToEntity()
     {

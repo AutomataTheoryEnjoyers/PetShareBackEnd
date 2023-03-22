@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ShelterModule.Models.Shelter;
-using ShelterModule.Services.Interfaces;
+using ShelterModule.Models.Shelters;
+using ShelterModule.Services.Interfaces.Shelters;
 
 namespace ShelterModule.Controllers;
 
@@ -24,9 +24,9 @@ public sealed class ShelterController : ControllerBase
     /// <returns> Shelter with a given ID </returns>
     [HttpGet]
     [Route("{id:guid}")]
-    [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+    //[ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
+    //[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    //[ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShelterResponse>> Get(Guid id)
     {
         var shelter = await _query.GetByIdAsync(id);
@@ -37,7 +37,8 @@ public sealed class ShelterController : ControllerBase
                 Id = id.ToString()
             });
 
-        return shelter.ToResponse();
+        //return shelter.ToResponse();
+        return Ok(shelter.ToResponse());
     }
 
     /// <summary>
@@ -48,7 +49,8 @@ public sealed class ShelterController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<ShelterResponse>> GetAll()
     {
-        return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
+        //return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();\
+        return (await _query.GetAllAsync()).Select(s => s.ToResponse()).ToList();
     }
 
     /// <summary>

@@ -1,7 +1,9 @@
 using Database;
 using Microsoft.EntityFrameworkCore;
-using ShelterModule.Services.Implementations;
-using ShelterModule.Services.Interfaces;
+using ShelterModule.Services.Implementations.Pets;
+using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces.Pets;
+using ShelterModule.Services.Interfaces.Shelters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddScoped<IShelterQuery,ShelterQuery>();
     services.AddScoped<IShelterCommand,ShelterCommand>();
+    services.AddScoped<IPetQuery, PetQuery>();
+    services.AddScoped<IPetCommand, PetCommand>();
 }
 
 void ApplyMigrations(IServiceProvider services)

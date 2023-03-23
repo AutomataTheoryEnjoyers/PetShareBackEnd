@@ -1,5 +1,7 @@
 ﻿using Database;
+using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
+using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Pets;
 
 namespace ShelterModule.Services.Implementations.Pets
@@ -13,14 +15,15 @@ namespace ShelterModule.Services.Implementations.Pets
             _context = context;
         }
 
-        public Task<IReadOnlyList<Pet>> GetAllAsync(CancellationToken token = default)
+        public async Task<IReadOnlyList<Pet>> GetAllAsync(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            return (await _context.Pets.ToListAsync(token)).Select(Pet.FromEntity).ToList();
         }
 
-        public Task<Pet?> GetByIdAsync(Guid id, CancellationToken token = default)
+        public async Task<Pet?> GetByIdAsync(Guid id, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            var entity = await _context.Pets.FirstOrDefaultAsync(e => e.Id == id, token);
+            return entity is null ? null : Pet.FromEntity(entity);
         }
     }
 }

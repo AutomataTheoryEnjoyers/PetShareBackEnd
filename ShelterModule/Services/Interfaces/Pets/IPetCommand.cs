@@ -4,7 +4,8 @@ namespace ShelterModule.Services.Interfaces.Pets
 {
     public interface IPetCommand
     {
-        public Task AddAsync(Pet pet);
+        public Task<Pet> AddAsync(Pet pet);
         public Task RemoveAsync(Pet pet);
+        public Task<Pet?> UpdateAsync(Pet pet);
     }
 }

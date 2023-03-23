@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230323194626_ReworkedModels")]
-    partial class ReworkedModels
+    [Migration("20230323204949_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,7 +61,7 @@ namespace Database.Migrations
 
                     b.HasIndex("ShelterId");
 
-                    b.ToTable("PetEnitiy");
+                    b.ToTable("Pets");
                 });
 
             modelBuilder.Entity("Database.Entities.ShelterEntity", b =>

@@ -58,7 +58,7 @@ namespace Database.Migrations
 
                     b.HasIndex("ShelterId");
 
-                    b.ToTable("PetEnitiy");
+                    b.ToTable("Pets");
                 });
 
             modelBuilder.Entity("Database.Entities.ShelterEntity", b =>

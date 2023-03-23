@@ -8,10 +8,13 @@ public sealed class ShelterCreationRequest
     [MaxLength(20)]
     public string UserName { get; init; } = null!;
 
-    [Required]
+    [Required(AllowEmptyStrings = false)]
+    [MaxLength(50)]
     public string FullShelterName { get; init; } = null!;
     [Required]
+    [Phone]
     public string PhoneNumber { get; init; } = null!;
     [Required]
+    [EmailAddress]
     public string Email { get; init; } = null!;
 }

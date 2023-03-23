@@ -24,9 +24,9 @@ public sealed class ShelterController : ControllerBase
     /// <returns> Shelter with a given ID </returns>
     [HttpGet]
     [Route("{id:guid}")]
-    //[ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
-    //[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    //[ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShelterResponse>> Get(Guid id)
     {
         var shelter = await _query.GetByIdAsync(id);

@@ -11,7 +11,6 @@ public sealed class Shelter : User
 
     public required string FullShelterName { get; init; }
 
-    // list<Pet> ? 
 
     public ShelterEntity ToEntity()
     {

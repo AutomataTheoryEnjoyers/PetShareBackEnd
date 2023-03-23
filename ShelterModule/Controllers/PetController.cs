@@ -80,9 +80,9 @@ namespace ShelterModule.Controllers
         }
 
         /// <summary>
-        ///     Updates authorization status of a shelter with specified ID
+        ///     Updates pet record with specified ID
         /// </summary>
-        /// <param name="id"> ID of a shelter to update </param>
+        /// <param name="id"> ID of a pet to update </param>
         /// <param name="request"> Request received </param>
         /// <returns> Updated pet </returns>
         [HttpPut]
@@ -90,7 +90,7 @@ namespace ShelterModule.Controllers
         [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpsertRequest request)
+        public async Task<ActionResult<PetResponse>> Put(Guid id, PetCreationRequest request)
         {
             //var shelter = await _command.SetAuthorizationAsync(id, request.IsAuthorized);
             //if (shelter is null)

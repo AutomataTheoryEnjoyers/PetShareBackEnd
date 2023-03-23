@@ -26,7 +26,7 @@ namespace ShelterModule.Models.Pets
                 Birthday = Birthday,
                 Description = Description,
                 Photo = Photo,
-                Shelter = Shelter.ToEntity(),
+                //Shelter = shelter.ToEntity(),
                 ShelterId = Shelter.Id
             };
         }

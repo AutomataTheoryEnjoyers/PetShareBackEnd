@@ -1,4 +1,5 @@
 ﻿using Database;
+using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
 using ShelterModule.Services.Interfaces.Pets;
 
@@ -13,14 +14,21 @@ namespace ShelterModule.Services.Implementations.Pets
             _dbContext = dbContext;
         }
 
-        public Task AddAsync(Pet typeObject)
+        public async Task AddAsync(Pet pet)
         {
-            throw new NotImplementedException();
+            _dbContext.Add(pet.ToEntity());
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task RemoveAsync(Pet typeObject)
+        public async Task RemoveAsync(Pet pet)
         {
-            throw new NotImplementedException();
+            var entityToRemove = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == pet.Id);
+            if (entityToRemove != null)
+            {
+                _dbContext.Remove(entityToRemove);
+                await _dbContext.SaveChangesAsync();
+            }
+            await Task.CompletedTask;
         }
     }
 }

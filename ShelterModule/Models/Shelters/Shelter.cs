@@ -1,15 +1,21 @@
 ﻿using Database.Entities;
+using Database.ValueObjects;
 
 namespace ShelterModule.Models.Shelters;
 
-public sealed class Shelter : User
+public sealed class Shelter
 {
+    public required Guid Id { get; init; }
+    public required string UserName { get; init; } = null!;
+    public required string FullShelterName { get; init; }
+    public required string PhoneNumber { get; init; } = null!;
+    public required string Email { get; init; } = null!;
+
+    public required Address Address { get; init; } = null!;
     public required bool? IsAuthorized { get; set; } = null;
     // true - authorized 
     // false - blocked
     // null - unauthorized unblocked
-
-    public required string FullShelterName { get; init; }
 
 
     public ShelterEntity ToEntity()
@@ -21,7 +27,8 @@ public sealed class Shelter : User
             FullShelterName = FullShelterName,
             PhoneNumber = PhoneNumber,
             Email = Email,
-            IsAuthorized = IsAuthorized
+            IsAuthorized = IsAuthorized,
+            Address = Address
         };
     }
 
@@ -34,7 +41,8 @@ public sealed class Shelter : User
             FullShelterName = entity.FullShelterName,
             PhoneNumber = entity.PhoneNumber,
             Email = entity.Email,
-            IsAuthorized = entity.IsAuthorized
+            IsAuthorized = entity.IsAuthorized,
+            Address = entity.Address
         };
     }
 
@@ -47,7 +55,8 @@ public sealed class Shelter : User
             FullShelterName = FullShelterName,
             PhoneNumber = PhoneNumber,
             Email = Email,
-            IsAuthorized = IsAuthorized
+            IsAuthorized = IsAuthorized,
+            Address = Address
         };
     }
 
@@ -60,7 +69,8 @@ public sealed class Shelter : User
             FullShelterName = request.FullShelterName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
-            IsAuthorized = false
+            IsAuthorized = false,
+            Address = request.Address
         };
     }
 }

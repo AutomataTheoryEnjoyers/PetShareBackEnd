@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Database.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShelterModule.Models.Shelters;
 
@@ -17,4 +18,7 @@ public sealed class ShelterCreationRequest
     [Required]
     [EmailAddress]
     public string Email { get; init; } = null!;
+
+    [Required]
+    public Address Address { get; init; } = null!;
 }

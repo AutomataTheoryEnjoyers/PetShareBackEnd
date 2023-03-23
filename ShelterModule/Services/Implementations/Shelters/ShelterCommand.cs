@@ -20,9 +20,9 @@ public sealed class ShelterCommand : IShelterCommand
         await _context.SaveChangesAsync();
     }
 
-    public async Task RemoveAsync(Shelter typeObject)
+    public async Task RemoveAsync(Shelter shelter)
     {
-        var entityToRemove = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == typeObject.Id);
+        var entityToRemove = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == shelter.Id);
         if( entityToRemove != null)
         {
             _context.Remove(entityToRemove);
@@ -40,9 +40,4 @@ public sealed class ShelterCommand : IShelterCommand
         await _context.SaveChangesAsync();
         return Shelter.FromEntity(entity);
     }
-
-    //public Task<Shelter> UpdateByIdAsync(Guid id, Shelter typeObject)
-    //{
-    //    throw new NotImplementedException();
-    //}
 }

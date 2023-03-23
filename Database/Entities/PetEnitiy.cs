@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database.Entities
 {
@@ -8,14 +9,15 @@ namespace Database.Entities
         public required Guid Id { get; init; }
 
         [Required]
-        public ShelterEntity Shelter { get; init; } = null!;
-        public required Guid ShelterId { get; init; }
+        [ForeignKey("ShelterId")]
+        public ShelterEntity Shelter { get; set; } = null!;
+        public required Guid ShelterId { get; set; }
 
-        public string Name { get; init; } = null!;
-        public string Species { get; init; } = null!;
-        public string Breed { get; init; } = null!;
-        public DateTime Birthday { get; init; }
-        public string Description { get; init; } = null!;
-        public string Photo { get; init; } = null!;
+        public string Name { get; set; } = null!;
+        public string Species { get; set; } = null!;
+        public string Breed { get; set; } = null!;
+        public DateTime Birthday { get; set; }
+        public string Description { get; set; } = null!;
+        public string Photo { get; set; } = null!;
     }
 }

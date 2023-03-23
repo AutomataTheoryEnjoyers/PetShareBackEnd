@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
 using ShelterModule.Models.Shelters;
@@ -32,15 +33,25 @@ namespace ShelterModule.Services.Implementations.Pets
             }
         }
 
-        public async Task<Pet?> UpdateAsync(Pet pet)
+        public async Task<Pet?> UpdateAsync(Guid id, PetCreationRequest request)
         {
-            var entityToUpdate = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == pet.Id);
+            var entityToUpdate = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == id);
             if (entityToUpdate is null)
                 return null;
-            
-            entityToUpdate = pet.ToEntity();
+
+            entityToUpdate.Name = request.Name;
+            entityToUpdate.Breed = request.Breed;
+            entityToUpdate.Species = request.Species;
+            entityToUpdate.Birthday = request.Birthday;
+            entityToUpdate.Description = request.Description;
+            entityToUpdate.Photo = request.Photo;
+            entityToUpdate.ShelterId = request.ShelterId;
+
             await _dbContext.SaveChangesAsync();
-            return Pet.FromEntity(entityToUpdate);
+            
+            var updatedEntity = await _dbContext.Pets.Include(x => x.Shelter).FirstOrDefaultAsync(e => e.Id == id);
+
+            return Pet.FromEntity(updatedEntity!);
         }
     }
 }

@@ -100,7 +100,7 @@ namespace ShelterModule.Controllers
                 return BadRequest();
 
             // update pet if there is a pet with given id
-            var pet = await _command.UpdateAsync(Pet.FromRequest(request,shelter));
+            var pet = await _command.UpdateAsync(id,request);
             if (pet is null)
                 return NotFound(new NotFoundResponse
                 {

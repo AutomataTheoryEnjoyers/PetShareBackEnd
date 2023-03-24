@@ -1,24 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Database.Entities;
-
-public class PetEnitiy
+namespace Database.Entities
 {
-    [Key]
-    public required Guid Id { get; init; }
+    public sealed class PetEnitiy
+    {
+        [Key]
+        public required Guid Id { get; init; }
 
-    // foreign key
-    [Required]
-    public ShelterEntity Shelter { get; init; } = null!;
-
-    public required Guid ShelterId { get; init; }
-
-    // fields
-    public string Name { get; init; } = null!;
-    public string Species { get; init; } = null!;
-    public string Breed { get; init; } = null!;
-    public DateTime Birthday { get; init; }
-    public string Description { get; init; } = null!;
-
-    //public byte[] Photo { get; init; } = null!; // ?
+        [Required]
+        [ForeignKey("ShelterId")]
+        public ShelterEntity Shelter { get; set; } = null!;
+        public required Guid ShelterId { get; set; }
+        public string Name { get; set; } = null!;
+        public string Species { get; set; } = null!;
+        public string Breed { get; set; } = null!;
+        public DateTime Birthday { get; set; }
+        public string Description { get; set; } = null!;
+        public string Photo { get; set; } = null!;
+    }
 }

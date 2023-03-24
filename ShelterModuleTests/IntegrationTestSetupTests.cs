@@ -1,12 +1,11 @@
 ﻿using Database;
 using Database.Entities;
+using Database.ValueObjects;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 using Xunit;
-using Database.ValueObjects;
+
 namespace ShelterModuleTests;
 
 [Trait("Category", "Unit")]
@@ -36,7 +35,7 @@ public sealed class IntegrationTestSetupTests
                 Province = "test-province",
                 City = "test-city",
                 Street = "test-street",
-                PostalCode = "test-postalCode",
+                PostalCode = "test-postalCode"
             }
         });
         await context.SaveChangesAsync();

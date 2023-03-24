@@ -7,11 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Models.Shelters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -33,7 +28,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
             Province = "test-province",
             City = "test-city",
             Street = "test-street",
-            PostalCode = "test-postalCode",
+            PostalCode = "test-postalCode"
         }
     };
 
@@ -99,10 +94,17 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     [Fact]
     public async Task GetShouldFailWithWrongShelterId()
     {
-        Guid wrongId = Guid.NewGuid();
+        var wrongId = Guid.NewGuid();
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelter", wrongId).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  ResourceName = nameof(Shelter),
+                  Id = wrongId.ToString()
+              });
     }
 
     [Fact]
@@ -120,7 +122,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                 Province = "test-province",
                 City = "test-city",
                 Street = "test-street",
-                PostalCode = "test-postalCode",
+                PostalCode = "test-postalCode"
             }
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
@@ -194,15 +196,22 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutShouldFailWithWrongShelterID()
+    public async Task PutShouldFailWithWrongShelterId()
     {
-        Guid wrongId = Guid.NewGuid();
+        var wrongId = Guid.NewGuid();
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelter", wrongId).PutJsonAsync(
-            new ShelterAuthorizationRequest
-            {
-                IsAuthorized = true
-            });
+        var response = await client.Request("shelter", wrongId).
+                                    PutJsonAsync(new ShelterAuthorizationRequest
+                                    {
+                                        IsAuthorized = true
+                                    });
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  ResourceName = nameof(Shelter),
+                  Id = wrongId.ToString()
+              });
     }
 }

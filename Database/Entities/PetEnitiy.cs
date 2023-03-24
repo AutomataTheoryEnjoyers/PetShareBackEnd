@@ -12,7 +12,6 @@ namespace Database.Entities
         [ForeignKey("ShelterId")]
         public ShelterEntity Shelter { get; set; } = null!;
         public required Guid ShelterId { get; set; }
-
         public string Name { get; set; } = null!;
         public string Species { get; set; } = null!;
         public string Breed { get; set; } = null!;

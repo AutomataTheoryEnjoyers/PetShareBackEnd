@@ -2,22 +2,28 @@
 
 namespace Database.ValueObjects
 {
-    public sealed class Address : ValueObject
+    [Owned]
+    public sealed class Address : IEquatable<Address>
     {
         public string Country { get; init; } = null!;
         public string Province { get; init; } = null!;
         public string City { get; init; } = null!;
         public string Street { get; init; } = null!;
         public string PostalCode { get; init; } = null!;
-        
 
-        protected override IEnumerable<object> GetEqualityComponents()
+        public bool Equals(Address? other)
         {
-            yield return Country;
-            yield return Province;
-            yield return City;
-            yield return Street;
-            yield return PostalCode;
+            if (other == null || other.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return (
+                Country == other.Country &&
+                Province == other.Province &&
+                City == other.City &&
+                Street == other.Street &&
+                PostalCode == other.PostalCode);
         }
     }
 }

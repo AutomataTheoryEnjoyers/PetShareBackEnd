@@ -23,8 +23,6 @@ namespace ShelterModule.Controllers
             _shelterQuery = shelterQuery;
         }
 
-
-
         /// <summary>
         ///     Returns a pet with a given ID
         /// </summary>
@@ -59,7 +57,6 @@ namespace ShelterModule.Controllers
         {
             return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
         }
-
 
         /// <summary>
         ///     Creates new pet

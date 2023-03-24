@@ -4,13 +4,12 @@ using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
-namespace ShelterModule.Controllers
-{
-    [ApiController]
-    [Route("pet")]
-    public class PetController : ControllerBase
-    {
+namespace ShelterModule.Controllers;
 
+[ApiController]
+[Route("pet")]
+public class PetController : ControllerBase
+{
         // dependency injection
         private readonly IPetQuery _query;
         private readonly IPetCommand _command;
@@ -107,5 +106,5 @@ namespace ShelterModule.Controllers
 
             return pet.ToResponse();
         }
-    }
+    
 }

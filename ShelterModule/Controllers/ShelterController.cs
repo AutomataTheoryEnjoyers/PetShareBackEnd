@@ -5,7 +5,7 @@ using ShelterModule.Services.Interfaces.Shelters;
 namespace ShelterModule.Controllers;
 
 [ApiController]
-[Route("shelters")]
+[Route("shelter")]
 public sealed class ShelterController : ControllerBase
 {
     // dependency injection

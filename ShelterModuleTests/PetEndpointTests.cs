@@ -118,11 +118,11 @@ public sealed class PetEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("pet", wrongId).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        var error = response.GetJsonAsync<NotFoundResponse>();
+        var error = await response.GetJsonAsync<NotFoundResponse>();
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {
-                  ResourceName = nameof(Shelter),
+                  ResourceName = nameof(Pet),
                   Id = wrongId.ToString()
               });
     }
@@ -275,7 +275,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("pet", wrongId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        var error = response.GetJsonAsync<NotFoundResponse>();
+        var error = await response.GetJsonAsync<NotFoundResponse>();
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {

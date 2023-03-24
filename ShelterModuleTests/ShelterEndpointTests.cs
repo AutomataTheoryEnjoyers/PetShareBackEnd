@@ -98,6 +98,13 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelter", wrongId).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  ResourceName = nameof(Shelter),
+                  Id = wrongId.ToString()
+              });
     }
 
     [Fact]
@@ -199,7 +206,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                                         IsAuthorized = true
                                     });
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-        var error = response.GetJsonAsync<NotFoundResponse>();
+        var error = await response.GetJsonAsync<NotFoundResponse>();
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {

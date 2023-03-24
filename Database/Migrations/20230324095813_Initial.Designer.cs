@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230323224423_RelationRedefinition")]
-    partial class RelationRedefinition
+    [Migration("20230324095813_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

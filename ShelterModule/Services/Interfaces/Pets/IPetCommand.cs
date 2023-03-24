@@ -6,6 +6,6 @@ namespace ShelterModule.Services.Interfaces.Pets
     {
         public Task<Pet> AddAsync(Pet pet);
         public Task RemoveAsync(Pet pet);
-        public Task<Pet?> UpdateAsync(Guid id, PetCreationRequest request);
+        public Task<Pet?> UpdateAsync(Guid id, PetUpsertRequest request);
     }
 }

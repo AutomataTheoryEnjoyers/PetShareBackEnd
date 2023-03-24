@@ -33,7 +33,7 @@ namespace ShelterModule.Services.Implementations.Pets
             }
         }
 
-        public async Task<Pet?> UpdateAsync(Guid id, PetCreationRequest request)
+        public async Task<Pet?> UpdateAsync(Guid id, PetUpsertRequest request)
         {
             var entityToUpdate = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == id);
             if (entityToUpdate is null)

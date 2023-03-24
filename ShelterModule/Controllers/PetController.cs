@@ -66,7 +66,7 @@ namespace ShelterModule.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PetResponse>> Post(PetCreationRequest request)
+        public async Task<ActionResult<PetResponse>> Post(PetUpsertRequest request)
         {
             // check if given shelterId is valid (TO DO: change after authorization is implemented)
             var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId);
@@ -89,7 +89,7 @@ namespace ShelterModule.Controllers
         [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PetResponse>> Put(Guid id, PetCreationRequest request)
+        public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpsertRequest request)
         {
             // check if given shelterId is valid (TO DO: change after authorization is implemented)
             var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId);

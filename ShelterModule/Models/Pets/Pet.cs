@@ -44,7 +44,7 @@ namespace ShelterModule.Models.Pets
             };
         }
 
-        public static Pet FromRequest(PetCreationRequest request, Shelter shelter)
+        public static Pet FromRequest(PetUpsertRequest request, Shelter shelter)
         {
             return new Pet
             {

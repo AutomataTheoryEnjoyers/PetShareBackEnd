@@ -2,7 +2,7 @@
 
 namespace ShelterModule.Models.Pets
 {
-    public sealed class PetCreationRequest
+    public sealed class PetUpsertRequest
     {
         [Required]
         [MaxLength(20)]

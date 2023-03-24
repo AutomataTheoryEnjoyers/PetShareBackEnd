@@ -3,8 +3,10 @@ using Database.Entities;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 using Xunit;
-
+using Database.ValueObjects;
 namespace ShelterModuleTests;
 
 [Trait("Category", "Unit")]
@@ -27,7 +29,15 @@ public sealed class IntegrationTestSetupTests
             UserName = shelterName,
             FullShelterName = shelterName,
             Email = "mail@mail.mail",
-            PhoneNumber = "123456789"
+            PhoneNumber = "123456789",
+            Address = new Address
+            {
+                Country = "test-country",
+                Province = "test-province",
+                City = "test-city",
+                Street = "test-street",
+                PostalCode = "test-postalCode",
+            }
         });
         await context.SaveChangesAsync();
     }

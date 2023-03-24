@@ -4,7 +4,12 @@ using FluentAssertions;
 using Flurl.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule.Models.Shelters;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Database.ValueObjects;
 using Xunit;
+using System.Linq;
 
 namespace ShelterModuleTests;
 
@@ -18,7 +23,15 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         Email = "mail@mail.mail",
         PhoneNumber = "123456789",
         FullShelterName = "Test Shelter",
-        IsAuthorized = null
+        IsAuthorized = null,
+        Address = new Address
+        {
+            Country = "test-country",
+            Province = "test-province",
+            City = "test-city",
+            Street = "test-street",
+            PostalCode = "test-postalCode",
+        }
     };
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -53,7 +66,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                          FullShelterName = _shelter.FullShelterName,
                          Email = _shelter.Email,
                          PhoneNumber = _shelter.PhoneNumber,
-                         IsAuthorized = _shelter.IsAuthorized
+                         IsAuthorized = _shelter.IsAuthorized,
+                         Address = _shelter.Address
                      }
                  });
     }
@@ -73,7 +87,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                      FullShelterName = _shelter.FullShelterName,
                      Email = _shelter.Email,
                      PhoneNumber = _shelter.PhoneNumber,
-                     IsAuthorized = _shelter.IsAuthorized
+                     IsAuthorized = _shelter.IsAuthorized,
+                     Address = _shelter.Address
                  });
     }
 
@@ -85,7 +100,15 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
             UserName = "new-shelter",
             FullShelterName = "New Shelter",
             Email = "cool@website.com",
-            PhoneNumber = "987654321"
+            PhoneNumber = "987654321",
+            Address = new Address
+            {
+                Country = "test-country",
+                Province = "test-province",
+                City = "test-city",
+                Street = "test-street",
+                PostalCode = "test-postalCode",
+            }
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelters").PostJsonAsync(request);
@@ -99,7 +122,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                        FullShelterName = request.FullShelterName,
                        Email = request.Email,
                        PhoneNumber = request.PhoneNumber,
-                       IsAuthorized = null
+                       IsAuthorized = null,
+                       Address = request.Address
                    }, options => options.Excluding(s => s.Id));
 
         using var scope = _testSetup.Services.CreateScope();
@@ -112,7 +136,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                     FullShelterName = request.FullShelterName,
                     Email = request.Email,
                     PhoneNumber = request.PhoneNumber,
-                    IsAuthorized = null
+                    IsAuthorized = null,
+                    Address = request.Address
                 });
     }
 
@@ -135,7 +160,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                        FullShelterName = _shelter.FullShelterName,
                        Email = _shelter.Email,
                        PhoneNumber = _shelter.PhoneNumber,
-                       IsAuthorized = true
+                       IsAuthorized = true,
+                       Address = _shelter.Address
                    });
 
         using var scope = _testSetup.Services.CreateScope();
@@ -149,7 +175,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                     FullShelterName = _shelter.FullShelterName,
                     Email = _shelter.Email,
                     PhoneNumber = _shelter.PhoneNumber,
-                    IsAuthorized = true
+                    IsAuthorized = true,
+                    Address = _shelter.Address
                 });
     }
 }

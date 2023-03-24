@@ -69,7 +69,7 @@ public sealed class Shelter
             FullShelterName = request.FullShelterName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
-            IsAuthorized = false,
+            IsAuthorized = null,
             Address = request.Address
         };
     }

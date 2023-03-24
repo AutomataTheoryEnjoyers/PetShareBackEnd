@@ -27,7 +27,7 @@ public class ShelterControllerTests
         var result = await sc.GetAll();
 
         // assert
-        mockShelterQuery.Verify(service => service.GetAllAsync(CancellationToken.None),Times.Once());
+        mockShelterQuery.Verify(service => service.GetAllAsync(CancellationToken.None), Times.Once());
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class ShelterControllerTests
 
         // assert
         actionResult.Should().BeOfType<ActionResult<ShelterResponse>>();
-        
+
         var result = actionResult.Result as OkObjectResult;
         result.Should().NotBeNull();
         result?.StatusCode.Should().Be(StatusCodes.Status200OK);

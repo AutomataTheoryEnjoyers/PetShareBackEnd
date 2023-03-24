@@ -1,5 +1,7 @@
 ﻿using Database.ValueObjects;
 using ShelterModule.Models.Shelters;
+using System;
+using System.Collections.Generic;
 
 namespace ShelterModuleTests.Fixtures
 {

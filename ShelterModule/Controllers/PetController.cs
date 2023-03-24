@@ -10,8 +10,6 @@ namespace ShelterModule.Controllers;
 [Route("pet")]
 public class PetController : ControllerBase
 {
-    private readonly IPetCommand _command;
-
         // dependency injection
         private readonly IPetQuery _query;
         private readonly IPetCommand _command;
@@ -108,5 +106,5 @@ public class PetController : ControllerBase
 
             return pet.ToResponse();
         }
-    }
+    
 }

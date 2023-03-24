@@ -1,15 +1,18 @@
 ﻿using Database;
 using Database.Entities;
+using Database.ValueObjects;
 using FluentAssertions;
 using Flurl.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using ShelterModule;
 using ShelterModule.Models.Shelters;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Database.ValueObjects;
-using Xunit;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace ShelterModuleTests;
 
@@ -46,6 +49,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
+        //_testSetup.Dispose();
         return Task.CompletedTask;
     }
 
@@ -53,7 +57,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchAllShelters()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelters").GetAsync();
+        var response = await client.Request("shelter").GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<IEnumerable<ShelterResponse>>();
         shelters.Should().
@@ -76,8 +80,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchShelterById()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelters", _shelter.Id).GetAsync();
-        response.StatusCode.Should().Be(200);
+        var response = await client.Request("shelter", _shelter.Id).GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status200OK);
         var shelters = await response.GetJsonAsync<ShelterResponse>();
         shelters.Should().
                  BeEquivalentTo(new ShelterResponse
@@ -90,6 +94,15 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                      IsAuthorized = _shelter.IsAuthorized,
                      Address = _shelter.Address
                  });
+    }
+
+    [Fact]
+    public async Task GetShouldFailWithWrongShelterId()
+    {
+        Guid wrongId = Guid.NewGuid();
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var response = await client.Request("shelter", wrongId).GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }
 
     [Fact]
@@ -111,7 +124,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
             }
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelters").PostJsonAsync(request);
+        var response = await client.Request("shelter").PostJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var newShelter = await response.GetJsonAsync<ShelterResponse>();
         newShelter.Should().
@@ -145,7 +158,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task PutShouldAuthorizeShelter()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelters", _shelter.Id).
+        var response = await client.Request("shelter", _shelter.Id).
                                     PutJsonAsync(new ShelterAuthorizationRequest
                                     {
                                         IsAuthorized = true
@@ -178,5 +191,18 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                     IsAuthorized = true,
                     Address = _shelter.Address
                 });
+    }
+
+    [Fact]
+    public async Task PutShouldFailWithWrongShelterID()
+    {
+        Guid wrongId = Guid.NewGuid();
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var response = await client.Request("shelter", wrongId).PutJsonAsync(
+            new ShelterAuthorizationRequest
+            {
+                IsAuthorized = true
+            });
+        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }
 }

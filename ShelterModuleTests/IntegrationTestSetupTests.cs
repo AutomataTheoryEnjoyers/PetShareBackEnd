@@ -61,6 +61,6 @@ public sealed class IntegrationTestSetupTests
     public async Task ShouldCreateWorkingFlurlClient()
     {
         var client = new IntegrationTestSetup().CreateFlurlClient();
-        (await client.Request("shelters").GetAsync()).StatusCode.Should().Be(200);
+        (await client.Request("shelter").GetAsync()).StatusCode.Should().Be(200);
     }
 }

@@ -4,12 +4,13 @@ using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
-namespace ShelterModule.Controllers
+namespace ShelterModule.Controllers;
+
+[ApiController]
+[Route("pet")]
+public class PetController : ControllerBase
 {
-    [ApiController]
-    [Route("pet")]
-    public class PetController : ControllerBase
-    {
+    private readonly IPetCommand _command;
 
         // dependency injection
         private readonly IPetQuery _query;

@@ -11,4 +11,5 @@ public sealed class PetShareDbContext : DbContext
 
     public DbSet<ShelterEntity> Shelters => Set<ShelterEntity>();
     public DbSet<PetEnitiy> Pets => Set<PetEnitiy>();
+    public DbSet<AnnouncementEntity> Announcements => Set<AnnouncementEntity>();
 }

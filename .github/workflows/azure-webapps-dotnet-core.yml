@@ -14,8 +14,8 @@
 # 3. Change the value for the AZURE_WEBAPP_NAME. Optionally, change the AZURE_WEBAPP_PACKAGE_PATH and DOTNET_VERSION environment variables below.
 #
 # For more information on GitHub Actions for Azure: https://github.com/Azure/Actions
-# For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
+# For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy 
+# For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples (TEST COMMENT EDIT FOR NEW COMMIT)
 
 name: Build and deploy ASP.Net Core app to an Azure Web App
 

@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - mini-pet-share
 on:
   push:
     branches:
-      - Deployement
+      - master
   workflow_dispatch:
 
 jobs:

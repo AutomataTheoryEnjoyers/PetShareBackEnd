@@ -22,9 +22,7 @@ namespace ShelterModule.Models.Announcements
             {
                 Id = Id,
                 ShelterId = Author.Id,
-                Author = Author.ToEntity(),
-                PetId = Pet.Id,
-                Pet = Pet.ToEntity(),
+                PetId = Pet.Id,  
                 Title = Title,
                 Description = Description,
                 CreationDate = CreationDate,

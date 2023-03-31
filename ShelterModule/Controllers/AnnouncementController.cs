@@ -17,13 +17,15 @@ namespace ShelterModule.Controllers
         private readonly IAnnouncementQuery _query;
         private readonly IAnnouncementCommand _command;
         private readonly IPetQuery _petQuery;
+        private readonly IPetCommand _petCommand;
         private readonly IShelterQuery _shelterQuery;
 
-        public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery,IShelterQuery shelterQuery)
+        public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery, IPetCommand petCommand, IShelterQuery shelterQuery)
         {
             _query = query;
             _command = command;
             _petQuery = petQuery;
+            _petCommand = petCommand;
             _shelterQuery = shelterQuery;
         }
         /// <summary>
@@ -35,7 +37,7 @@ namespace ShelterModule.Controllers
         [Route("{id:guid}")]
         [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AnnouncementResponse>> Get(Guid id)
         {
             var announcement = await _query.GetByIdAsync(id);
@@ -56,7 +58,7 @@ namespace ShelterModule.Controllers
         /// <returns> List of all announcements matching the filters </returns>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]        
-        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered([FromQuery] GetAllAnnouncementsFilteredQuery query)
         {            
             return (await _query.GetAllFilteredAsync(query)).Select(s => s.ToResponse()).ToList();
@@ -70,10 +72,9 @@ namespace ShelterModule.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
         {
-            // check if given shelterId is valid (TO DO: change after authorization is implemented)
             var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId);
             if (shelter is null)
                 return BadRequest();
@@ -82,7 +83,8 @@ namespace ShelterModule.Controllers
                 Pet.FromRequest(request.PetRequest, shelter) : await _petQuery.GetByIdAsync((Guid)request.PetId);
             if (pet is null)
                 return BadRequest();
-            // create new announcement
+            if (request.PetId is null)
+                await _petCommand.AddAsync(pet);
             var announcement = Announcement.FromRequest(request, shelter, pet);
             return (await _command.AddAsync(announcement)).ToResponse();
         }
@@ -94,11 +96,11 @@ namespace ShelterModule.Controllers
         public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
         {
             // check if given shelterId is valid (TO DO: change after authorization is implemented)
-            var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId);
+            var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId);
             if (shelter is null)
                 return BadRequest();
 
-            // update pet if there is a pet with given id
+            // update announcement if there is an announcement with given id
             var announcement = await _command.UpdateAsync(id, request);
             if (announcement is null)
                 return NotFound(new NotFoundResponse

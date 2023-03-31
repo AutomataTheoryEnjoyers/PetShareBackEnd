@@ -16,7 +16,8 @@ namespace ShelterModule.Services.Implementations.Announcements
         }
         public async Task<Announcement> AddAsync(Announcement announcement)
         {
-            _dbContext.Add(announcement.ToEntity());
+            var entityAnnouncement = announcement.ToEntity();
+            _dbContext.Add(entityAnnouncement);
             await _dbContext.SaveChangesAsync();
             return announcement;
         }

@@ -13,6 +13,6 @@ namespace ShelterModule.Models.Announcements
         public Guid ShelterId { get; init; }
         public Guid? PetId { get; init; } = null!;
 
-        public PetUpsertRequest PetRequest { get; init; } = null!;
+        public PetUpsertRequest? PetRequest { get; init; } = null!;
     }
 }

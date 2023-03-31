@@ -18,7 +18,7 @@ namespace ShelterModule.Services.Implementations.Announcements
 
         public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQuery query, CancellationToken token = default)
         {
-            var filteredAnnouncements = (await _context.Announcements.ToListAsync(token)).Select(Announcement.FromEntity);
+            var filteredAnnouncements = (await _context.Announcements.Include(x => x.Author).Include(x => x.Pet).ToListAsync(token)).Select(Announcement.FromEntity);
 
             if (query.Species is not null)
             {
@@ -50,7 +50,7 @@ namespace ShelterModule.Services.Implementations.Announcements
 
         public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)
         {
-            var entity = await _context.Announcements.FirstOrDefaultAsync(e => e.Id == id, token);
+            var entity = await _context.Announcements.Include(x => x.Author).Include(x=>x.Pet).FirstOrDefaultAsync(e => e.Id == id, token);
             return entity is null ? null : Announcement.FromEntity(entity);
         }
     }

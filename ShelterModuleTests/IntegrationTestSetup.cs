@@ -101,6 +101,7 @@ public sealed class TestDbConnectionString : IDisposable
         ConnectionString = connectionString;
         var options = new DbContextOptionsBuilder<PetShareDbContext>().UseSqlServer(connectionString).Options;
         using var context = new PetShareDbContext(options);
+        
         context.Database.EnsureCreated();
     }
 

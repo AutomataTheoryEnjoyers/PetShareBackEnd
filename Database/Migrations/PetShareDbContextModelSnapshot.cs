@@ -22,6 +22,47 @@ namespace Database.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Database.Entities.AnnouncementEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClosingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastUpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ShelterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PetId");
+
+                    b.HasIndex("ShelterId");
+
+                    b.ToTable("Announcements");
+                });
+
             modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -91,12 +132,31 @@ namespace Database.Migrations
                     b.ToTable("Shelters");
                 });
 
+            modelBuilder.Entity("Database.Entities.AnnouncementEntity", b =>
+                {
+                    b.HasOne("Database.Entities.PetEnitiy", "Pet")
+                        .WithMany()
+                        .HasForeignKey("PetId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Database.Entities.ShelterEntity", "Author")
+                        .WithMany()
+                        .HasForeignKey("ShelterId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Pet");
+                });
+
             modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
                 {
                     b.HasOne("Database.Entities.ShelterEntity", "Shelter")
                         .WithMany("Pets")
                         .HasForeignKey("ShelterId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Shelter");

@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Services.Implementations.Pets;
@@ -19,6 +20,10 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        var keyVaultUrl = new Uri(builder.Configuration.GetSection("KeyVaultURL").Value!);
+        var azureCredential = new DefaultAzureCredential();
+        builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
 
         var app = builder.Build();
 
@@ -48,9 +53,7 @@ public class Program
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<PetShareDbContext>(options =>
-                                                     options.UseSqlServer(configuration.
-                                                                              GetConnectionString(PetShareDbContext.
-                                                                                                      DbConnectionStringName)));
+            options.UseSqlServer(configuration.GetSection("PetShareDbConnectionString").Value));
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();

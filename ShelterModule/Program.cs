@@ -14,16 +14,13 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        ConfigureOptions(builder.Services);
-        ConfigureServices(builder.Services, builder.Configuration);
+        ConfigureOptions(builder);
+        ConfigureServices(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        var keyVaultUrl = new Uri(builder.Configuration.GetSection("KeyVaultURL").Value!);
-        var azureCredential = new DefaultAzureCredential();
-        builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
 
         var app = builder.Build();
 
@@ -50,10 +47,18 @@ public class Program
         context.Database.Migrate();
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopement)
     {
-        services.AddDbContext<PetShareDbContext>(options =>
-            options.UseSqlServer(configuration.GetSection("PetShareDbConnectionString").Value));
+        if(isDevelopement)
+        {
+            services.AddDbContext<PetShareDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)));
+        }
+        else
+        {
+            services.AddDbContext<PetShareDbContext>(options =>
+                options.UseSqlServer(configuration.GetValue<string>("PetShareDbConnectionString")));
+        }
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();
@@ -61,5 +66,13 @@ public class Program
         services.AddScoped<IPetCommand, PetCommand>();
     }
 
-    private static void ConfigureOptions(IServiceCollection services) { }
+    private static void ConfigureOptions(WebApplicationBuilder builder) 
+    {
+        if (!builder.Environment.IsDevelopment())
+        {
+            var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")!);
+            var azureCredential = new DefaultAzureCredential();
+            builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
+        }
+    }
 }

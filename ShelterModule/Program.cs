@@ -70,7 +70,7 @@ public class Program
     {
         if (!builder.Environment.IsDevelopment())
         {
-            var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")!);
+            var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL") ?? throw new InvalidOperationException("No azureKeyVault URL found in config."));
             var azureCredential = new DefaultAzureCredential();
             builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
         }

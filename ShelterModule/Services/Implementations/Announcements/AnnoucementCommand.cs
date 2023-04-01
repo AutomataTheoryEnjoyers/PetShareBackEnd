@@ -34,7 +34,7 @@ namespace ShelterModule.Services.Implementations.Announcements
 
         public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request)
         {
-            var entityToUpdate = await _dbContext.Announcements.FirstOrDefaultAsync(e => e.Id == id);
+            var entityToUpdate = await _dbContext.Announcements.Include(x=>x.Pet).Include(x=>x.Author).FirstOrDefaultAsync(e => e.Id == id);
             if (entityToUpdate is null)
                 return null;
 

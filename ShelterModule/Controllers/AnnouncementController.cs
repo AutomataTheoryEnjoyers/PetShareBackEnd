@@ -83,8 +83,10 @@ namespace ShelterModule.Controllers
                 Pet.FromRequest(request.PetRequest, shelter) : await _petQuery.GetByIdAsync((Guid)request.PetId);
             if (pet is null)
                 return BadRequest();
+
             if (request.PetId is null)
                 await _petCommand.AddAsync(pet);
+
             var announcement = Announcement.FromRequest(request, shelter, pet);
             return (await _command.AddAsync(announcement)).ToResponse();
         }
@@ -96,16 +98,20 @@ namespace ShelterModule.Controllers
         public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
         {
             // check if given shelterId is valid (TO DO: change after authorization is implemented)
-            var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId);
+            var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId!);
             if (shelter is null)
                 return BadRequest();
 
+            var pet = await _petQuery.GetByIdAsync((Guid)request.PetId!); //to jest troche dziwne, ale tak jest w specyfikacji, nie widze sensu
+                                                                          //przekazywania petId w AnnouncementPutRequest, wystarczy samo announcementId                                                  
+            if (pet is null)
+                return BadRequest();
             // update announcement if there is an announcement with given id
             var announcement = await _command.UpdateAsync(id, request);
             if (announcement is null)
                 return NotFound(new NotFoundResponse
                 {
-                    ResourceName = nameof(Shelter),
+                    ResourceName = nameof(Announcement),
                     Id = id.ToString()
                 });
 

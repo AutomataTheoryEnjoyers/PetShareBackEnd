@@ -40,7 +40,7 @@ namespace ShelterModule.Controllers
         [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AnnouncementResponse>> Get(Guid id)
         {
-            var announcement = await _query.GetByIdAsync(id);
+            var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
             if (announcement is null)
                 return NotFound(new NotFoundResponse
                 {
@@ -61,7 +61,7 @@ namespace ShelterModule.Controllers
         [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered([FromQuery] GetAllAnnouncementsFilteredQuery query)
         {            
-            return (await _query.GetAllFilteredAsync(query)).Select(s => s.ToResponse()).ToList();
+            return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
         }
 
         /// <summary>
@@ -75,20 +75,24 @@ namespace ShelterModule.Controllers
         [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
         {
-            var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId);
+            var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);
             if (shelter is null)
                 return BadRequest();
 
+            if (request.PetRequest is null && request.PetId is null)
+                return BadRequest();
+
             var pet = request.PetId is null ? 
-                Pet.FromRequest(request.PetRequest, shelter) : await _petQuery.GetByIdAsync((Guid)request.PetId);
+                Pet.FromRequest(request.PetRequest!) : await _petQuery.GetByIdAsync((Guid)request.PetId, HttpContext.RequestAborted);
             if (pet is null)
                 return BadRequest();
 
             if (request.PetId is null)
-                await _petCommand.AddAsync(pet);
+                await _petCommand.AddAsync(pet, HttpContext.RequestAborted);
 
-            var announcement = Announcement.FromRequest(request, shelter, pet);
-            return (await _command.AddAsync(announcement)).ToResponse();
+            
+            var announcement = Announcement.FromRequest(request, pet.Id);
+            return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
         }
         [HttpPut]
         [Route("{id:guid}")]
@@ -98,16 +102,16 @@ namespace ShelterModule.Controllers
         public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
         {
             // check if given shelterId is valid (TO DO: change after authorization is implemented)
-            var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId!);
+            var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId!, HttpContext.RequestAborted);
             if (shelter is null)
                 return BadRequest();
 
-            var pet = await _petQuery.GetByIdAsync((Guid)request.PetId!); //to jest troche dziwne, ale tak jest w specyfikacji, nie widze sensu
+            var pet = await _petQuery.GetByIdAsync((Guid)request.PetId!, HttpContext.RequestAborted); //to jest troche dziwne, ale tak jest w specyfikacji, nie widze sensu
                                                                           //przekazywania petId w AnnouncementPutRequest, wystarczy samo announcementId                                                  
             if (pet is null)
                 return BadRequest();
             // update announcement if there is an announcement with given id
-            var announcement = await _command.UpdateAsync(id, request);
+            var announcement = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
             if (announcement is null)
                 return NotFound(new NotFoundResponse
                 {

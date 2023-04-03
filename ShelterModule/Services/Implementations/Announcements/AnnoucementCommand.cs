@@ -14,27 +14,17 @@ namespace ShelterModule.Services.Implementations.Announcements
         {
             _dbContext = dbContext;
         }
-        public async Task<Announcement> AddAsync(Announcement announcement)
+        public async Task<Announcement> AddAsync(Announcement announcement, CancellationToken token = default)
         {
             var entityAnnouncement = announcement.ToEntity();
             _dbContext.Add(entityAnnouncement);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(token);
             return announcement;
         }
 
-        public async Task RemoveAsync(Announcement announcement)
+        public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request, CancellationToken token = default)
         {
-            var entityToRemove = await _dbContext.Announcements.FirstOrDefaultAsync(e => e.Id == announcement.Id);
-            if (entityToRemove != null)
-            {
-                _dbContext.Remove(entityToRemove);
-                await _dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request)
-        {
-            var entityToUpdate = await _dbContext.Announcements.Include(x=>x.Pet).Include(x=>x.Author).FirstOrDefaultAsync(e => e.Id == id);
+            var entityToUpdate = await _dbContext.Announcements.Include(x=>x.Pet).Include(x=>x.Author).FirstOrDefaultAsync(e => e.Id == id, token);
             if (entityToUpdate is null)
                 return null;
 
@@ -47,7 +37,7 @@ namespace ShelterModule.Services.Implementations.Announcements
                 entityToUpdate.ClosingDate = DateTime.Now;
             entityToUpdate.LastUpdateDate = DateTime.Now;
 
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(token);
             return Announcement.FromEntity(entityToUpdate);
         }
     }

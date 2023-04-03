@@ -10,11 +10,11 @@ public sealed class PetShareDbContext : DbContext
     public PetShareDbContext(DbContextOptions options) : base(options) { }
 
     public DbSet<ShelterEntity> Shelters => Set<ShelterEntity>();
-    public DbSet<PetEnitiy> Pets => Set<PetEnitiy>();
+    public DbSet<PetEntity> Pets => Set<PetEntity>();
     public DbSet<AnnouncementEntity> Announcements => Set<AnnouncementEntity>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AnnouncementEntity>().HasOne("Database.Entities.PetEnitiy", "Pet")
+        modelBuilder.Entity<AnnouncementEntity>().HasOne("Database.Entities.PetEntity", "Pet")
                         .WithMany()
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -23,9 +23,9 @@ public sealed class PetShareDbContext : DbContext
         modelBuilder.Entity<AnnouncementEntity>()
             .HasOne("Database.Entities.ShelterEntity", "Author")
                         .WithMany()
-                        .HasForeignKey("ShelterId")
+                        .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired(); 
+                        .IsRequired();
     }
-    public DbSet<PetEntity> Pets => Set<PetEntity>();
+
 }

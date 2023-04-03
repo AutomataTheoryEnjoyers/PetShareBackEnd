@@ -12,7 +12,6 @@ public class PetController : ControllerBase
 {
     private readonly IPetCommand _command;
     private readonly IPetQuery _query;
-        private readonly IPetCommand _command;
     private readonly IShelterQuery _shelterQuery;
 
     public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery)

@@ -29,4 +29,4 @@ public sealed class PetResponse
     [Required]
     public required string Photo { get; init; }
 }
-}
+

@@ -26,4 +26,4 @@ public class PetQuery : IPetQuery
         return entity is null ? null : Pet.FromEntity(entity);
     }
 }
-}
+

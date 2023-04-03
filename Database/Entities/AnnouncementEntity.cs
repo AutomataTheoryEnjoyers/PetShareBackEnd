@@ -15,13 +15,12 @@ namespace Database.Entities
         public required Guid Id { get; init; }
 
         [Required]
-        [ForeignKey("ShelterId")]
         public ShelterEntity Author { get; set; } = null!;
-        public required Guid ShelterId { get; set; }
+        public required Guid AuthorId { get; set; }
         [Required]
-        [ForeignKey("PetId")]
         
-        public PetEnitiy Pet { get; set; } = null!;
+        public PetEntity Pet { get; set; } = null!;
+        
         public required Guid PetId { get; set; }
 
         public required string Title { get; set; } = null!;

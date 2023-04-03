@@ -7,8 +7,8 @@ namespace ShelterModule.Models.Announcements
     public sealed class Announcement
     {
         public Guid Id { get; init; }
-        public required Shelter Author { get; init; } = null!;
-        public required Pet Pet { get; init; } = null!;
+        public required Guid AuthorId { get; init; }
+        public required Guid PetId { get; init; }
         public required string Title { get; init; } = null!;
         public required string Description { get; init; } = null!;
         public required DateTime CreationDate { get; init; }
@@ -21,8 +21,8 @@ namespace ShelterModule.Models.Announcements
             return new AnnouncementEntity
             {
                 Id = Id,
-                ShelterId = Author.Id,
-                PetId = Pet.Id,  
+                AuthorId = AuthorId,
+                PetId = PetId,  
                 Title = Title,
                 Description = Description,
                 CreationDate = CreationDate,
@@ -37,8 +37,8 @@ namespace ShelterModule.Models.Announcements
             return new Announcement
             {
                 Id = entity.Id,
-                Author = Shelter.FromEntity(entity.Author),
-                Pet = Pet.FromEntity(entity.Pet),
+                AuthorId = entity.AuthorId,
+                PetId = entity.PetId,   
                 Title = entity.Title,
                 Description = entity.Description,
                 CreationDate = entity.CreationDate,
@@ -52,8 +52,8 @@ namespace ShelterModule.Models.Announcements
             return new AnnouncementResponse
             {
                 Id = Id,
-                AuthorId = Author.Id,
-                PetId = Pet.Id,
+                AuthorId = AuthorId,
+                PetId = PetId,
                 Title = Title,
                 Description = Description,
                 CreationDate = CreationDate,
@@ -62,13 +62,13 @@ namespace ShelterModule.Models.Announcements
                 LastUpdateDate = LastUpdateDate,
             };
         }
-        public static Announcement FromRequest(AnnouncementCreationRequest request, Shelter shelter, Pet pet)
+        public static Announcement FromRequest(AnnouncementCreationRequest request, Guid petId)
         {
             return new Announcement
             {
                 Id = Guid.NewGuid(),
-                Author = shelter,
-                Pet = pet,
+                AuthorId = request.ShelterId,
+                PetId = petId,
                 Title = request.Title,
                 Description = request.Description,
                 CreationDate = DateTime.Now,

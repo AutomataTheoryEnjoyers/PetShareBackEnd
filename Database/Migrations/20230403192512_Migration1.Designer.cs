@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230324095813_Initial")]
-    partial class Initial
+    [Migration("20230403192512_Migration1")]
+    partial class Migration1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,53 @@ namespace Database.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
+            modelBuilder.Entity("Database.Entities.AnnouncementEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClosingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastUpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("PetEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("PetEntityId");
+
+                    b.HasIndex("PetId");
+
+                    b.ToTable("Announcements");
+                });
+
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,7 +140,30 @@ namespace Database.Migrations
                     b.ToTable("Shelters");
                 });
 
-            modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
+            modelBuilder.Entity("Database.Entities.AnnouncementEntity", b =>
+                {
+                    b.HasOne("Database.Entities.ShelterEntity", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Database.Entities.PetEntity", null)
+                        .WithMany("Announcements")
+                        .HasForeignKey("PetEntityId");
+
+                    b.HasOne("Database.Entities.PetEntity", "Pet")
+                        .WithMany()
+                        .HasForeignKey("PetId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Pet");
+                });
+
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
                 {
                     b.HasOne("Database.Entities.ShelterEntity", "Shelter")
                         .WithMany("Pets")
@@ -142,6 +211,11 @@ namespace Database.Migrations
 
                     b.Navigation("Address")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
+                {
+                    b.Navigation("Announcements");
                 });
 
             modelBuilder.Entity("Database.Entities.ShelterEntity", b =>

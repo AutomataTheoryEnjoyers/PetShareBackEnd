@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Database.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrationTest : Migration
+    public partial class Migration1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -53,7 +53,7 @@ namespace Database.Migrations
                         column: x => x.ShelterId,
                         principalTable: "Shelters",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,41 +61,50 @@ namespace Database.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ShelterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PetId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClosingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    LastUpdateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LastUpdateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PetEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Announcements", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Announcements_Pets_PetEntityId",
+                        column: x => x.PetEntityId,
+                        principalTable: "Pets",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_Announcements_Pets_PetId",
                         column: x => x.PetId,
                         principalTable: "Pets",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Announcements_Shelters_ShelterId",
-                        column: x => x.ShelterId,
+                        name: "FK_Announcements_Shelters_AuthorId",
+                        column: x => x.AuthorId,
                         principalTable: "Shelters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
+                        principalColumn: "Id");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Announcements_AuthorId",
+                table: "Announcements",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Announcements_PetEntityId",
+                table: "Announcements",
+                column: "PetEntityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Announcements_PetId",
                 table: "Announcements",
                 column: "PetId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Announcements_ShelterId",
-                table: "Announcements",
-                column: "ShelterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Pets_ShelterId",

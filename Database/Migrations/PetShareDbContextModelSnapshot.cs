@@ -28,6 +28,9 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime?>("ClosingDate")
                         .HasColumnType("datetime2");
 
@@ -41,10 +44,10 @@ namespace Database.Migrations
                     b.Property<DateTime>("LastUpdateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PetId")
+                    b.Property<Guid?>("PetEntityId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ShelterId")
+                    b.Property<Guid>("PetId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
@@ -56,14 +59,16 @@ namespace Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PetId");
+                    b.HasIndex("AuthorId");
 
-                    b.HasIndex("ShelterId");
+                    b.HasIndex("PetEntityId");
+
+                    b.HasIndex("PetId");
 
                     b.ToTable("Announcements");
                 });
 
-            modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -134,15 +139,19 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.AnnouncementEntity", b =>
                 {
-                    b.HasOne("Database.Entities.PetEnitiy", "Pet")
+                    b.HasOne("Database.Entities.ShelterEntity", "Author")
                         .WithMany()
-                        .HasForeignKey("PetId")
+                        .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Database.Entities.ShelterEntity", "Author")
+                    b.HasOne("Database.Entities.PetEntity", null)
+                        .WithMany("Announcements")
+                        .HasForeignKey("PetEntityId");
+
+                    b.HasOne("Database.Entities.PetEntity", "Pet")
                         .WithMany()
-                        .HasForeignKey("ShelterId")
+                        .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -151,7 +160,7 @@ namespace Database.Migrations
                     b.Navigation("Pet");
                 });
 
-            modelBuilder.Entity("Database.Entities.PetEnitiy", b =>
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
                 {
                     b.HasOne("Database.Entities.ShelterEntity", "Shelter")
                         .WithMany("Pets")
@@ -199,6 +208,11 @@ namespace Database.Migrations
 
                     b.Navigation("Address")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Database.Entities.PetEntity", b =>
+                {
+                    b.Navigation("Announcements");
                 });
 
             modelBuilder.Entity("Database.Entities.ShelterEntity", b =>

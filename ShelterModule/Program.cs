@@ -1,8 +1,10 @@
 using Azure.Identity;
 using Database;
 using Microsoft.EntityFrameworkCore;
+using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -60,6 +62,8 @@ public class Program
         services.AddScoped<IShelterCommand, ShelterCommand>();
         services.AddScoped<IPetQuery, PetQuery>();
         services.AddScoped<IPetCommand, PetCommand>();
+        services.AddScoped<IAnnouncementQuery, AnnoucementQuery>();
+        services.AddScoped<IAnnouncementCommand, AnnoucementCommand>();
     }
 
     private static void ConfigureOptions(WebApplicationBuilder builder) 

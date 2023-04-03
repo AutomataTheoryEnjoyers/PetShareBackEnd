@@ -12,12 +12,12 @@ public sealed class Shelter
     public required string Email { get; init; } = null!;
     public required Address Address { get; init; } = null!;
 
-    public required Address Address { get; init; } = null!;
+    
     public required bool? IsAuthorized { get; set; } = null;
     // true - authorized 
     // false - blocked
     // null - unauthorized unblocked
-    public required bool? IsAuthorized { get; set; }
+   
 
     public ShelterEntity ToEntity()
     {

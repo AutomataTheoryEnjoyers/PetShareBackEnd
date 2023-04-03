@@ -8,11 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Models.Pets;
 using ShelterModule.Models.Shelters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -56,8 +51,6 @@ public sealed class PetEndpointTests : IAsyncLifetime
             ShelterId = _shelter.Id
         };
     }
-
-        private readonly IntegrationTestSetup _testSetup = new();
 
     public async Task InitializeAsync()
     {

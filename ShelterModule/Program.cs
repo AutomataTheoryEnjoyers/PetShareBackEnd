@@ -1,8 +1,10 @@
 using Azure.Identity;
 using Database;
 using Microsoft.EntityFrameworkCore;
+using ShelterModule.Services.Implementations.Adopters;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces.Adopters;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -43,32 +45,31 @@ public class Program
         context.Database.Migrate();
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopement)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        if(isDevelopement)
-        {
-            services.AddDbContext<PetShareDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)));
-        }
-        else
-        {
-            services.AddDbContext<PetShareDbContext>(options =>
-                options.UseSqlServer(configuration.GetValue<string>("PetShareDbConnectionString")));
-        }
+        var connectionString = isDevelopment
+            ? configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
+            : configuration.GetValue<string>("PetShareDbConnectionString");
+
+        services.AddDbContext<PetShareDbContext>(options =>
+                                                     options.UseSqlServer(connectionString));
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();
         services.AddScoped<IPetQuery, PetQuery>();
         services.AddScoped<IPetCommand, PetCommand>();
+        services.AddScoped<IAdopterQuery, AdopterQuery>();
+        services.AddScoped<IAdopterCommand, AdopterCommand>();
     }
 
-    private static void ConfigureOptions(WebApplicationBuilder builder) 
+    private static void ConfigureOptions(WebApplicationBuilder builder)
     {
-        if (!builder.Environment.IsDevelopment())
-        {
-            var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL") ?? throw new InvalidOperationException("No azureKeyVault URL found in config."));
-            var azureCredential = new DefaultAzureCredential();
-            builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
-        }
+        if (builder.Environment.IsDevelopment())
+            return;
+
+        var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")
+                                  ?? throw new InvalidOperationException("No Azure KeyVault URL found in config"));
+        var azureCredential = new DefaultAzureCredential();
+        builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
     }
 }

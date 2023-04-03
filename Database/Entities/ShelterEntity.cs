@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Database.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Entities;
 

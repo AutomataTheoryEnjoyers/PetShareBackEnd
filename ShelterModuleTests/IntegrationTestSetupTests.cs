@@ -4,6 +4,7 @@ using Database.ValueObjects;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,7 +20,10 @@ public sealed class IntegrationTestSetupTests
     public async Task ShouldUseUniqueDbPerTest(string shelterName)
     {
         using var connection = IntegrationTestSetup.CreateTestDatabase();
-        await using var context = IntegrationTestSetup.CreateDbContext(connection);
+
+        var testSetup = new IntegrationTestSetup();
+        using var scope = testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
 
         context.Shelters.Should().BeEmpty();
 

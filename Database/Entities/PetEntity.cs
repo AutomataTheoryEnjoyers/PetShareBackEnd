@@ -9,9 +9,8 @@ public sealed class PetEntity
     public required Guid Id { get; init; }
 
     [Required]
-    //[ForeignKey("ShelterId")]
     public ShelterEntity Shelter { get; set; } = null!;
-    public List<AnnouncementEntity> Announcements { get; set; } = null!;
+    public List<AnnouncementEntity> Announcements { get; set; } = new();
     public required Guid ShelterId { get; set; }
     public string Name { get; set; } = null!;
     public string Species { get; set; } = null!;

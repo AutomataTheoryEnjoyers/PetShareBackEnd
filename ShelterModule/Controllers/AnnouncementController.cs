@@ -37,7 +37,7 @@ namespace ShelterModule.Controllers
         [Route("{id:guid}")]
         [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AnnouncementResponse>> Get(Guid id)
         {
             var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -58,7 +58,6 @@ namespace ShelterModule.Controllers
         /// <returns> List of all announcements matching the filters </returns>
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]        
-        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered([FromQuery] GetAllAnnouncementsFilteredQuery query)
         {            
             return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
@@ -72,7 +71,6 @@ namespace ShelterModule.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(UnauthorizedResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
         {
             var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);

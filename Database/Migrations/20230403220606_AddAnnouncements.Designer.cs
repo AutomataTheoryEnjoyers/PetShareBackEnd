@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230403192512_Migration1")]
-    partial class Migration1
+    [Migration("20230403220606_AddAnnouncements")]
+    partial class AddAnnouncements
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,13 +42,10 @@ namespace Database.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("LastUpdateDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("PetEntityId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("PetId")
                         .HasColumnType("uniqueidentifier");
@@ -63,8 +60,6 @@ namespace Database.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
-
-                    b.HasIndex("PetEntityId");
 
                     b.HasIndex("PetId");
 
@@ -86,7 +81,7 @@ namespace Database.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -145,17 +140,13 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.ShelterEntity", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Database.Entities.PetEntity", null)
-                        .WithMany("Announcements")
-                        .HasForeignKey("PetEntityId");
-
                     b.HasOne("Database.Entities.PetEntity", "Pet")
-                        .WithMany()
+                        .WithMany("Announcements")
                         .HasForeignKey("PetId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Author");

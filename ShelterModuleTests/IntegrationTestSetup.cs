@@ -59,20 +59,21 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration(configuration => 
-        { 
-            configuration
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile("appsettings.Development.json")
-                .AddInMemoryCollection(new Dictionary<string, string?>
+        builder.ConfigureAppConfiguration(configuration =>
                 {
-                    [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] = CreateConnectionString()
+                    configuration.AddJsonFile("appsettings.json").
+                                  AddJsonFile("appsettings.Development.json").
+                                  AddInMemoryCollection(new Dictionary<string, string?>
+                                  {
+                                      [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
+                                          CreateConnectionString()
+                                  });
+                }).
+                ConfigureTestServices(services =>
+                {
+                    services.RemoveAll<IHostedService>();
+                    ConfigureServices(services);
                 });
-        }).ConfigureTestServices(services =>
-        {
-            services.RemoveAll<IHostedService>();
-            ConfigureServices(services);
-        });
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

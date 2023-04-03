@@ -1,4 +1,5 @@
-﻿using Database.ValueObjects;
+﻿using System.ComponentModel.DataAnnotations;
+using Database.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 
 namespace ShelterModule.Models.Shelters;
@@ -8,8 +9,7 @@ public sealed class ShelterCreationRequest
     [Required]
     public string UserName { get; init; } = null!;
 
-    [Required(AllowEmptyStrings = false)]
-    [MaxLength(50)]
+    [Required]
     public string FullShelterName { get; init; } = null!;
 
     [Required]

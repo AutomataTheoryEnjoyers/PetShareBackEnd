@@ -7,8 +7,7 @@ public sealed class PetShareDbContext : DbContext
 {
     public const string DbConnectionStringName = "PetShareDatabase";
 
-    public PetShareDbContext(DbContextOptions options) : base(options) {
-    }
+    public PetShareDbContext(DbContextOptions options) : base(options) { }
 
     public DbSet<ShelterEntity> Shelters => Set<ShelterEntity>();
     public DbSet<PetEnitiy> Pets => Set<PetEnitiy>();
@@ -28,4 +27,5 @@ public sealed class PetShareDbContext : DbContext
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired(); 
     }
+    public DbSet<PetEntity> Pets => Set<PetEntity>();
 }

@@ -30,7 +30,7 @@ public sealed class ShelterController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShelterResponse>> Get(Guid id)
     {
-        var shelter = await _query.GetByIdAsync(id);
+        var shelter = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (shelter is null)
             return NotFound(new NotFoundResponse
             {
@@ -38,8 +38,7 @@ public sealed class ShelterController : ControllerBase
                 Id = id.ToString()
             });
 
-        //return shelter.ToResponse();
-        return Ok(shelter.ToResponse());
+        return shelter.ToResponse();
     }
 
     /// <summary>
@@ -50,8 +49,7 @@ public sealed class ShelterController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<ShelterResponse>> GetAll()
     {
-        //return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();\
-        return (await _query.GetAllAsync()).Select(s => s.ToResponse()).ToList();
+        return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
     }
 
     /// <summary>
@@ -65,7 +63,7 @@ public sealed class ShelterController : ControllerBase
     public async Task<ActionResult<ShelterResponse>> Post(ShelterCreationRequest request)
     {
         var shelter = Shelter.FromRequest(request);
-        await _command.AddAsync(shelter);
+        await _command.AddAsync(shelter, HttpContext.RequestAborted);
         return shelter.ToResponse();
     }
 
@@ -82,7 +80,7 @@ public sealed class ShelterController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShelterResponse>> Put(Guid id, ShelterAuthorizationRequest request)
     {
-        var shelter = await _command.SetAuthorizationAsync(id, request.IsAuthorized);
+        var shelter = await _command.SetAuthorizationAsync(id, request.IsAuthorized, HttpContext.RequestAborted);
         if (shelter is null)
             return NotFound(new NotFoundResponse
             {

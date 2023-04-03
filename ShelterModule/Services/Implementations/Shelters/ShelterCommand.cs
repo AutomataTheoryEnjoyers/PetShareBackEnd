@@ -14,30 +14,20 @@ public sealed class ShelterCommand : IShelterCommand
         _context = context;
     }
 
-    public async Task AddAsync(Shelter shelter)
+    public async Task AddAsync(Shelter shelter, CancellationToken token = default)
     {
         _context.Add(shelter.ToEntity());
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
     }
 
-    public async Task RemoveAsync(Shelter shelter)
+    public async Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized, CancellationToken token = default)
     {
-        var entityToRemove = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == shelter.Id);
-        if( entityToRemove != null)
-        {
-            _context.Remove(entityToRemove);
-            await _context.SaveChangesAsync();
-        }
-    }
-
-    public async Task<Shelter?> SetAuthorizationAsync(Guid id, bool? isAuthorized)
-    {
-        var entity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == id);
+        var entity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
             return null;
 
         entity.IsAuthorized = isAuthorized;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
         return Shelter.FromEntity(entity);
     }
 }

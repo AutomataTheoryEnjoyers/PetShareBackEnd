@@ -43,6 +43,7 @@ public class Program
         context.Database.Migrate();
     }
 
+    // Important
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopement)
     {
         if(isDevelopement)

@@ -60,8 +60,7 @@ public class AnnouncementController : ControllerBase
     public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
-        return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).
-                                                                                     ToList();
+        return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
     }
 
     /// <summary>
@@ -80,7 +79,7 @@ public class AnnouncementController : ControllerBase
 
         var pet = request.PetId is null
             ? Pet.FromRequest(request.PetRequest ?? 
-            throw new ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"))
+            throw new ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"), shelter)
             : await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
         if (pet is null)
             return BadRequest();
@@ -88,7 +87,7 @@ public class AnnouncementController : ControllerBase
         if (request.PetId is null)
             await _petCommand.AddAsync(pet, HttpContext.RequestAborted);
 
-        var announcement = Announcement.FromRequest(request, pet.Id);
+        var announcement = Announcement.FromRequest(request, pet);
         return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
     }
 

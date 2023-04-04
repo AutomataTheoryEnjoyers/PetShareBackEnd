@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Models.Pets;
+using ShelterModule.Models.Shelters;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -16,6 +17,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
 {
     private readonly PetEntity _pet;
     private readonly ShelterEntity _shelter;
+
+    private readonly ShelterResponse _shelterResponse;
 
     private readonly IntegrationTestSetup _testSetup = new();
 
@@ -48,6 +51,16 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Description = "test-description",
             Photo = "test-photo",
             ShelterId = _shelter.Id
+        };
+        _shelterResponse = new ShelterResponse
+        {
+            Id = _shelter.Id,
+            UserName = _shelter.UserName,
+            FullShelterName = _shelter.FullShelterName,
+            Email = _shelter.Email,
+            PhoneNumber = _shelter.PhoneNumber,
+            IsAuthorized = _shelter.IsAuthorized,
+            Address = _shelter.Address
         };
     }
 
@@ -84,7 +97,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      Photo = _pet.Photo,
-                     ShelterId = _pet.ShelterId
+                     ShelterId = _pet.ShelterId,
+                     Shelter = _shelterResponse,
                  }
              });
     }
@@ -106,7 +120,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      Photo = _pet.Photo,
-                     ShelterId = _pet.ShelterId
+                     ShelterId = _pet.ShelterId,
+                     Shelter = _shelterResponse,
                  });
     }
 
@@ -153,7 +168,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Birthday = request.Birthday,
                    Description = request.Description,
                    Photo = request.Photo,
-                   ShelterId = request.ShelterId
+                   ShelterId = request.ShelterId,
+                   Shelter = _shelterResponse
                }, options => options.Excluding(s => s.Id));
 
         using var scope = _testSetup.Services.CreateScope();
@@ -218,7 +234,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Birthday = request.Birthday,
                        Description = request.Description,
                        Photo = request.Photo,
-                       ShelterId = request.ShelterId
+                       ShelterId = request.ShelterId,
+                       Shelter = _shelterResponse
                    });
 
         using var scope = _testSetup.Services.CreateScope();

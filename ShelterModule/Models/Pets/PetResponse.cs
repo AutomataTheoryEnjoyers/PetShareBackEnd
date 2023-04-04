@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShelterModule.Models.Shelters;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShelterModule.Models.Pets;
 
@@ -9,6 +10,9 @@ public sealed class PetResponse
 
     [Required]
     public required Guid ShelterId { get; init; }
+
+    [Required]
+    public required ShelterResponse Shelter { get; init; }
 
     [Required]
     public required string Name { get; init; }

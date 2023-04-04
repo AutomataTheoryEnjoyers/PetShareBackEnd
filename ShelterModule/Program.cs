@@ -51,11 +51,11 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        string cs = isDevelopment ?
-            configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName) ?? throw new InvalidOperationException("No connection string found in config.")
-            :configuration.GetValue<string>("PetShareDbConnectionString") ?? throw new InvalidOperationException("No connection string found in KeyVault.");
-        
-        services.AddDbContext<PetShareDbContext>(options => options.UseSqlServer(cs));
+        services.AddDbContext<PetShareDbContext>(options =>
+        {
+            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName));
+        });
+
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();
         services.AddScoped<IPetQuery, PetQuery>();

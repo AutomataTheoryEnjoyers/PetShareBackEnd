@@ -7,6 +7,7 @@ public sealed class ShelterEntity
 {
     [Key]
     public required Guid Id { get; init; }
+
     public IList<PetEntity> Pets { get; init; } = new List<PetEntity>();
     public required string UserName { get; init; }
     public required string FullShelterName { get; init; }

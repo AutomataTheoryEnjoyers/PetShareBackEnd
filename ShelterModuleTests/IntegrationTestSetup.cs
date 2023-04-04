@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using ShelterModule;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ShelterModuleTests;
 
@@ -100,7 +97,7 @@ public sealed class TestDbConnectionString : IDisposable
     public TestDbConnectionString(string connectionString)
     {
         ConnectionString = connectionString;
-        
+
         var testSetup = new IntegrationTestSetup();
         var scope = testSetup.Services.CreateScope();
         using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();

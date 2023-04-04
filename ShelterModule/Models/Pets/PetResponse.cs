@@ -1,5 +1,4 @@
-﻿using ShelterModule.Models.Shelters;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShelterModule.Models.Pets;
 
@@ -29,4 +28,3 @@ public sealed class PetResponse
     [Required]
     public required string Photo { get; init; }
 }
-

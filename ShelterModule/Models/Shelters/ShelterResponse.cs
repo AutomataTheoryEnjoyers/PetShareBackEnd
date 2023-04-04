@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Database.ValueObjects;
 
-
 namespace ShelterModule.Models.Shelters;
 
 public sealed class ShelterResponse

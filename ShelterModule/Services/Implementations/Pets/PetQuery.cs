@@ -1,7 +1,6 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
-using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Pets;
 
 namespace ShelterModule.Services.Implementations.Pets;
@@ -26,4 +25,3 @@ public class PetQuery : IPetQuery
         return entity is null ? null : Pet.FromEntity(entity);
     }
 }
-

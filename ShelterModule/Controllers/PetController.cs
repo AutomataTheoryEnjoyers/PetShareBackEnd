@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Pets;
-using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -101,5 +100,4 @@ public class PetController : ControllerBase
 
         return pet.ToResponse();
     }
-    
 }

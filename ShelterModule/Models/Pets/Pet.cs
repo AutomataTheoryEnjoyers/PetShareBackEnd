@@ -1,5 +1,4 @@
 ﻿using Database.Entities;
-using ShelterModule.Models.Shelters;
 
 namespace ShelterModule.Models.Pets;
 
@@ -73,6 +72,4 @@ public class Pet
             ShelterId = ShelterId
         };
     }
-
-    
 }

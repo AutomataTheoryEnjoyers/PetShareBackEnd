@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Models.Pets;
+using ShelterModule.Models.Shelters;
 using Xunit;
 
 namespace ShelterModuleTests;

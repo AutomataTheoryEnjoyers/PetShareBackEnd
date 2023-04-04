@@ -88,8 +88,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements").GetAsync();
         response.StatusCode.Should().Be(200);
-        var pets = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
-        pets.Should().
+        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        announcements.Should().
              BeEquivalentTo(new[]
              {
                  new AnnouncementResponse
@@ -122,6 +122,36 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetAnnouncementsWithAdvancedFilters()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new GetAllAnnouncementsFilteredQueryRequest
+        {
+            Breeds = new List<string> { "test-breed"},
+            Species = new List<string> { "test-species" }
+        };
+        var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        announcements.Should().
+             BeEquivalentTo(new[]
+             {
+                 new AnnouncementResponse
+                 {
+                     Id = _announcement.Id,
+                     Title = _announcement.Title,
+                     Description = _announcement.Description,
+                     CreationDate = _announcement.CreationDate,
+                     ClosingDate = _announcement.ClosingDate,
+                     Status = _announcement.Status,
+                     LastUpdateDate = _announcement.LastUpdateDate,
+                     AuthorId = _announcement.AuthorId,
+                     PetId = _announcement.PetId
+                 }
+             }); 
+    }
+
+    [Fact]
     public async Task GetAnnouncementsWithFiltersNonEmpty()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
@@ -131,8 +161,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var shelters = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
-        shelters.Should().
+        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        announcements.Should().
                  BeEquivalentTo(new[]
                  {
                      new AnnouncementResponse
@@ -156,8 +186,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements", _announcement.Id).GetAsync();
         response.StatusCode.Should().Be(200);
-        var shelters = await response.GetJsonAsync<AnnouncementResponse>();
-        shelters.Should().
+        var announcements = await response.GetJsonAsync<AnnouncementResponse>();
+        announcements.Should().
                  BeEquivalentTo(new AnnouncementResponse
                  {
                      Id = _announcement.Id,

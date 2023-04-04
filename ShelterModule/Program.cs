@@ -47,11 +47,20 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        var connectionString = isDevelopment
-            ? configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
-            : configuration.GetValue<string>("PetShareDbConnectionString");
-
-        services.AddDbContext<PetShareDbContext>(options => options.UseSqlServer(connectionString));
+        if (isDevelopment)
+        {
+            services.AddDbContext<PetShareDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName));
+            });
+        }
+        else
+        {
+            services.AddDbContext<PetShareDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetValue<string>("PetShareDbConnectionString"));
+            });
+        }
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();

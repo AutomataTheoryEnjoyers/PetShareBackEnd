@@ -26,14 +26,13 @@ public class AnnouncementQuery : IAnnouncementQuery
         if (query.Cities is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => query.Cities.Contains(a.Pet.Shelter.Address.City));
         if (query.MinAge is not null)
-            filteredAnnouncements =filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now) >= query.MinAge);
+            filteredAnnouncements = filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now) >= query.MinAge);
         if (query.MaxAge is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now) <= query.MaxAge);
         if (query.ShelterNames is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => query.ShelterNames.Contains(a.Pet.Shelter.FullShelterName));
 
-        var entitiesList = await filteredAnnouncements.ToListAsync(token);
-        return entitiesList.Select(Announcement.FromEntity).ToList();
+        return await filteredAnnouncements.Select(e => Announcement.FromEntity(e)).ToListAsync(token);
     }
 
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)

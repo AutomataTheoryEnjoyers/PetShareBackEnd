@@ -16,6 +16,7 @@ public sealed class Shelter
     // false - blocked
     // null - unauthorized unblocked
     public required bool? IsAuthorized { get; set; }
+
     public ShelterEntity ToEntity()
     {
         return new ShelterEntity

@@ -12,6 +12,4 @@ public sealed class PetShareDbContext : DbContext
     public DbSet<ShelterEntity> Shelters => Set<ShelterEntity>();
     public DbSet<PetEntity> Pets => Set<PetEntity>();
     public DbSet<AdopterEntity> Adopters => Set<AdopterEntity>();
-
-    //TODO: Make migration to add adopters table
 }

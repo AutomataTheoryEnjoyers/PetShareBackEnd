@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230403220606_AddAnnouncements")]
+    [Migration("20230404192238_AddAnnouncements")]
     partial class AddAnnouncements
     {
         /// <inheritdoc />

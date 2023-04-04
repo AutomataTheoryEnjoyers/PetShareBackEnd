@@ -111,7 +111,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     public async Task GetAnnouncementsWithFiltersEmpty()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var query = new GetAllAnnouncementsFilteredQuery
+        var query = new GetAllAnnouncementsFilteredQueryRequest
         {
             MinAge = 1000
         };
@@ -125,7 +125,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     public async Task GetAnnouncementsWithFiltersNonEmpty()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var query = new GetAllAnnouncementsFilteredQuery
+        var query = new GetAllAnnouncementsFilteredQueryRequest
         {
             MaxAge = 1000
         };
@@ -202,9 +202,10 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                            Title = request.Title,
                                            Description = request.Description,
                                            CreationDate = DateTime.Now,
+                                           ClosingDate = null,
                                            LastUpdateDate = DateTime.Now,
                                            Status = 0,
-                                           PetId = (Guid)request.PetId,
+                                           PetId = request.PetId.Value,
                                            AuthorId = request.ShelterId
                                        },
                                        options => options.Excluding(s => s.Id).
@@ -225,7 +226,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     LastUpdateDate = newAnnouncement.LastUpdateDate,
                     Status = newAnnouncement.Status,
                     AuthorId = request.ShelterId,
-                    PetId = (Guid)request.PetId
+                    PetId = request.PetId.Value
                 });
     }
 
@@ -261,6 +262,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                            Description = request.Description,
                                            CreationDate = DateTime.Now,
                                            LastUpdateDate = DateTime.Now,
+                                           ClosingDate = null,
                                            Status = 0,
                                            PetId = Guid.NewGuid(),
                                            AuthorId = request.ShelterId
@@ -305,13 +307,26 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PostShouldFailWithoutPetIdAndPetRequest()
+    {
+        var request = new AnnouncementCreationRequest
+        {
+            Title = "test-announcement2",
+            Description = "test-description2",
+            ShelterId = _shelter.Id
+        };
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var response = await client.Request("announcements").PostJsonAsync(request);
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
     public async Task PutShouldUpdateAnnouncement()
     {
         var request = new AnnouncementPutRequest
         {
-            Status = 2,
+            Status = (int)AnnouncementStatus.DuringVerification,
             Description = "test-description-updated",
-            ShelterId = _shelter.Id,
             PetId = _pet.Id
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
@@ -325,9 +340,10 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Title = _announcement.Title,
                                 Description = request.Description,
                                 Status = (int)request.Status,
-                                AuthorId = (Guid)request.ShelterId,
-                                PetId = (Guid)request.PetId,
+                                AuthorId = _announcement.AuthorId,
+                                PetId = request.PetId.Value,
                                 CreationDate = _announcement.CreationDate,
+                                ClosingDate = null,
                                 LastUpdateDate = _announcement.LastUpdateDate
                             }, options => options.Excluding(s => s.LastUpdateDate));
 
@@ -348,21 +364,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                 });
     }
 
-    [Fact]
-    public async Task PutShouldFailWithWrongShelterId()
-    {
-        var wrongShelterId = Guid.NewGuid();
-        var request = new AnnouncementPutRequest
-        {
-            Status = 2,
-            Description = "test-description-updated",
-            ShelterId = wrongShelterId,
-            PetId = _pet.Id
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements", _announcement.Id).PutJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    }
+    
 
     [Fact]
     public async Task PutShouldFailWithWrongPetId()
@@ -372,7 +374,6 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         {
             Status = 2,
             Description = "test-description-updated",
-            ShelterId = _shelter.Id,
             PetId = wrongPetId
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
@@ -386,9 +387,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var wrongAnnouncementId = Guid.NewGuid();
         var request = new AnnouncementPutRequest
         {
-            Status = 2,
+            Status = (int)AnnouncementStatus.DuringVerification,
             Description = "test-description-updated",
-            ShelterId = _shelter.Id,
             PetId = _pet.Id
         };
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();

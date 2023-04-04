@@ -57,15 +57,15 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration(configuration =>
-                {
-                    configuration.AddJsonFile("appsettings.json").
-                                  AddJsonFile("appsettings.Development.json").
-                                  AddInMemoryCollection(new Dictionary<string, string?>
-                                  {
-                                      [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
-                                          CreateConnectionString()
-                                  });
-                }).
+        {
+            configuration.AddJsonFile("appsettings.json").
+                          AddJsonFile("appsettings.Development.json").
+                          AddInMemoryCollection(new Dictionary<string, string?>
+                          {
+                              [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
+                                  CreateConnectionString()
+                          });
+        }).
                 ConfigureTestServices(services =>
                 {
                     services.RemoveAll<IHostedService>();
@@ -97,10 +97,9 @@ public sealed class TestDbConnectionString : IDisposable
     public TestDbConnectionString(string connectionString)
     {
         ConnectionString = connectionString;
-
-        var testSetup = new IntegrationTestSetup();
-        var scope = testSetup.Services.CreateScope();
-        using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        var options = new DbContextOptionsBuilder<PetShareDbContext>().UseSqlServer(connectionString).Options;
+        using var context = new PetShareDbContext(options);
+        
 
         context.Database.EnsureCreated();
     }

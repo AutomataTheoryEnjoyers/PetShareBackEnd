@@ -36,7 +36,7 @@ public class AnnouncementController : ControllerBase
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AnnouncementResponse>> Get(Guid id)
     {
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -58,7 +58,7 @@ public class AnnouncementController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered(
-        [FromQuery] GetAllAnnouncementsFilteredQuery query)
+        [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
         return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).
                                                                                      ToList();
@@ -78,12 +78,10 @@ public class AnnouncementController : ControllerBase
         if (shelter is null)
             return BadRequest();
 
-        if (request.PetRequest is null && request.PetId is null)
-            return BadRequest();
-
         var pet = request.PetId is null
-            ? Pet.FromRequest(request.PetRequest!)
-            : await _petQuery.GetByIdAsync((Guid)request.PetId, HttpContext.RequestAborted);
+            ? Pet.FromRequest(request.PetRequest ?? 
+            throw new ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"))
+            : await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
         if (pet is null)
             return BadRequest();
 
@@ -101,14 +99,12 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
     {
-        var shelter = await _shelterQuery.GetByIdAsync((Guid)request.ShelterId!, HttpContext.RequestAborted);
-        if (shelter is null)
-            return BadRequest();
-
-        var pet = await _petQuery.GetByIdAsync((Guid)request.PetId!, HttpContext.RequestAborted);
-        if (pet is null)
-            return BadRequest();
-
+        if (request.PetId.HasValue)
+        {
+            var pet = await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
+            if (pet is null)
+                return BadRequest();
+        }
         var announcement = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (announcement is null)
             return NotFound(new NotFoundResponse

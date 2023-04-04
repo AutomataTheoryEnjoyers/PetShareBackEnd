@@ -16,7 +16,7 @@ public class AnnouncementQuery : IAnnouncementQuery
         _context = context;
     }
 
-    public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQuery query,
+    public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQueryRequest query,
         CancellationToken token = default)
     {
         var filteredAnnouncements =

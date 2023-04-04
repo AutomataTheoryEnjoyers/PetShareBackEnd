@@ -8,7 +8,6 @@ namespace ShelterModule.Controllers;
 [Route("shelter")]
 public sealed class ShelterController : ControllerBase
 {
-    // dependency injection
     private readonly IShelterCommand _command;
     private readonly IShelterQuery _query;
 

@@ -11,7 +11,7 @@ public sealed class Announcement
     public required string Description { get; init; } = null!;
     public required DateTime CreationDate { get; init; }
     public DateTime? ClosingDate { get; init; }
-    public required int Status { get; init; }
+    public required AnnouncementStatus Status { get; init; }
     public required DateTime LastUpdateDate { get; init; }
 
     public AnnouncementEntity ToEntity()
@@ -25,7 +25,7 @@ public sealed class Announcement
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = Status,
+            Status = (int)Status,
             LastUpdateDate = LastUpdateDate
         };
     }
@@ -41,7 +41,7 @@ public sealed class Announcement
             Description = entity.Description,
             CreationDate = entity.CreationDate,
             ClosingDate = entity.ClosingDate,
-            Status = entity.Status,
+            Status = (AnnouncementStatus)entity.Status,
             LastUpdateDate = entity.LastUpdateDate
         };
     }
@@ -57,7 +57,7 @@ public sealed class Announcement
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = Status,
+            Status = (int)Status,
             LastUpdateDate = LastUpdateDate
         };
     }
@@ -72,8 +72,16 @@ public sealed class Announcement
             Title = request.Title,
             Description = request.Description,
             CreationDate = DateTime.Now,
-            Status = 0,
+            Status = AnnouncementStatus.Open,
             LastUpdateDate = DateTime.Now
         };
     }
+}
+
+public enum AnnouncementStatus
+{ 
+    Open = 0, 
+    Closed = 1, 
+    DuringVerification = 2, 
+    Deleted = 3
 }

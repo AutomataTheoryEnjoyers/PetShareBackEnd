@@ -17,7 +17,7 @@ public class AnnouncementCommand : IAnnouncementCommand
     public async Task<Announcement> AddAsync(Announcement announcement, CancellationToken token = default)
     {
         var entityAnnouncement = announcement.ToEntity();
-        _dbContext.Add(entityAnnouncement);
+        _dbContext.Announcements.Add(entityAnnouncement);
         await _dbContext.SaveChangesAsync(token);
         return announcement;
     }
@@ -25,9 +25,7 @@ public class AnnouncementCommand : IAnnouncementCommand
     public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request,
         CancellationToken token = default)
     {
-        var entityToUpdate = await _dbContext.Announcements.Include(x => x.Pet).
-                                              Include(x => x.Author).
-                                              FirstOrDefaultAsync(e => e.Id == id, token);
+        var entityToUpdate = await _dbContext.Announcements.FirstOrDefaultAsync(e => e.Id == id, token);
         if (entityToUpdate is null)
             return null;
 
@@ -35,8 +33,9 @@ public class AnnouncementCommand : IAnnouncementCommand
         entityToUpdate.Description = request.Description ?? entityToUpdate.Description;
         entityToUpdate.PetId = request.PetId ?? entityToUpdate.PetId;
         entityToUpdate.Status = request.Status ?? entityToUpdate.Status;
+        
 
-        if (entityToUpdate.Status == 1)
+        if (entityToUpdate.Status == (int)AnnouncementStatus.Closed)
             entityToUpdate.ClosingDate = DateTime.Now;
         entityToUpdate.LastUpdateDate = DateTime.Now;
 

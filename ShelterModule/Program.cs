@@ -54,7 +54,7 @@ public class Program
         services.AddDbContext<PetShareDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName) 
-                ?? throw new InvalidOperationException("no connection stirng found. Check if there is corresponding secrec in AzureKeyVault"));
+                ?? throw new InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
         });
 
         services.AddScoped<IShelterQuery, ShelterQuery>();

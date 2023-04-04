@@ -86,7 +86,6 @@ public class AnnouncementController : ControllerBase
 
         if (request.PetId is null)
             await _petCommand.AddAsync(pet, HttpContext.RequestAborted);
-
         var announcement = Announcement.FromRequest(request, pet);
         return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
     }

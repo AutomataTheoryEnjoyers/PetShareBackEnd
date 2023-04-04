@@ -19,7 +19,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     private readonly AnnouncementEntity _announcement;
     private readonly PetEntity _pet;
     private readonly ShelterEntity _shelter;
-
+    
     private readonly PetResponse _petResponse;
     private readonly ShelterResponse _shelterResponse;
 
@@ -93,6 +93,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             ShelterId = _pet.ShelterId,
             Shelter = _shelterResponse,
         };
+
     }
 
     public async Task InitializeAsync()

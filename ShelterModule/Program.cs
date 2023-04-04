@@ -26,6 +26,10 @@ public class Program
         // Configure the HTTP request pipeline.
         app.UseSwagger();
         app.UseSwaggerUI();
+        app.UseCors(options => options.AllowAnyMethod().
+                                       AllowAnyHeader().
+                                       SetIsOriginAllowed(_ => true).
+                                       AllowCredentials());
 
         app.UseHttpsRedirection();
         app.UseAuthorization();

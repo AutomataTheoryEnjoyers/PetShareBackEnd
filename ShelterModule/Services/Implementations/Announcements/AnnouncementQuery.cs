@@ -30,7 +30,7 @@ public class AnnouncementQuery : IAnnouncementQuery
         if (query.MaxAge is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now) <= query.MaxAge);
         if (query.ShelterNames is not null)
-            filteredAnnouncements = filteredAnnouncements.Where(a => query.ShelterNames.Contains(a.Pet.Shelter.FullShelterName));
+            filteredAnnouncements = filteredAnnouncements.Where(a => query.ShelterNames.Contains(a.Pet.Shelter.UserName));
 
         var entitiesList = await filteredAnnouncements.Include(x=>x.Author).Include(x=>x.Pet).ToListAsync(token);
         return entitiesList.Select(Announcement.FromEntity).ToList();

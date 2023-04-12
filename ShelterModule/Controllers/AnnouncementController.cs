@@ -77,15 +77,10 @@ public class AnnouncementController : ControllerBase
         if (shelter is null)
             return BadRequest();
 
-        var pet = request.PetId is null
-            ? Pet.FromRequest(request.PetRequest ?? 
-            throw new ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"), shelter)
-            : await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
+        var pet = await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted);
         if (pet is null)
             return BadRequest();
 
-        if (request.PetId is null)
-            await _petCommand.AddAsync(pet, HttpContext.RequestAborted);
         var announcement = Announcement.FromRequest(request, pet);
         return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
     }
@@ -97,12 +92,6 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
     {
-        if (request.PetId.HasValue)
-        {
-            var pet = await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
-            if (pet is null)
-                return BadRequest();
-        }
         var announcement = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (announcement is null)
             return NotFound(new NotFoundResponse

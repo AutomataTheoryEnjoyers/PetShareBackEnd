@@ -5,6 +5,7 @@ namespace Database;
 
 public sealed class PetShareDbContext : DbContext
 {
+    // NOTE: this string has to mach value for AzureKeyVaultSecret ConnectionStrings--{value}
     public const string DbConnectionStringName = "PetShareDatabase";
 
     public PetShareDbContext(DbContextOptions options) : base(options) { }

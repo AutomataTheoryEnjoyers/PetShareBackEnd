@@ -51,20 +51,11 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
-        if (isDevelopment)
+        services.AddDbContext<PetShareDbContext>(options =>
         {
-            services.AddDbContext<PetShareDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName));
-            });
-        }
-        else
-        {
-            services.AddDbContext<PetShareDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetValue<string>("PetShareDbConnectionString"));
-            });
-        }
+            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName) 
+                ?? throw new InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
+        });
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();

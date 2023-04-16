@@ -1,6 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 using Azure.Identity;
 using Database;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using ShelterModule.Configuration;
 using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
@@ -17,7 +22,8 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         ConfigureOptions(builder);
-        ConfigureServices(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
+        ConfigureJwt(builder.Services, builder.Configuration);
+        ConfigureServices(builder.Services, builder.Configuration);
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -49,12 +55,13 @@ public class Program
         context.Database.Migrate();
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<PetShareDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName) 
-                ?? throw new InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
+            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
+                                 ?? throw new
+                                     InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
         });
 
         services.AddScoped<IShelterQuery, ShelterQuery>();
@@ -67,12 +74,37 @@ public class Program
 
     private static void ConfigureOptions(WebApplicationBuilder builder)
     {
-        if (builder.Environment.IsDevelopment())
+        if (!builder.Environment.IsProduction())
             return;
 
         var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")
                                   ?? throw new InvalidOperationException("No azureKeyVault URL found in config."));
         var azureCredential = new DefaultAzureCredential();
         builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
+    }
+
+    private static void ConfigureJwt(IServiceCollection services, IConfiguration config)
+    {
+        var jwtSettings = config.GetSection(JwtConfiguration.SectionName).Get<JwtConfiguration>()
+                          ?? throw new ValidationException("JWT options could not be bound to config object");
+        Validator.ValidateObject(jwtSettings, new ValidationContext(jwtSettings));
+
+        services.AddAuthentication(options =>
+                 {
+                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                 }).
+                 AddJwtBearer(options =>
+                 {
+                     options.TokenValidationParameters = new TokenValidationParameters
+                     {
+                         ValidateIssuer = true,
+                         ValidIssuer = jwtSettings.ValidIssuer,
+                         ValidateAudience = true,
+                         ValidAudience = jwtSettings.ValidAudience,
+                         ValidateIssuerSigningKey = true,
+                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecurityKey))
+                     };
+                 });
     }
 }

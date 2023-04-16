@@ -79,9 +79,9 @@ public sealed class Announcement
 }
 
 public enum AnnouncementStatus
-{ 
-    Open = 0, 
-    Closed = 1, 
-    DuringVerification = 2, 
+{
+    Open = 0,
+    Closed = 1,
+    DuringVerification = 2,
     Deleted = 3
 }

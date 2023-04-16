@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Pets;
 using ShelterModule.Services.Interfaces.Announcements;
@@ -9,6 +10,7 @@ namespace ShelterModule.Controllers;
 
 [ApiController]
 [Route("announcements")]
+[Authorize(Roles = "Adopter")]
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
@@ -33,6 +35,7 @@ public class AnnouncementController : ControllerBase
     /// <param name="id"> ID of the announcement that should be returned </param>
     /// <returns> Announcement with a given ID </returns>
     [HttpGet]
+    [AllowAnonymous]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -56,6 +59,7 @@ public class AnnouncementController : ControllerBase
     /// <param name="query"> query with parameters to filter announcements </param>
     /// <returns> List of all announcements matching the filters </returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
@@ -79,8 +83,9 @@ public class AnnouncementController : ControllerBase
             return BadRequest();
 
         var pet = request.PetId is null
-            ? Pet.FromRequest(request.PetRequest ?? 
-            throw new ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"))
+            ? Pet.FromRequest(request.PetRequest
+                              ?? throw new
+                                  ArgumentException("PetId and PetRequest were null in AnnouncementCreationRequest"))
             : await _petQuery.GetByIdAsync(request.PetId.Value, HttpContext.RequestAborted);
         if (pet is null)
             return BadRequest();
@@ -105,6 +110,7 @@ public class AnnouncementController : ControllerBase
             if (pet is null)
                 return BadRequest();
         }
+
         var announcement = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (announcement is null)
             return NotFound(new NotFoundResponse

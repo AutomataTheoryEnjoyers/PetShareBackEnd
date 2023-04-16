@@ -90,21 +90,21 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
         announcements.Should().
-             BeEquivalentTo(new[]
-             {
-                 new AnnouncementResponse
-                 {
-                     Id = _announcement.Id,
-                     Title = _announcement.Title,
-                     Description = _announcement.Description,
-                     CreationDate = _announcement.CreationDate,
-                     ClosingDate = _announcement.ClosingDate,
-                     Status = _announcement.Status,
-                     LastUpdateDate = _announcement.LastUpdateDate,
-                     AuthorId = _announcement.AuthorId,
-                     PetId = _announcement.PetId
-                 }
-             });
+                      BeEquivalentTo(new[]
+                      {
+                          new AnnouncementResponse
+                          {
+                              Id = _announcement.Id,
+                              Title = _announcement.Title,
+                              Description = _announcement.Description,
+                              CreationDate = _announcement.CreationDate,
+                              ClosingDate = _announcement.ClosingDate,
+                              Status = _announcement.Status,
+                              LastUpdateDate = _announcement.LastUpdateDate,
+                              AuthorId = _announcement.AuthorId,
+                              PetId = _announcement.PetId
+                          }
+                      });
     }
 
     [Fact]
@@ -127,28 +127,28 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var query = new GetAllAnnouncementsFilteredQueryRequest
         {
-            Breeds = new List<string> { "test-breed"},
+            Breeds = new List<string> { "test-breed" },
             Species = new List<string> { "test-species" }
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
         announcements.Should().
-             BeEquivalentTo(new[]
-             {
-                 new AnnouncementResponse
-                 {
-                     Id = _announcement.Id,
-                     Title = _announcement.Title,
-                     Description = _announcement.Description,
-                     CreationDate = _announcement.CreationDate,
-                     ClosingDate = _announcement.ClosingDate,
-                     Status = _announcement.Status,
-                     LastUpdateDate = _announcement.LastUpdateDate,
-                     AuthorId = _announcement.AuthorId,
-                     PetId = _announcement.PetId
-                 }
-             }); 
+                      BeEquivalentTo(new[]
+                      {
+                          new AnnouncementResponse
+                          {
+                              Id = _announcement.Id,
+                              Title = _announcement.Title,
+                              Description = _announcement.Description,
+                              CreationDate = _announcement.CreationDate,
+                              ClosingDate = _announcement.ClosingDate,
+                              Status = _announcement.Status,
+                              LastUpdateDate = _announcement.LastUpdateDate,
+                              AuthorId = _announcement.AuthorId,
+                              PetId = _announcement.PetId
+                          }
+                      });
     }
 
     [Fact]
@@ -163,21 +163,21 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
         announcements.Should().
-                 BeEquivalentTo(new[]
-                 {
-                     new AnnouncementResponse
-                     {
-                         Id = _announcement.Id,
-                         Title = _announcement.Title,
-                         Description = _announcement.Description,
-                         CreationDate = _announcement.CreationDate,
-                         ClosingDate = _announcement.ClosingDate,
-                         Status = _announcement.Status,
-                         LastUpdateDate = _announcement.LastUpdateDate,
-                         AuthorId = _announcement.AuthorId,
-                         PetId = _announcement.PetId
-                     }
-                 });
+                      BeEquivalentTo(new[]
+                      {
+                          new AnnouncementResponse
+                          {
+                              Id = _announcement.Id,
+                              Title = _announcement.Title,
+                              Description = _announcement.Description,
+                              CreationDate = _announcement.CreationDate,
+                              ClosingDate = _announcement.ClosingDate,
+                              Status = _announcement.Status,
+                              LastUpdateDate = _announcement.LastUpdateDate,
+                              AuthorId = _announcement.AuthorId,
+                              PetId = _announcement.PetId
+                          }
+                      });
     }
 
     [Fact]
@@ -188,18 +188,18 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<AnnouncementResponse>();
         announcements.Should().
-                 BeEquivalentTo(new AnnouncementResponse
-                 {
-                     Id = _announcement.Id,
-                     Title = _announcement.Title,
-                     Description = _announcement.Description,
-                     CreationDate = _announcement.CreationDate,
-                     ClosingDate = _announcement.ClosingDate,
-                     Status = _announcement.Status,
-                     LastUpdateDate = _announcement.LastUpdateDate,
-                     AuthorId = _announcement.AuthorId,
-                     PetId = _announcement.PetId
-                 });
+                      BeEquivalentTo(new AnnouncementResponse
+                      {
+                          Id = _announcement.Id,
+                          Title = _announcement.Title,
+                          Description = _announcement.Description,
+                          CreationDate = _announcement.CreationDate,
+                          ClosingDate = _announcement.ClosingDate,
+                          Status = _announcement.Status,
+                          LastUpdateDate = _announcement.LastUpdateDate,
+                          AuthorId = _announcement.AuthorId,
+                          PetId = _announcement.PetId
+                      });
     }
 
     [Fact]
@@ -227,17 +227,17 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var newAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
         newAnnouncement.Should().
                         BeEquivalentTo(new AnnouncementResponse
-                                       {
-                                           Id = Guid.NewGuid(),
-                                           Title = request.Title,
-                                           Description = request.Description,
-                                           CreationDate = DateTime.Now,
-                                           ClosingDate = null,
-                                           LastUpdateDate = DateTime.Now,
-                                           Status = 0,
-                                           PetId = request.PetId.Value,
-                                           AuthorId = request.ShelterId
-                                       },
+                        {
+                            Id = Guid.NewGuid(),
+                            Title = request.Title,
+                            Description = request.Description,
+                            CreationDate = DateTime.Now,
+                            ClosingDate = null,
+                            LastUpdateDate = DateTime.Now,
+                            Status = 0,
+                            PetId = request.PetId.Value,
+                            AuthorId = request.ShelterId
+                        },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
                                                           Excluding(s => s.LastUpdateDate));
@@ -286,17 +286,17 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var newAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
         newAnnouncement.Should().
                         BeEquivalentTo(new AnnouncementResponse
-                                       {
-                                           Id = Guid.NewGuid(),
-                                           Title = request.Title,
-                                           Description = request.Description,
-                                           CreationDate = DateTime.Now,
-                                           LastUpdateDate = DateTime.Now,
-                                           ClosingDate = null,
-                                           Status = 0,
-                                           PetId = Guid.NewGuid(),
-                                           AuthorId = request.ShelterId
-                                       },
+                        {
+                            Id = Guid.NewGuid(),
+                            Title = request.Title,
+                            Description = request.Description,
+                            CreationDate = DateTime.Now,
+                            LastUpdateDate = DateTime.Now,
+                            ClosingDate = null,
+                            Status = 0,
+                            PetId = Guid.NewGuid(),
+                            AuthorId = request.ShelterId
+                        },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
                                                           Excluding(s => s.LastUpdateDate).
@@ -393,8 +393,6 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     LastUpdateDate = updatedAnnouncement.LastUpdateDate
                 });
     }
-
-    
 
     [Fact]
     public async Task PutShouldFailWithWrongPetId()

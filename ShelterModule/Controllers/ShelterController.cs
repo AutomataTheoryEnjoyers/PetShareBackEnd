@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -6,6 +7,7 @@ namespace ShelterModule.Controllers;
 
 [ApiController]
 [Route("shelter")]
+[Authorize(Roles = "Shelter")]
 public sealed class ShelterController : ControllerBase
 {
     private readonly IShelterCommand _command;
@@ -23,6 +25,7 @@ public sealed class ShelterController : ControllerBase
     /// <param name="id"> ID of the shelter that should be returned </param>
     /// <returns> Shelter with a given ID </returns>
     [HttpGet]
+    [AllowAnonymous]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -45,6 +48,7 @@ public sealed class ShelterController : ControllerBase
     /// </summary>
     /// <returns> List of all shelters </returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<ShelterResponse>> GetAll()
     {

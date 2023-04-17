@@ -51,7 +51,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'mini-pet-share'
+          app-name: 'petshare'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_20F6190E0F1749ADA46B4E8979DFDB49 }}
           package: .

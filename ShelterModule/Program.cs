@@ -50,13 +50,13 @@ public class Program
     }
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
-                               ?? throw new
-                                   InvalidOperationException("No connection string found. Check if there is a corresponding secret in AzureKeyVault");
+    {;
         services.AddDbContext<PetShareDbContext>(options =>
         {
-            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(5));
+            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
+                                 ?? throw new
+                                     InvalidOperationException("No connection string found. Check if there is a corresponding secret in AzureKeyVault"),
+                                 sqlOptions => sqlOptions.EnableRetryOnFailure(5));
         });
 
         services.AddScoped<IShelterQuery, ShelterQuery>();

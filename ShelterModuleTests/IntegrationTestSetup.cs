@@ -1,4 +1,6 @@
-﻿using Database;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Database;
 using Flurl.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
 
 namespace ShelterModuleTests;
@@ -82,6 +85,24 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         return host;
     }
 
+    public static string CreateTestJwtToken(string role, Guid id)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, role),
+            new("db_id", id.ToString()) // TODO: Replace with correct value
+        };
+
+        var jwtSecurityToken = new JwtSecurityToken("issuer",
+                                                    "audience",
+                                                    claims,
+                                                    expires: DateTime.Now.AddMinutes(5),
+                                                    signingCredentials: new
+                                                        SigningCredentials(new SymmetricSecurityKey("testKey1234567890"u8.ToArray()),
+                                                                           SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+    }
+
     public override async ValueTask DisposeAsync()
     {
         GC.SuppressFinalize(this);
@@ -89,6 +110,14 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         await context.Database.EnsureDeletedAsync();
         await base.DisposeAsync();
+    }
+}
+
+public static class FlurlClientExtensions
+{
+    public static FlurlClient WithAuth(this FlurlClient client, string role, Guid id)
+    {
+        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id));
     }
 }
 

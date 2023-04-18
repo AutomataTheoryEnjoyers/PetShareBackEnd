@@ -8,7 +8,6 @@ namespace ShelterModule.Controllers;
 
 [ApiController]
 [Route("pet")]
-[Authorize(Roles = "Shelter")]
 public class PetController : ControllerBase
 {
     private readonly IPetCommand _command;
@@ -64,10 +63,13 @@ public class PetController : ControllerBase
     /// <param name="request"> Request received </param>
     /// <returns> Newly created pet </returns>
     [HttpPost]
+    [Authorize(Roles = "Shelter")]
     [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PetResponse>> Post(PetUpsertRequest request)
     {
+        // TODO: Check ShelterId
+
         // check if shelter with a given ID exists
         var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);
         if (shelter is null)
@@ -84,12 +86,15 @@ public class PetController : ControllerBase
     /// <param name="request"> Request received </param>
     /// <returns> Updated pet </returns>
     [HttpPut]
+    [Authorize(Roles = "Shelter")]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpsertRequest request)
     {
+        // TODO: Check ShelterId
+
         var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);
         if (shelter is null)
             return BadRequest();

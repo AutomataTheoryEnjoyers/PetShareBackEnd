@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.Security.Claims;
 using Azure.Identity;
 using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -96,14 +96,11 @@ public class Program
                  }).
                  AddJwtBearer(options =>
                  {
+                     options.Authority = jwtSettings.ValidIssuer;
+                     options.Audience = jwtSettings.ValidAudience;
                      options.TokenValidationParameters = new TokenValidationParameters
                      {
-                         ValidateIssuer = true,
-                         ValidIssuer = jwtSettings.ValidIssuer,
-                         ValidateAudience = true,
-                         ValidAudience = jwtSettings.ValidAudience,
-                         ValidateIssuerSigningKey = true,
-                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecurityKey))
+                         NameClaimType = ClaimTypes.NameIdentifier
                      };
                  });
     }

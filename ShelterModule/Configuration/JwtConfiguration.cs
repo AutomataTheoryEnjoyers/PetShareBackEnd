@@ -11,7 +11,4 @@ public sealed class JwtConfiguration
 
     [Required]
     public required string ValidAudience { get; init; }
-
-    [Required]
-    public required string SecurityKey { get; init; }
 }

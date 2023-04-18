@@ -10,7 +10,6 @@ namespace ShelterModule.Controllers;
 
 [ApiController]
 [Route("announcements")]
-[Authorize(Roles = "Adopter")]
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
@@ -74,6 +73,7 @@ public class AnnouncementController : ControllerBase
     /// <param name="request"> Request received </param>
     /// <returns> Newly created announcement </returns>
     [HttpPost]
+    [Authorize(Roles = "Shelter")]
     [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
@@ -98,6 +98,7 @@ public class AnnouncementController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = "Shelter")]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(AnnouncementResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -110,6 +111,8 @@ public class AnnouncementController : ControllerBase
             if (pet is null)
                 return BadRequest();
         }
+
+        // TODO: Check announcement author
 
         var announcement = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (announcement is null)

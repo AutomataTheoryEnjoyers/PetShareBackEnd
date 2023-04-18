@@ -7,7 +7,6 @@ namespace ShelterModule.Controllers;
 
 [ApiController]
 [Route("shelter")]
-[Authorize(Roles = "Shelter")]
 public sealed class ShelterController : ControllerBase
 {
     private readonly IShelterCommand _command;
@@ -61,6 +60,7 @@ public sealed class ShelterController : ControllerBase
     /// <param name="request"> Request received </param>
     /// <returns> Newly created shelter </returns>
     [HttpPost]
+    [Authorize(Roles = "Unassigned")]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ShelterResponse>> Post(ShelterCreationRequest request)
@@ -77,6 +77,7 @@ public sealed class ShelterController : ControllerBase
     /// <param name="request"> Request received </param>
     /// <returns> Updated shelter </returns>
     [HttpPut]
+    [Authorize(Roles = "Shelter")]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]

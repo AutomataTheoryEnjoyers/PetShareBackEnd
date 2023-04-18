@@ -17,7 +17,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         ConfigureOptions(builder);
-        ConfigureServices(builder.Services, builder.Configuration, builder.Environment.IsDevelopment());
+        ConfigureServices(builder.Services, builder.Configuration);
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -49,12 +49,14 @@ public class Program
         context.Database.Migrate();
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, bool isDevelopment)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
+                               ?? throw new
+                                   InvalidOperationException("No connection string found. Check if there is a corresponding secret in AzureKeyVault");
         services.AddDbContext<PetShareDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName) 
-                ?? throw new InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
+            options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure(5));
         });
 
         services.AddScoped<IShelterQuery, ShelterQuery>();

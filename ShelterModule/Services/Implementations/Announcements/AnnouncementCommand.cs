@@ -25,13 +25,12 @@ public class AnnouncementCommand : IAnnouncementCommand
     public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request,
         CancellationToken token = default)
     {
-        var entityToUpdate = await _dbContext.Announcements.FirstOrDefaultAsync(e => e.Id == id, token);
+        var entityToUpdate = await _dbContext.Announcements.Include(x=>x.Author).Include(x=>x.Pet).FirstOrDefaultAsync(e => e.Id == id, token);
         if (entityToUpdate is null)
             return null;
 
         entityToUpdate.Title = request.Title ?? entityToUpdate.Title;
         entityToUpdate.Description = request.Description ?? entityToUpdate.Description;
-        entityToUpdate.PetId = request.PetId ?? entityToUpdate.PetId;
         entityToUpdate.Status = request.Status ?? entityToUpdate.Status;
 
         if (entityToUpdate.Status == (int)AnnouncementStatus.Closed)

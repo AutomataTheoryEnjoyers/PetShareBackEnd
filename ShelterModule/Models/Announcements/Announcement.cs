@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using ShelterModule.Models.Pets;
 
 namespace ShelterModule.Models.Announcements;
 
@@ -7,6 +8,7 @@ public sealed class Announcement
     public Guid Id { get; init; }
     public required Guid AuthorId { get; init; }
     public required Guid PetId { get; init; }
+    public required Pet Pet { get; init; }
     public required string Title { get; init; } = null!;
     public required string Description { get; init; } = null!;
     public required DateTime CreationDate { get; init; }
@@ -42,7 +44,8 @@ public sealed class Announcement
             CreationDate = entity.CreationDate,
             ClosingDate = entity.ClosingDate,
             Status = (AnnouncementStatus)entity.Status,
-            LastUpdateDate = entity.LastUpdateDate
+            LastUpdateDate = entity.LastUpdateDate,
+            Pet = Pet.FromEntity(entity.Pet)
         };
     }
 
@@ -58,22 +61,24 @@ public sealed class Announcement
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
             Status = (int)Status,
-            LastUpdateDate = LastUpdateDate
+            LastUpdateDate = LastUpdateDate,
+            Pet = Pet.ToResponse()
         };
     }
 
-    public static Announcement FromRequest(AnnouncementCreationRequest request, Guid petId)
+    public static Announcement FromRequest(AnnouncementCreationRequest request, Pet pet)
     {
         return new Announcement
         {
             Id = Guid.NewGuid(),
             AuthorId = request.ShelterId,
-            PetId = petId,
+            PetId = pet.Id,
             Title = request.Title,
             Description = request.Description,
             CreationDate = DateTime.Now,
             Status = AnnouncementStatus.Open,
-            LastUpdateDate = DateTime.Now
+            LastUpdateDate = DateTime.Now,
+            Pet = pet
         };
     }
 }

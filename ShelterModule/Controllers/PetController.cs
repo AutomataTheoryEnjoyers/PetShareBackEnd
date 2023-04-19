@@ -69,7 +69,7 @@ public class PetController : ControllerBase
         if (shelter is null)
             return BadRequest();
 
-        var pet = Pet.FromRequest(request);
+        var pet = Pet.FromRequest(request, shelter);
         return (await _command.AddAsync(pet, HttpContext.RequestAborted)).ToResponse();
     }
 

@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using ShelterModule.Models.Shelters;
 
 namespace ShelterModule.Models.Pets;
 
@@ -6,6 +7,7 @@ public class Pet
 {
     public Guid Id { get; init; }
     public required Guid ShelterId { get; init; }
+    public required Shelter Shelter { get; init; }
     public required string Name { get; init; } = null!;
     public required string Species { get; init; } = null!;
     public required string Breed { get; init; } = null!;
@@ -39,11 +41,13 @@ public class Pet
             Birthday = entity.Birthday,
             Description = entity.Description,
             Photo = entity.Photo,
-            ShelterId = entity.ShelterId
+            ShelterId = entity.ShelterId,
+            Shelter = Shelter.FromEntity(entity.Shelter),
+            
         };
     }
 
-    public static Pet FromRequest(PetUpsertRequest request)
+    public static Pet FromRequest(PetUpsertRequest request, Shelter shelter)
     {
         return new Pet
         {
@@ -54,7 +58,8 @@ public class Pet
             Birthday = request.Birthday,
             Description = request.Description,
             Photo = request.Photo,
-            ShelterId = request.ShelterId
+            ShelterId = request.ShelterId,
+            Shelter = shelter, 
         };
     }
 
@@ -69,7 +74,8 @@ public class Pet
             Birthday = Birthday,
             Description = Description,
             Photo = Photo,
-            ShelterId = ShelterId
+            ShelterId = ShelterId,
+            Shelter = Shelter.ToResponse()
         };
     }
 }

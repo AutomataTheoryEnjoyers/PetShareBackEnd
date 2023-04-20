@@ -62,13 +62,13 @@ public sealed class Announcement
         };
     }
 
-    public static Announcement FromRequest(AnnouncementCreationRequest request, Guid petId)
+    public static Announcement FromRequest(AnnouncementCreationRequest request, Guid shelterId)
     {
         return new Announcement
         {
             Id = Guid.NewGuid(),
-            AuthorId = request.ShelterId,
-            PetId = petId,
+            AuthorId = shelterId,
+            PetId = request.PetId,
             Title = request.Title,
             Description = request.Description,
             CreationDate = DateTime.Now,

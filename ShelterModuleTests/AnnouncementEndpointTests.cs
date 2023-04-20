@@ -5,8 +5,8 @@ using FluentAssertions;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using ShelterModule.Controllers;
 using ShelterModule.Models.Announcements;
-using ShelterModule.Models.Pets;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -87,6 +87,31 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements").GetAsync();
+        response.StatusCode.Should().Be(200);
+        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        announcements.Should().
+                      BeEquivalentTo(new[]
+                      {
+                          new AnnouncementResponse
+                          {
+                              Id = _announcement.Id,
+                              Title = _announcement.Title,
+                              Description = _announcement.Description,
+                              CreationDate = _announcement.CreationDate,
+                              ClosingDate = _announcement.ClosingDate,
+                              Status = _announcement.Status,
+                              LastUpdateDate = _announcement.LastUpdateDate,
+                              AuthorId = _announcement.AuthorId,
+                              PetId = _announcement.PetId
+                          }
+                      });
+    }
+
+    [Fact]
+    public async Task GetShouldFetchAnnouncementsFromShelter()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
+        var response = await client.Request("shelter", "announcements").GetAsync();
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
         announcements.Should().
@@ -218,10 +243,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         {
             Title = "test-annt2",
             Description = "test-de",
-            PetId = _pet.Id,
-            ShelterId = _shelter.Id
+            PetId = _pet.Id
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements").PostJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
         var newAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
@@ -235,8 +259,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
                             Status = 0,
-                            PetId = request.PetId.Value,
-                            AuthorId = request.ShelterId
+                            PetId = request.PetId,
+                            AuthorId = _shelter.Id
                         },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
@@ -255,99 +279,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     ClosingDate = newAnnouncement.ClosingDate,
                     LastUpdateDate = newAnnouncement.LastUpdateDate,
                     Status = newAnnouncement.Status,
-                    AuthorId = request.ShelterId,
-                    PetId = request.PetId.Value
+                    AuthorId = _shelter.Id,
+                    PetId = request.PetId
                 });
-    }
-
-    [Fact]
-    public async Task PostShouldAddAnnouncementWithoutPetId()
-    {
-        var petRequest = new PetUpsertRequest
-        {
-            Name = "test-pet2",
-            Breed = "test-breed2",
-            Species = "test-species2",
-            Birthday = DateTime.Now,
-            Description = "test-description2",
-            Photo = "test-photo2",
-            ShelterId = _shelter.Id
-        };
-        var request = new AnnouncementCreationRequest
-        {
-            Title = "test-annt2",
-            Description = "test-de",
-            PetRequest = petRequest,
-            ShelterId = _shelter.Id
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements").PostJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status200OK);
-        var newAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
-        newAnnouncement.Should().
-                        BeEquivalentTo(new AnnouncementResponse
-                        {
-                            Id = Guid.NewGuid(),
-                            Title = request.Title,
-                            Description = request.Description,
-                            CreationDate = DateTime.Now,
-                            LastUpdateDate = DateTime.Now,
-                            ClosingDate = null,
-                            Status = 0,
-                            PetId = Guid.NewGuid(),
-                            AuthorId = request.ShelterId
-                        },
-                                       options => options.Excluding(s => s.Id).
-                                                          Excluding(s => s.CreationDate).
-                                                          Excluding(s => s.LastUpdateDate).
-                                                          Excluding(p => p.PetId));
-        ;
-
-        using var scope = _testSetup.Services.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Announcements.Should().
-                ContainEquivalentOf(new AnnouncementEntity
-                {
-                    Id = newAnnouncement.Id,
-                    Title = newAnnouncement.Title,
-                    Description = newAnnouncement.Description,
-                    CreationDate = newAnnouncement.CreationDate,
-                    ClosingDate = newAnnouncement.ClosingDate,
-                    LastUpdateDate = newAnnouncement.LastUpdateDate,
-                    Status = newAnnouncement.Status,
-                    AuthorId = request.ShelterId,
-                    PetId = newAnnouncement.PetId
-                });
-    }
-
-    [Fact]
-    public async Task PostShouldFailWithWrongShelterId()
-    {
-        var wrongShelterId = Guid.NewGuid();
-        var request = new AnnouncementCreationRequest
-        {
-            Title = "test-announcement2",
-            Description = "test-description2",
-            PetId = _pet.Id,
-            ShelterId = wrongShelterId
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements").PostJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
-    public async Task PostShouldFailWithoutPetIdAndPetRequest()
-    {
-        var request = new AnnouncementCreationRequest
-        {
-            Title = "test-announcement2",
-            Description = "test-description2",
-            ShelterId = _shelter.Id
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements").PostJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
@@ -356,10 +290,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var request = new AnnouncementPutRequest
         {
             Status = (int)AnnouncementStatus.DuringVerification,
-            Description = "test-description-updated",
-            PetId = _pet.Id
+            Description = "test-description-updated"
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements", _announcement.Id).PutJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var updatedAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
@@ -371,7 +304,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Description = request.Description,
                                 Status = (int)request.Status,
                                 AuthorId = _announcement.AuthorId,
-                                PetId = request.PetId.Value,
+                                PetId = _announcement.PetId,
                                 CreationDate = _announcement.CreationDate,
                                 ClosingDate = null,
                                 LastUpdateDate = _announcement.LastUpdateDate
@@ -395,31 +328,15 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutShouldFailWithWrongPetId()
-    {
-        var wrongPetId = Guid.NewGuid();
-        var request = new AnnouncementPutRequest
-        {
-            Status = 2,
-            Description = "test-description-updated",
-            PetId = wrongPetId
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements", _announcement.Id).PutJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
     public async Task PutShouldFailWithWrongAnnouncementId()
     {
         var wrongAnnouncementId = Guid.NewGuid();
         var request = new AnnouncementPutRequest
         {
             Status = (int)AnnouncementStatus.DuringVerification,
-            Description = "test-description-updated",
-            PetId = _pet.Id
+            Description = "test-description-updated"
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements", wrongAnnouncementId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
     }

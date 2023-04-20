@@ -2,14 +2,8 @@
 
 namespace ShelterModule.Models.Pets;
 
-public sealed class PetResponse
+public sealed class PetCreationRequest
 {
-    [Required]
-    public required Guid Id { get; init; }
-
-    [Required]
-    public required Guid ShelterId { get; init; }
-
     [Required]
     public required string Name { get; init; }
 
@@ -24,6 +18,4 @@ public sealed class PetResponse
 
     [Required]
     public required string Description { get; init; }
-
-    public string? PhotoUrl { get; init; }
 }

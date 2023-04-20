@@ -31,7 +31,6 @@ public class AnnouncementCommand : IAnnouncementCommand
 
         entityToUpdate.Title = request.Title ?? entityToUpdate.Title;
         entityToUpdate.Description = request.Description ?? entityToUpdate.Description;
-        entityToUpdate.PetId = request.PetId ?? entityToUpdate.PetId;
         entityToUpdate.Status = request.Status ?? entityToUpdate.Status;
 
         if (entityToUpdate.Status == (int)AnnouncementStatus.Closed)

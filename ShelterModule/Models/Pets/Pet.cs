@@ -6,12 +6,12 @@ public class Pet
 {
     public Guid Id { get; init; }
     public required Guid ShelterId { get; init; }
-    public required string Name { get; init; } = null!;
-    public required string Species { get; init; } = null!;
-    public required string Breed { get; init; } = null!;
+    public required string Name { get; init; }
+    public required string Species { get; init; }
+    public required string Breed { get; init; }
     public required DateTime Birthday { get; init; }
-    public required string Description { get; init; } = null!;
-    public required string Photo { get; init; } = null!;
+    public required string Description { get; init; }
+    public string? Photo { get; init; }
 
     public PetEntity ToEntity()
     {
@@ -43,7 +43,7 @@ public class Pet
         };
     }
 
-    public static Pet FromRequest(PetUpsertRequest request)
+    public static Pet FromRequest(PetCreationRequest request, Guid shelterId)
     {
         return new Pet
         {
@@ -53,8 +53,8 @@ public class Pet
             Breed = request.Breed,
             Birthday = request.Birthday,
             Description = request.Description,
-            Photo = request.Photo,
-            ShelterId = request.ShelterId
+            Photo = null,
+            ShelterId = shelterId
         };
     }
 
@@ -68,7 +68,7 @@ public class Pet
             Breed = Breed,
             Birthday = Birthday,
             Description = Description,
-            Photo = Photo,
+            PhotoUrl = Photo,
             ShelterId = ShelterId
         };
     }

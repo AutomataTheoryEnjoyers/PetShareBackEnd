@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -20,9 +21,8 @@ public sealed class ShelterController : ControllerBase
     /// <summary>
     ///     Returns a shelter with a given ID
     /// </summary>
-    /// <param name="id"> ID of the shelter that should be returned </param>
-    /// <returns> Shelter with a given ID </returns>
     [HttpGet]
+    [AllowAnonymous]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -43,8 +43,8 @@ public sealed class ShelterController : ControllerBase
     /// <summary>
     ///     Returns all shelters
     /// </summary>
-    /// <returns> List of all shelters </returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
     public async Task<IReadOnlyList<ShelterResponse>> GetAll()
     {
@@ -54,11 +54,12 @@ public sealed class ShelterController : ControllerBase
     /// <summary>
     ///     Creates new shelter
     /// </summary>
-    /// <param name="request"> Request received </param>
-    /// <returns> Newly created shelter </returns>
     [HttpPost]
+    [Authorize(Roles = Roles.Unassigned)]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ShelterResponse>> Post(ShelterCreationRequest request)
     {
         var shelter = Shelter.FromRequest(request);
@@ -69,13 +70,13 @@ public sealed class ShelterController : ControllerBase
     /// <summary>
     ///     Updates authorization status of a shelter with specified ID
     /// </summary>
-    /// <param name="id"> ID of a shelter to update </param>
-    /// <param name="request"> Request received </param>
-    /// <returns> Updated shelter </returns>
     [HttpPut]
+    [Authorize(Roles = Roles.Admin)]
     [Route("{id:guid}")]
     [ProducesResponseType(typeof(ShelterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ShelterResponse>> Put(Guid id, ShelterAuthorizationRequest request)
     {

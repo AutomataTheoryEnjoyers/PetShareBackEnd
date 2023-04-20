@@ -6,6 +6,7 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
+using ShelterModule.Controllers;
 using ShelterModule.Models.Shelters;
 using Xunit;
 
@@ -125,7 +126,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                 PostalCode = "test-postalCode"
             }
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Unassigned).AllowAnyHttpStatus();
         var response = await client.Request("shelter").PostJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var newShelter = await response.GetJsonAsync<ShelterResponse>();
@@ -137,7 +138,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                        FullShelterName = request.FullShelterName,
                        Email = request.Email,
                        PhoneNumber = request.PhoneNumber,
-                       IsAuthorized = null,
+                       IsAuthorized = true,
                        Address = request.Address
                    }, options => options.Excluding(s => s.Id));
 
@@ -151,7 +152,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
                     FullShelterName = request.FullShelterName,
                     Email = request.Email,
                     PhoneNumber = request.PhoneNumber,
-                    IsAuthorized = null,
+                    IsAuthorized = true,
                     Address = request.Address
                 });
     }
@@ -159,7 +160,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     [Fact]
     public async Task PutShouldAuthorizeShelter()
     {
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
         var response = await client.Request("shelter", _shelter.Id).
                                     PutJsonAsync(new ShelterAuthorizationRequest
                                     {
@@ -199,7 +200,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task PutShouldFailWithWrongShelterId()
     {
         var wrongId = Guid.NewGuid();
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
         var response = await client.Request("shelter", wrongId).
                                     PutJsonAsync(new ShelterAuthorizationRequest
                                     {

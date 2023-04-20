@@ -1,4 +1,6 @@
-﻿using Database;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Database;
 using Flurl.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,7 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
+using ShelterModule.Controllers;
 
 namespace ShelterModuleTests;
 
@@ -56,6 +60,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test");
         builder.ConfigureAppConfiguration(configuration =>
                 {
                     configuration.AddJsonFile("appsettings.json").
@@ -63,7 +68,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                   AddInMemoryCollection(new Dictionary<string, string?>
                                   {
                                       [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
-                                          CreateConnectionString()
+                                          CreateConnectionString(),
+                                      ["Jwt:ValidIssuer"] = "test-issuer",
+                                      ["Jwt:ValidAudience"] = "test-audience"
                                   });
                 }).
                 ConfigureTestServices(services =>
@@ -82,6 +89,24 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         return host;
     }
 
+    public static string CreateTestJwtToken(string role, Guid id)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Role, role),
+            new(ClaimsExtensions.IdClaim, id.ToString())
+        };
+
+        var jwtSecurityToken = new JwtSecurityToken("test-issuer",
+                                                    "test-audience",
+                                                    claims,
+                                                    expires: DateTime.Now.AddMinutes(5),
+                                                    signingCredentials: new
+                                                        SigningCredentials(new SymmetricSecurityKey("testKey1234567890"u8.ToArray()),
+                                                                           SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+    }
+
     public override async ValueTask DisposeAsync()
     {
         GC.SuppressFinalize(this);
@@ -89,6 +114,14 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         await context.Database.EnsureDeletedAsync();
         await base.DisposeAsync();
+    }
+}
+
+public static class FlurlClientExtensions
+{
+    public static FlurlClient WithAuth(this FlurlClient client, string role, Guid? id = null)
+    {
+        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id ?? Guid.Empty));
     }
 }
 

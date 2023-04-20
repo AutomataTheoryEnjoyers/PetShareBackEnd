@@ -63,7 +63,8 @@ public class Program
         {
             options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
                                  ?? throw new
-                                     InvalidOperationException("No connection string found. Check if there is corresponding secret in AzureKeyVault"));
+                                     InvalidOperationException("No connection string found. Check if there is a corresponding secret in AzureKeyVault"),
+                                 sqlOptions => sqlOptions.EnableRetryOnFailure(5));
         });
 
         services.AddScoped<TokenValidator>();

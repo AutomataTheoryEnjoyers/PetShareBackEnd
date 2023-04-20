@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Azure.Identity;
 using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using ShelterModule.Configuration;
+using ShelterModule.Services;
 using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
@@ -43,7 +44,8 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
 
-        ApplyMigrations(app.Services);
+        if (!builder.Environment.IsEnvironment("Test"))
+            ApplyMigrations(app.Services);
 
         app.Run();
     }
@@ -61,9 +63,10 @@ public class Program
         {
             options.UseSqlServer(configuration.GetConnectionString(PetShareDbContext.DbConnectionStringName)
                                  ?? throw new
-                                     InvalidOperationException("No connection string found. Check if there is coresponding secret in AzureKeyVault"));
+                                     InvalidOperationException("No connection string found. Check if there is corresponding secret in AzureKeyVault"));
         });
 
+        services.AddScoped<TokenValidator>();
         services.AddScoped<IShelterQuery, ShelterQuery>();
         services.AddScoped<IShelterCommand, ShelterCommand>();
         services.AddScoped<IPetQuery, PetQuery>();
@@ -74,13 +77,15 @@ public class Program
 
     private static void ConfigureOptions(WebApplicationBuilder builder)
     {
-        if (!builder.Environment.IsProduction())
-            return;
+        if (builder.Environment.IsProduction())
+        {
+            var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")
+                                      ?? throw new InvalidOperationException("No azureKeyVault URL found in config."));
+            var azureCredential = new DefaultAzureCredential();
+            builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
+        }
 
-        var keyVaultUrl = new Uri(builder.Configuration.GetValue<string>("KeyVaultURL")
-                                  ?? throw new InvalidOperationException("No azureKeyVault URL found in config."));
-        var azureCredential = new DefaultAzureCredential();
-        builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredential);
+        builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(JwtConfiguration.SectionName));
     }
 
     private static void ConfigureJwt(IServiceCollection services, IConfiguration config)
@@ -96,11 +101,25 @@ public class Program
                  }).
                  AddJwtBearer(options =>
                  {
-                     options.Authority = jwtSettings.ValidIssuer;
-                     options.Audience = jwtSettings.ValidAudience;
-                     options.TokenValidationParameters = new TokenValidationParameters
+                     options.RequireHttpsMetadata = false;
+
+                     options.Events = new JwtBearerEvents
                      {
-                         NameClaimType = ClaimTypes.NameIdentifier
+                         OnMessageReceived = context =>
+                         {
+                             var settings = context.HttpContext.RequestServices.
+                                                    GetRequiredService<IOptions<JwtConfiguration>>().
+                                                    Value;
+
+                             context.Options.TokenValidationParameters.ValidateIssuer = true;
+                             context.Options.TokenValidationParameters.ValidateAudience = true;
+                             context.Options.TokenValidationParameters.ValidateIssuerSigningKey = false;
+                             context.Options.TokenValidationParameters.ValidIssuer = settings.ValidIssuer;
+                             context.Options.TokenValidationParameters.ValidAudience = settings.ValidAudience;
+                             context.Options.TokenValidationParameters.SignatureValidator = (token, _) =>
+                                 new JwtSecurityTokenHandler().ReadJwtToken(token);
+                             return Task.CompletedTask;
+                         }
                      };
                  });
     }

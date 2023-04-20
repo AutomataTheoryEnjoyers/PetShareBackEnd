@@ -1,36 +1,32 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Pets;
+using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Pets;
-using ShelterModule.Services.Interfaces.Shelters;
 
 namespace ShelterModule.Controllers;
 
 [ApiController]
-[Route("pet")]
 public class PetController : ControllerBase
 {
     private readonly IPetCommand _command;
     private readonly IPetQuery _query;
-    private readonly IShelterQuery _shelterQuery;
+    private readonly TokenValidator _validator;
 
-    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery)
+    public PetController(IPetQuery query, IPetCommand command, TokenValidator validator)
     {
         _query = query;
         _command = command;
-        _shelterQuery = shelterQuery;
+        _validator = validator;
     }
 
     /// <summary>
     ///     Returns a pet with a given ID
     /// </summary>
-    /// <param name="id"> ID of the pet that should be returned </param>
-    /// <returns> Pet with a given ID </returns>
     [HttpGet]
     [AllowAnonymous]
-    [Route("{id:guid}")]
+    [Route("pet/{id:guid}")]
     [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PetResponse>> Get(Guid id)
     {
@@ -48,58 +44,58 @@ public class PetController : ControllerBase
     /// <summary>
     ///     Returns all pets
     /// </summary>
-    /// <returns> List of all pets </returns>
     [HttpGet]
-    [AllowAnonymous]
+    [Route("shelter/pets")]
+    [Authorize(Roles = Roles.Shelter)]
     [ProducesResponseType(typeof(IReadOnlyList<PetResponse>), StatusCodes.Status200OK)]
-    public async Task<IReadOnlyList<PetResponse>> GetAll()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyList<PetResponse>>> GetAll()
     {
-        return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        return (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
+               Select(s => s.ToResponse()).
+               ToList();
     }
 
     /// <summary>
     ///     Creates new pet
     /// </summary>
-    /// <param name="request"> Request received </param>
-    /// <returns> Newly created pet </returns>
     [HttpPost]
-    [Authorize(Roles = "Shelter")]
+    [Route("pet")]
+    [Authorize(Roles = Roles.Shelter)]
     [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PetResponse>> Post(PetUpsertRequest request)
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<PetResponse>> Post(PetCreationRequest request)
     {
-        // TODO: Check ShelterId
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
 
-        // check if shelter with a given ID exists
-        var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);
-        if (shelter is null)
-            return BadRequest();
-
-        var pet = Pet.FromRequest(request);
+        var pet = Pet.FromRequest(request, User.GetId());
         return (await _command.AddAsync(pet, HttpContext.RequestAborted)).ToResponse();
     }
 
     /// <summary>
     ///     Updates pet record with specified ID
     /// </summary>
-    /// <param name="id"> ID of a pet to update </param>
-    /// <param name="request"> Request received </param>
-    /// <returns> Updated pet </returns>
     [HttpPut]
-    [Authorize(Roles = "Shelter")]
-    [Route("{id:guid}")]
+    [Authorize(Roles = Roles.Shelter)]
+    [Route("pet/{id:guid}")]
     [ProducesResponseType(typeof(PetResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpsertRequest request)
+    public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpdateRequest request)
     {
-        // TODO: Check ShelterId
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
 
-        var shelter = await _shelterQuery.GetByIdAsync(request.ShelterId, HttpContext.RequestAborted);
-        if (shelter is null)
-            return BadRequest();
-
-        var pet = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
+        var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (pet is null)
             return NotFound(new NotFoundResponse
             {
@@ -107,6 +103,52 @@ public class PetController : ControllerBase
                 Id = id.ToString()
             });
 
-        return pet.ToResponse();
+        if (User.TryGetId() != pet.ShelterId)
+            return Forbid();
+
+        var updatedPet = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
+        if (updatedPet is null)
+            return NotFound(new NotFoundResponse
+            {
+                ResourceName = nameof(Pet),
+                Id = id.ToString()
+            });
+
+        return updatedPet.ToResponse();
+    }
+
+    /// <summary>
+    ///     Updates pet photo
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = Roles.Shelter)]
+    [Route("pet/{id:guid}/photo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> PostPhoto(IFormFile file, Guid id)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (pet is null)
+            return NotFound(new NotFoundResponse
+            {
+                ResourceName = nameof(Pet),
+                Id = id.ToString()
+            });
+
+        if (User.TryGetId() != pet.ShelterId)
+            return Forbid();
+
+        return await _command.SetPhotoAsync(id, file, HttpContext.RequestAborted) is not null
+            ? Ok()
+            : NotFound(new NotFoundResponse
+            {
+                Id = id.ToString(),
+                ResourceName = nameof(Pet)
+            });
     }
 }

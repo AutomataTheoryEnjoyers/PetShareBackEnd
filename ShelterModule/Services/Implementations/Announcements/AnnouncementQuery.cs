@@ -40,6 +40,13 @@ public class AnnouncementQuery : IAnnouncementQuery
         return await filteredAnnouncements.Select(e => Announcement.FromEntity(e)).ToListAsync(token);
     }
 
+    public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
+    {
+        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).ToListAsync(token)).
+               Select(Announcement.FromEntity).
+               ToList();
+    }
+
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
         var entity = await _context.Announcements.Include(x => x.Author).

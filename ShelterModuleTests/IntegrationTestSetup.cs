@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
+using ShelterModule.Controllers;
 
 namespace ShelterModuleTests;
 
@@ -59,6 +60,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test");
         builder.ConfigureAppConfiguration(configuration =>
                 {
                     configuration.AddJsonFile("appsettings.json").
@@ -66,7 +68,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                   AddInMemoryCollection(new Dictionary<string, string?>
                                   {
                                       [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
-                                          CreateConnectionString()
+                                          CreateConnectionString(),
+                                      ["Jwt:ValidIssuer"] = "test-issuer",
+                                      ["Jwt:ValidAudience"] = "test-audience"
                                   });
                 }).
                 ConfigureTestServices(services =>
@@ -90,11 +94,11 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         var claims = new List<Claim>
         {
             new(ClaimTypes.Role, role),
-            new("db_id", id.ToString()) // TODO: Replace with correct value
+            new(ClaimsExtensions.IdClaim, id.ToString())
         };
 
-        var jwtSecurityToken = new JwtSecurityToken("issuer",
-                                                    "audience",
+        var jwtSecurityToken = new JwtSecurityToken("test-issuer",
+                                                    "test-audience",
                                                     claims,
                                                     expires: DateTime.Now.AddMinutes(5),
                                                     signingCredentials: new
@@ -115,9 +119,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
 public static class FlurlClientExtensions
 {
-    public static FlurlClient WithAuth(this FlurlClient client, string role, Guid id)
+    public static FlurlClient WithAuth(this FlurlClient client, string role, Guid? id = null)
     {
-        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id));
+        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id ?? Guid.Empty));
     }
 }
 

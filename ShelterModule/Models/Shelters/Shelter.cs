@@ -68,7 +68,7 @@ public sealed class Shelter
             FullShelterName = request.FullShelterName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
-            IsAuthorized = null,
+            IsAuthorized = true, // TODO: Change this when admin functionalities are added
             Address = request.Address
         };
     }

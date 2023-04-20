@@ -6,6 +6,7 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
+using ShelterModule.Controllers;
 using ShelterModule.Models.Pets;
 using Xunit;
 
@@ -66,10 +67,10 @@ public sealed class PetEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetShouldFetchAllPets()
+    public async Task GetShouldFetchPetsFromShelter()
     {
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("pet").GetAsync();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
+        var response = await client.Request("shelter", "pets").GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<IEnumerable<PetResponse>>();
         pets.Should().
@@ -83,7 +84,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Breed = _pet.Breed,
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
-                     Photo = _pet.Photo,
+                     PhotoUrl = _pet.Photo,
                      ShelterId = _pet.ShelterId
                  }
              });
@@ -105,7 +106,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Breed = _pet.Breed,
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
-                     Photo = _pet.Photo,
+                     PhotoUrl = _pet.Photo,
                      ShelterId = _pet.ShelterId
                  });
     }
@@ -129,17 +130,15 @@ public sealed class PetEndpointTests : IAsyncLifetime
     [Fact]
     public async Task PostShouldAddPet()
     {
-        var request = new PetUpsertRequest
+        var request = new PetCreationRequest
         {
             Name = "test-pet2",
             Breed = "test-breed2",
             Species = "test-species2",
             Birthday = DateTime.Now,
-            Description = "test-description2",
-            Photo = "test-photo2",
-            ShelterId = _shelter.Id
+            Description = "test-description2"
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet").PostJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
         var newPet = await response.GetJsonAsync<PetResponse>();
@@ -152,8 +151,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Species = request.Species,
                    Birthday = request.Birthday,
                    Description = request.Description,
-                   Photo = request.Photo,
-                   ShelterId = request.ShelterId
+                   PhotoUrl = null,
+                   ShelterId = _shelter.Id
                }, options => options.Excluding(s => s.Id));
 
         using var scope = _testSetup.Services.CreateScope();
@@ -167,44 +166,23 @@ public sealed class PetEndpointTests : IAsyncLifetime
                     Species = request.Species,
                     Birthday = request.Birthday,
                     Description = request.Description,
-                    Photo = request.Photo,
-                    ShelterId = request.ShelterId
+                    ShelterId = _shelter.Id,
+                    Photo = null
                 });
-    }
-
-    [Fact]
-    public async Task PostShouldFailWithWrongShelterId()
-    {
-        var wrongShelterId = Guid.NewGuid();
-        var request = new PetUpsertRequest
-        {
-            Name = "test-pet2",
-            Breed = "test-breed2",
-            Species = "test-species2",
-            Birthday = DateTime.Now,
-            Description = "test-description2",
-            Photo = "test-photo2",
-            ShelterId = wrongShelterId
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("pet").PostJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
     public async Task PutShouldUpdatePet()
     {
-        var request = new PetUpsertRequest
+        var request = new PetCreationRequest
         {
             Name = "test-pet-updated",
             Breed = "test-breed-updated",
             Species = "test-species-updated",
             Birthday = DateTime.Now.AddDays(-3),
-            Description = "test-description-updated",
-            Photo = "test-photo-updated",
-            ShelterId = _shelter.Id
+            Description = "test-description-updated"
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet", _pet.Id).PutJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var updatedPet = await response.GetJsonAsync<PetResponse>();
@@ -217,8 +195,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Species = request.Species,
                        Birthday = request.Birthday,
                        Description = request.Description,
-                       Photo = request.Photo,
-                       ShelterId = request.ShelterId
+                       ShelterId = _shelter.Id,
+                       PhotoUrl = _pet.Photo
                    });
 
         using var scope = _testSetup.Services.CreateScope();
@@ -233,45 +211,24 @@ public sealed class PetEndpointTests : IAsyncLifetime
                     Species = request.Species,
                     Birthday = request.Birthday,
                     Description = request.Description,
-                    Photo = request.Photo,
-                    ShelterId = request.ShelterId
+                    Photo = _pet.Photo,
+                    ShelterId = _shelter.Id
                 });
-    }
-
-    [Fact]
-    public async Task PutShouldFailWithWrongShelterId()
-    {
-        var wrongShelterId = Guid.NewGuid();
-        var request = new PetUpsertRequest
-        {
-            Name = "test-pet2",
-            Breed = "test-breed2",
-            Species = "test-species2",
-            Birthday = DateTime.Now,
-            Description = "test-description2",
-            Photo = "test-photo2",
-            ShelterId = wrongShelterId
-        };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("pet", _pet.Id).PutJsonAsync(request);
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
     public async Task PutShouldFailWithWrongPetId()
     {
         var wrongId = Guid.NewGuid();
-        var request = new PetUpsertRequest
+        var request = new PetCreationRequest
         {
             Name = "test-pet2",
             Breed = "test-breed2",
             Species = "test-species2",
             Birthday = DateTime.Now,
-            Description = "test-description2",
-            Photo = "test-photo2",
-            ShelterId = _shelter.Id
+            Description = "test-description2"
         };
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet", wrongId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         var error = await response.GetJsonAsync<NotFoundResponse>();

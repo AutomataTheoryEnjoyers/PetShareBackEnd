@@ -12,6 +12,8 @@ public class Pet
     public required DateTime Birthday { get; init; }
     public required string Description { get; init; }
     public string? Photo { get; init; }
+    public required PetSex Sex { get; init; }
+    public required PetStatus Status { get; init; }
 
     public PetEntity ToEntity()
     {
@@ -24,7 +26,9 @@ public class Pet
             Birthday = Birthday,
             Description = Description,
             Photo = Photo,
-            ShelterId = ShelterId
+            ShelterId = ShelterId,
+            Sex = Sex,
+            Status = Status
         };
     }
 
@@ -39,7 +43,9 @@ public class Pet
             Birthday = entity.Birthday,
             Description = entity.Description,
             Photo = entity.Photo,
-            ShelterId = entity.ShelterId
+            ShelterId = entity.ShelterId,
+            Sex = entity.Sex,
+            Status = entity.Status
         };
     }
 
@@ -54,7 +60,9 @@ public class Pet
             Birthday = request.Birthday,
             Description = request.Description,
             Photo = null,
-            ShelterId = shelterId
+            ShelterId = shelterId,
+            Sex = Enum.Parse<PetSex>(request.Sex),
+            Status = PetStatus.Active
         };
     }
 
@@ -69,7 +77,8 @@ public class Pet
             Birthday = Birthday,
             Description = Description,
             PhotoUrl = Photo,
-            ShelterId = ShelterId
+            ShelterId = ShelterId,
+            Sex = Sex.ToString()
         };
     }
 }

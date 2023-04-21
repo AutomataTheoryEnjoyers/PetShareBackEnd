@@ -26,4 +26,7 @@ public sealed class PetResponse
     public required string Description { get; init; }
 
     public string? PhotoUrl { get; init; }
+
+    [Required]
+    public required string Sex { get; init; }
 }

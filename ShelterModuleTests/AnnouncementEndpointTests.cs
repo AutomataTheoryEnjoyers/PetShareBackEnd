@@ -47,9 +47,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             Breed = "test-breed",
             Species = "test-species",
             Birthday = DateTime.Now,
-            Description = "test-escription",
+            Description = "test-description",
             Photo = "test-photo",
-            ShelterId = _shelter.Id
+            ShelterId = _shelter.Id,
+            Sex = PetSex.Unknown,
+            Status = PetStatus.Active
         };
 
         _announcement = new AnnouncementEntity

@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
 using ShelterModule.Services.Interfaces.Pets;
@@ -23,7 +24,8 @@ public class PetCommand : IPetCommand
 
     public async Task<Pet?> UpdateAsync(Guid id, PetUpdateRequest request, CancellationToken token = default)
     {
-        var entity = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == id, token);
+        var entity = await _dbContext.Pets.Where(e => e.Status != PetStatus.Deleted).
+                                      FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
             return null;
 
@@ -32,6 +34,7 @@ public class PetCommand : IPetCommand
         entity.Species = request.Species ?? entity.Species;
         entity.Birthday = request.Birthday ?? entity.Birthday;
         entity.Description = request.Description ?? entity.Description;
+        entity.Status = request.Status is not null ? Enum.Parse<PetStatus>(request.Status) : entity.Status;
 
         await _dbContext.SaveChangesAsync(token);
 
@@ -40,7 +43,8 @@ public class PetCommand : IPetCommand
 
     public async Task<Pet?> SetPhotoAsync(Guid id, IFormFile photo, CancellationToken token = default)
     {
-        var entity = await _dbContext.Pets.FirstOrDefaultAsync(e => e.Id == id, token);
+        var entity = await _dbContext.Pets.Where(e => e.Status != PetStatus.Deleted).
+                                      FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
             return null;
 

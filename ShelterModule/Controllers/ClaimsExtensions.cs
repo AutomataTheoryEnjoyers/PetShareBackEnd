@@ -19,6 +19,11 @@ public static class ClaimsExtensions
     {
         return TryGetId(user) ?? throw new InvalidOperationException("JWT token does not contain ID claim");
     }
+
+    public static bool IsAdmin(this ClaimsPrincipal user)
+    {
+        return user.IsInRole(Roles.Admin);
+    }
 }
 
 public static class Roles

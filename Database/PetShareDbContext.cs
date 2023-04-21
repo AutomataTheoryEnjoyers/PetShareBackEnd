@@ -13,6 +13,8 @@ public sealed class PetShareDbContext : DbContext
     public DbSet<ShelterEntity> Shelters => Set<ShelterEntity>();
     public DbSet<PetEntity> Pets => Set<PetEntity>();
     public DbSet<AnnouncementEntity> Announcements => Set<AnnouncementEntity>();
+    public DbSet<AdopterEntity> Adopters => Set<AdopterEntity>();
+    public DbSet<AdopterVerificationEntity> Verifications => Set<AdopterVerificationEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

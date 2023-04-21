@@ -7,9 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ShelterModule.Configuration;
 using ShelterModule.Services;
+using ShelterModule.Services.Implementations.Adopters;
 using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces.Adopters;
 using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
@@ -74,6 +76,8 @@ public class Program
         services.AddScoped<IPetCommand, PetCommand>();
         services.AddScoped<IAnnouncementQuery, AnnouncementQuery>();
         services.AddScoped<IAnnouncementCommand, AnnouncementCommand>();
+        services.AddScoped<IAdopterCommand, AdopterCommand>();
+        services.AddScoped<IAdopterQuery, AdopterQuery>();
     }
 
     private static void ConfigureOptions(WebApplicationBuilder builder)

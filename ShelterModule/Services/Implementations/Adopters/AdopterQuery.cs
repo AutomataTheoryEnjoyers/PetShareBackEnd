@@ -15,25 +15,25 @@ public sealed class AdopterQuery : IAdopterQuery
         _context = context;
     }
 
-    public async Task<IReadOnlyList<Adopter>> GetAllAsync()
+    public async Task<IReadOnlyList<Adopter>> GetAllAsync(CancellationToken token = default)
     {
         return await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
                               Select(e => Adopter.FromEntity(e)).
-                              ToListAsync();
+                              ToListAsync(token);
     }
 
-    public async Task<Adopter?> GetByIdAsync(Guid id)
+    public async Task<Adopter?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
         var entity = await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
-                                    FirstOrDefaultAsync(e => e.Id == id);
+                                    FirstOrDefaultAsync(e => e.Id == id, token);
         return entity is null ? null : Adopter.FromEntity(entity);
     }
 
-    public async Task<bool?> IsVerifiedForShelterAsync(Guid id, Guid shelterId)
+    public async Task<bool?> IsVerifiedForShelterAsync(Guid id, Guid shelterId, CancellationToken token = default)
     {
-        if (!await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).AnyAsync(e => e.Id == id))
+        if (!await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).AnyAsync(e => e.Id == id, token))
             return null;
 
-        return await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId);
+        return await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId, token);
     }
 }

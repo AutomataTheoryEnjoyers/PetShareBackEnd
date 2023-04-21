@@ -15,35 +15,35 @@ public sealed class AdopterCommand : IAdopterCommand
         _context = context;
     }
 
-    public async Task AddAsync(Adopter adopter)
+    public async Task AddAsync(Adopter adopter, CancellationToken token = default)
     {
         _context.Adopters.Add(adopter.ToEntity());
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
     }
 
-    public async Task<Adopter?> SetStatusAsync(Guid id, AdopterStatus status)
+    public async Task<Adopter?> SetStatusAsync(Guid id, AdopterStatus status, CancellationToken token = default)
     {
         var entity = await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
-                                    FirstOrDefaultAsync(e => e.Id == id);
+                                    FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
             return null;
 
         entity.Status = status;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
 
         return Adopter.FromEntity(entity);
     }
 
-    public async Task<bool?> VerifyForShelterAsync(Guid id, Guid shelterId)
+    public async Task<bool?> VerifyForShelterAsync(Guid id, Guid shelterId, CancellationToken token = default)
     {
         var adopterEntity = await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
-                                           FirstOrDefaultAsync(e => e.Id == id);
-        var shelterEntity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == shelterId);
+                                           FirstOrDefaultAsync(e => e.Id == id, token);
+        var shelterEntity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == shelterId, token);
 
         if (adopterEntity is null || shelterEntity is null)
             return null;
 
-        if (await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId))
+        if (await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId, token))
             return false;
 
         _context.Verifications.Add(new AdopterVerificationEntity
@@ -51,7 +51,7 @@ public sealed class AdopterCommand : IAdopterCommand
             AdopterId = id,
             ShelterId = shelterId
         });
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(token);
         return true;
     }
 }

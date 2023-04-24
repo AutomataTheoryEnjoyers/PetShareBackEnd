@@ -1,6 +1,7 @@
 ﻿using Database;
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
+using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Applications;
 using ShelterModule.Services.Interfaces.Applications;
 
@@ -17,8 +18,10 @@ public sealed class ApplicationCommand : IApplicationCommand
 
     public async Task<Application?> CreateAsync(Guid announcementId, Guid adopterId, CancellationToken token = default)
     {
-        if (!_context.Adopters.Any(adopter => adopter.Id == adopterId)
-            || !_context.Announcements.Any(announcement => announcement.Id == announcementId))
+        if (!_context.Adopters.Where(adopter => adopter.Status != AdopterStatus.Deleted).
+                      Any(adopter => adopter.Id == adopterId)
+            || !_context.Announcements.Where(announcement => announcement.Status != (int)AnnouncementStatus.Deleted).
+                         Any(announcement => announcement.Id == announcementId))
             return null;
 
         var id = Guid.NewGuid();

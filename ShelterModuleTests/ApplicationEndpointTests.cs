@@ -4,7 +4,9 @@ using Database.ValueObjects;
 using FluentAssertions;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ShelterModule;
 using ShelterModule.Controllers;
 using ShelterModule.Models.Adopters;
 using ShelterModule.Models.Announcements;
@@ -353,6 +355,60 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PostShouldNotCreateApplicationIfAnnouncementIsClosed()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications").
+                                    PostJsonAsync(new ApplicationRequest
+                                    {
+                                        AnnouncementId = _announcements[2].Id
+                                    });
+
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task PostShouldNotCreateApplicationIfAnnouncementIsDeleted()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications").
+                                    PostJsonAsync(new ApplicationRequest
+                                    {
+                                        AnnouncementId = _announcements[2].Id
+                                    });
+
+        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  Id = _announcements[2].Id.ToString(),
+                  ResourceName = nameof(Announcement)
+              });
+    }
+
+    [Fact]
+    public async Task PostShouldReturn404IfAnnouncementDoesntExist()
+    {
+        var invalidId = Guid.NewGuid();
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications").
+                                    PostJsonAsync(new ApplicationRequest
+                                    {
+                                        AnnouncementId = invalidId
+                                    });
+
+        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  Id = invalidId.ToString(),
+                  ResourceName = nameof(Announcement)
+              });
+    }
+
+    [Fact]
     public async Task GetShouldReturnApplicationById()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
@@ -377,7 +433,33 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutShouldWithdrawApplication()
+    public async Task GetShouldReturn404IfApplicationDoesntExist()
+    {
+        var invalidId = Guid.NewGuid();
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", invalidId).GetAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        var error = await response.GetJsonAsync<NotFoundResponse>();
+        error.Should().
+              BeEquivalentTo(new NotFoundResponse
+              {
+                  Id = invalidId.ToString(),
+                  ResourceName = nameof(Application)
+              });
+    }
+
+    [Fact]
+    public async Task GetShouldReturn403IfApplicationBelongsToDifferentShelter()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[1].Id).GetAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+    }
+
+    [Fact]
+    public async Task WithdrawShouldWithdrawApplication()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id);
         var response = await client.Request("applications", _applications[0].Id, "withdraw").PutAsync();
@@ -390,7 +472,20 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutShouldAcceptApplication()
+    public async Task WithdrawShouldReturn403IfAppBelongsToDifferentAdopter()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[1].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "withdraw").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
+    }
+
+    [Fact]
+    public async Task AcceptShouldAcceptApplication()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
         var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
@@ -403,7 +498,50 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutShouldRejectApplication()
+    public async Task AcceptShouldReturn403IfAppBelongsToDifferentShelter()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[1].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
+    }
+
+    [Fact]
+    public async Task AcceptShouldReturn400IfApplicationIsWithdrawn()
+    {
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        await context.Applications.Where(app => app.Id == _applications[0].Id).
+                      ExecuteUpdateAsync(app => app.SetProperty(e => e.State, ApplicationState.Withdrawn));
+
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Withdrawn);
+    }
+
+    [Fact]
+    public async Task AcceptShouldReturn400IfApplicationIsRejected()
+    {
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        await context.Applications.Where(app => app.Id == _applications[0].Id).
+                      ExecuteUpdateAsync(app => app.SetProperty(e => e.State, ApplicationState.Rejected));
+
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Rejected);
+    }
+
+    [Fact]
+    public async Task RejectShouldRejectApplication()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
         var response = await client.Request("applications", _applications[0].Id, "reject").PutAsync();
@@ -413,5 +551,33 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Rejected);
+    }
+
+    [Fact]
+    public async Task RejectShouldReturn400IfApplicationIsAccepted()
+    {
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        await context.Applications.Where(app => app.Id == _applications[0].Id).
+                      ExecuteUpdateAsync(app => app.SetProperty(e => e.State, ApplicationState.Accepted));
+
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "reject").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Accepted);
+    }
+
+    [Fact]
+    public async Task RejectShouldReturn403IfAppBelongsToDifferentShelter()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[1].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications", _applications[0].Id, "reject").PutAsync();
+
+        response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+
+        using var scope = _testSuite.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
     }
 }

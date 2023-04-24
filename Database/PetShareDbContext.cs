@@ -15,6 +15,9 @@ public sealed class PetShareDbContext : DbContext
     public DbSet<AnnouncementEntity> Announcements => Set<AnnouncementEntity>();
     public DbSet<AdopterEntity> Adopters => Set<AdopterEntity>();
     public DbSet<AdopterVerificationEntity> Verifications => Set<AdopterVerificationEntity>();
+    public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
+
+    // TODO: Migrate
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

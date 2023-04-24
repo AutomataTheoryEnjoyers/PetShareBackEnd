@@ -1,0 +1,161 @@
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ShelterModule.Models.Announcements;
+using ShelterModule.Models.Applications;
+using ShelterModule.Services;
+using ShelterModule.Services.Interfaces.Applications;
+
+namespace ShelterModule.Controllers;
+
+[ApiController]
+[Route("applications")]
+public sealed class ApplicationController : ControllerBase
+{
+    private readonly IApplicationCommand _command;
+    private readonly IApplicationQuery _query;
+    private readonly TokenValidator _validator;
+
+    public ApplicationController(IApplicationQuery query, IApplicationCommand command, TokenValidator validator)
+    {
+        _query = query;
+        _command = command;
+        _validator = validator;
+    }
+
+    [HttpGet]
+    [Authorize(Roles = $"{Roles.Admin}, {Roles.Adopter}, {Roles.Shelter}")]
+    public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll()
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        if (User.IsAdmin())
+            return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(app => app.ToResponse()).ToList();
+
+        if (User.IsAdopter())
+            return (await _query.GetAllForAdopterAsync(User.GetId(), HttpContext.RequestAborted)
+                    ?? throw new UnreachableException()).
+                   Select(app => app.ToResponse()).
+                   ToList();
+
+        if (User.IsShelter())
+            return (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)
+                    ?? throw new UnreachableException()).
+                   Select(app => app.ToResponse()).
+                   ToList();
+
+        throw new UnreachableException();
+    }
+
+    [HttpPost]
+    [Authorize(Roles = Roles.Adopter)]
+    public async Task<ActionResult<ApplicationResponse>> Post(ApplicationRequest request)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var application = await _command.CreateAsync(request.AnnouncementId, User.GetId(), HttpContext.RequestAborted);
+        return application is not null
+            ? application.ToResponse()
+            : NotFound(new NotFoundResponse
+            {
+                Id = request.AnnouncementId.ToString(),
+                ResourceName = nameof(Announcement)
+            });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = Roles.Shelter)]
+    [Route("{id:guid}")]
+    public async Task<ActionResult<ApplicationResponse>> Get(Guid id)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (application is null)
+            return NotFound(new NotFoundResponse
+            {
+                Id = id.ToString(),
+                ResourceName = nameof(Application)
+            });
+
+        if (application.Announcement.AuthorId != User.GetId())
+            return Forbid();
+
+        return application.ToResponse();
+    }
+
+    [HttpPut]
+    [Authorize(Roles = Roles.Adopter)]
+    [Route("{id:guid}/withdraw")]
+    public async Task<ActionResult> Withdraw(Guid id)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (application is null)
+            return NotFound(new NotFoundResponse
+            {
+                Id = id.ToString(),
+                ResourceName = nameof(Application)
+            });
+
+        if (application.Adopter.Id != User.GetId())
+            return Forbid();
+
+        await _command.WithdrawAsync(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [HttpPut]
+    [Authorize(Roles = Roles.Shelter)]
+    [Route("{id:guid}/accept")]
+    public async Task<ActionResult> Accept(Guid id)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (application is null)
+            return NotFound(new NotFoundResponse
+            {
+                Id = id.ToString(),
+                ResourceName = nameof(Application)
+            });
+
+        if (application.Announcement.AuthorId != User.GetId())
+            return Forbid();
+
+        await _command.AcceptAsync(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+
+    [HttpPut]
+    [Authorize(Roles = Roles.Shelter)]
+    [Route("{id:guid}/reject")]
+    public async Task<ActionResult> Reject(Guid id)
+    {
+        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+            return Unauthorized();
+
+        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
+        if (application is null)
+            return NotFound(new NotFoundResponse
+            {
+                Id = id.ToString(),
+                ResourceName = nameof(Application)
+            });
+
+        if (application.Announcement.AuthorId != User.GetId())
+            return Forbid();
+
+        await _command.RejectAsync(id, HttpContext.RequestAborted);
+
+        return Ok();
+    }
+}

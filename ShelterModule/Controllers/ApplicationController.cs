@@ -25,6 +25,8 @@ public sealed class ApplicationController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = $"{Roles.Admin}, {Roles.Adopter}, {Roles.Shelter}")]
+    [ProducesResponseType(typeof(IReadOnlyList<ApplicationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll()
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
@@ -50,14 +52,17 @@ public sealed class ApplicationController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = Roles.Adopter)]
-    public async Task<ActionResult<ApplicationResponse>> Post(ApplicationRequest request)
+    [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Post(ApplicationRequest request)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
         var application = await _command.CreateAsync(request.AnnouncementId, User.GetId(), HttpContext.RequestAborted);
         return application is not null
-            ? application.ToResponse()
+            ? Created(new Uri(application.Id.ToString(), UriKind.Relative), application.ToResponse())
             : NotFound(new NotFoundResponse
             {
                 Id = request.AnnouncementId.ToString(),
@@ -68,6 +73,10 @@ public sealed class ApplicationController : ControllerBase
     [HttpGet]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}")]
+    [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApplicationResponse>> Get(Guid id)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
@@ -90,6 +99,10 @@ public sealed class ApplicationController : ControllerBase
     [HttpPut]
     [Authorize(Roles = Roles.Adopter)]
     [Route("{id:guid}/withdraw")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Withdraw(Guid id)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
@@ -114,6 +127,10 @@ public sealed class ApplicationController : ControllerBase
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}/accept")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Accept(Guid id)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
@@ -138,6 +155,10 @@ public sealed class ApplicationController : ControllerBase
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}/reject")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Reject(Guid id)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)

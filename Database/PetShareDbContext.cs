@@ -17,8 +17,6 @@ public sealed class PetShareDbContext : DbContext
     public DbSet<AdopterVerificationEntity> Verifications => Set<AdopterVerificationEntity>();
     public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
 
-    // TODO: Migrate
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AnnouncementEntity>().
@@ -27,5 +25,18 @@ public sealed class PetShareDbContext : DbContext
                      HasForeignKey("AuthorId").
                      OnDelete(DeleteBehavior.Restrict).
                      IsRequired();
+
+        modelBuilder.Entity<AnnouncementEntity>().
+                     HasOne("Database.Entities.PetEntity", "Pet").
+                     WithMany("Announcements").
+                     HasForeignKey("PetId").
+                     OnDelete(DeleteBehavior.Restrict).
+                     IsRequired();
+
+        modelBuilder.Entity<PetEntity>().Property<string>(nameof(PetEntity.Description)).HasColumnType("text");
+
+        modelBuilder.Entity<AnnouncementEntity>().
+                     Property<string>(nameof(AnnouncementEntity.Description)).
+                     HasColumnType("text");
     }
 }

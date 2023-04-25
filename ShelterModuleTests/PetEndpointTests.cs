@@ -389,9 +389,10 @@ public sealed class PetEndpointTests : IAsyncLifetime
     [Fact]
     public async Task PostPhotoShouldUpdatePetPhoto()
     {
+        var stream = new MemoryStream("photo content"u8.ToArray());
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id);
         var response = await client.Request("pet", _pet.Id, "photo").
-                                    PostAsync(new ByteArrayContent("photo content"u8.ToArray()));
+                                    PostMultipartAsync(mp => mp.AddFile("file", stream, "new-photo.jpg", "image/jpg"));
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
 
         using var scope = _testSetup.Services.CreateScope();

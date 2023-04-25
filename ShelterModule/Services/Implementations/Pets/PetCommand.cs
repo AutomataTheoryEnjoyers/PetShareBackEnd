@@ -3,6 +3,7 @@ using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
 using ShelterModule.Results;
+using ShelterModule.Services.Interfaces;
 using ShelterModule.Services.Interfaces.Pets;
 
 namespace ShelterModule.Services.Implementations.Pets;

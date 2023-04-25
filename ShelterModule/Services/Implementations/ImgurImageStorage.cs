@@ -4,6 +4,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Options;
 using ShelterModule.Configuration;
 using ShelterModule.Results;
+using ShelterModule.Services.Interfaces;
 
 namespace ShelterModule.Services.Implementations;
 
@@ -18,12 +19,22 @@ public sealed class ImgurImageStorage : IImageStorage
 
     public async Task<Result<string>> UploadImageAsync(IFormFile imageFile)
     {
-        using var memoryStream = new MemoryStream();
-        await imageFile.CopyToAsync(memoryStream);
+        int? GetCode(dynamic error)
+        {
+            try
+            {
+                return (int)error.code;
+            }
+            catch (RuntimeBinderException)
+            {
+                return null;
+            }
+        }
 
         var response = await _config.Value.UploadUrl.WithHeader("Authorization", $"Client-ID {_config.Value.ApiKey}").
                                      AllowAnyHttpStatus().
-                                     PostAsync(new ByteArrayContent(memoryStream.ToArray()));
+                                     PostMultipartAsync(mp => mp.AddFile("image", imageFile.OpenReadStream(),
+                                                                         imageFile.FileName, imageFile.ContentType));
 
         if (response.StatusCode >= 500)
             return new UploadError(response.StatusCode);
@@ -34,17 +45,17 @@ public sealed class ImgurImageStorage : IImageStorage
 
         try
         {
-            if (!data.success)
-                return (data.data.error as string) switch
-                {
-                    { } e when e.StartsWith("Invalid URL") => new InvalidOperation("File type is invalid"),
-                    "File is over the size limit" => new InvalidOperation("Image is too large"),
-                    "No image data was sent to the upload api" =>
-                        new InvalidOperation("Form field is not named 'image'"),
-                    _ => new UploadError(response.StatusCode)
-                };
+            if (data.success)
+                return data.data.link;
 
-            return data.data.link;
+            return data.data.error switch
+            {
+                string e when e.StartsWith("Invalid URL") => new InvalidOperation("File type is invalid"),
+                "File is over the size limit" => new InvalidOperation("Image is too large"),
+                "No image data was sent to the upload api" => new InvalidOperation("Form field is not named 'image'"),
+                var e when GetCode(e) == 1003 => new InvalidOperation("File type is invalid"),
+                _ => new UploadError(response.StatusCode)
+            };
         }
         catch (RuntimeBinderException)
         {

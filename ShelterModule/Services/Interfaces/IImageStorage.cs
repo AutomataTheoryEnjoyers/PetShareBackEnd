@@ -1,6 +1,6 @@
 ﻿using ShelterModule.Results;
 
-namespace ShelterModule.Services;
+namespace ShelterModule.Services.Interfaces;
 
 public interface IImageStorage
 {

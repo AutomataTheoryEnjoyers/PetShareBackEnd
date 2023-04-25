@@ -12,6 +12,7 @@ using ShelterModule.Services.Implementations.Adopters;
 using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces;
 using ShelterModule.Services.Interfaces.Adopters;
 using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Pets;

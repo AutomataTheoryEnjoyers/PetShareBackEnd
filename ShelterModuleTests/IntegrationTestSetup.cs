@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
 using ShelterModule.Controllers;
 using ShelterModule.Results;
-using ShelterModule.Services;
+using ShelterModule.Services.Interfaces;
 
 namespace ShelterModuleTests;
 

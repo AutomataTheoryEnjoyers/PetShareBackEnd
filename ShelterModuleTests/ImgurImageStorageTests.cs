@@ -31,7 +31,11 @@ public sealed class ImgurImageStorageTests
     {
         const string path = "Files/small-image.png";
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        var result = await _storage.UploadImageAsync(new FormFile(stream, 0, stream.Length, "image", "photo.png"));
+        var result = await _storage.UploadImageAsync(new FormFile(stream, 0, stream.Length, "image", "photo.png")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "image/png"
+        });
 
         result.HasValue.Should().BeTrue();
 
@@ -44,7 +48,11 @@ public sealed class ImgurImageStorageTests
     {
         const string path = "Files/not-an-image.txt";
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        var result = await _storage.UploadImageAsync(new FormFile(stream, 0, stream.Length, "image", "photo.txt"));
+        var result = await _storage.UploadImageAsync(new FormFile(stream, 0, stream.Length, "image", "photo.txt")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "text/plain"
+        });
 
         result.HasValue.Should().BeFalse();
         result.State.Should().BeOfType<InvalidOperation>();

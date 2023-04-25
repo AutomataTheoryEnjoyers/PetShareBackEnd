@@ -124,6 +124,7 @@ public class PetController : ControllerBase
     [Authorize(Roles = Roles.Shelter)]
     [Route("pet/{id:guid}/photo")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
@@ -143,12 +144,7 @@ public class PetController : ControllerBase
         if (User.TryGetId() != pet.ShelterId)
             return Forbid();
 
-        return await _command.SetPhotoAsync(id, file, HttpContext.RequestAborted) is not null
-            ? Ok()
-            : NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Pet)
-            });
+        var result = await _command.SetPhotoAsync(id, file, HttpContext.RequestAborted);
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 }

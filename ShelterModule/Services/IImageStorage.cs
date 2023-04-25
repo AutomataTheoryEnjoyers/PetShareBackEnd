@@ -1,6 +1,8 @@
-﻿namespace ShelterModule.Services;
+﻿using ShelterModule.Results;
+
+namespace ShelterModule.Services;
 
 public interface IImageStorage
 {
-    Task<string> UploadImageAsync(IFormFile image);
+    Task<Result<string>> UploadImageAsync(IFormFile image);
 }

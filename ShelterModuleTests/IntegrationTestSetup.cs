@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
 using ShelterModule.Controllers;
+using ShelterModule.Results;
 using ShelterModule.Services;
 
 namespace ShelterModuleTests;
@@ -122,9 +123,9 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
 
     private sealed class TestImageStorage : IImageStorage
     {
-        public Task<string> UploadImageAsync(IFormFile image)
+        public Task<Result<string>> UploadImageAsync(IFormFile image)
         {
-            return Task.FromResult("photo.jpg");
+            return Task.FromResult(new Result<string>("photo.jpg"));
         }
     }
 }

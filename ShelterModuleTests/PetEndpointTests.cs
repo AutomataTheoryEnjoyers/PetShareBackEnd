@@ -385,4 +385,17 @@ public sealed class PetEndpointTests : IAsyncLifetime
                   Id = wrongId.ToString()
               });
     }
+
+    [Fact]
+    public async Task PostPhotoShouldUpdatePetPhoto()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id);
+        var response = await client.Request("pet", _pet.Id, "photo").
+                                    PostAsync(new ByteArrayContent("photo content"u8.ToArray()));
+        response.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+        using var scope = _testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        context.Pets.Single(pet => pet.Id == _pet.Id).Photo.Should().Be("photo.jpg");
+    }
 }

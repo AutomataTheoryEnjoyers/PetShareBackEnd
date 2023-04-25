@@ -2,6 +2,7 @@
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
+using ShelterModule.Results;
 using ShelterModule.Services.Interfaces.Pets;
 
 namespace ShelterModule.Services.Implementations.Pets;
@@ -43,14 +44,18 @@ public class PetCommand : IPetCommand
         return Pet.FromEntity(entity);
     }
 
-    public async Task<Pet?> SetPhotoAsync(Guid id, IFormFile photo, CancellationToken token = default)
+    public async Task<Result<Pet>> SetPhotoAsync(Guid id, IFormFile photo, CancellationToken token = default)
     {
         var entity = await _dbContext.Pets.Where(e => e.Status != PetStatus.Deleted).
                                       FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
-            return null;
+            return new NotFound(id, nameof(Pet));
 
-        entity.Photo = await _imageStorage.UploadImageAsync(photo);
+        var uploadResult = await _imageStorage.UploadImageAsync(photo);
+        if (!uploadResult.HasValue)
+            return uploadResult.State;
+
+        entity.Photo = uploadResult.Value;
         await _dbContext.SaveChangesAsync(token);
 
         return Pet.FromEntity(entity);

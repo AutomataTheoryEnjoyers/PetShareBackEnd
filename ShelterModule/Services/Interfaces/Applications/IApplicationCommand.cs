@@ -1,11 +1,12 @@
 ﻿using ShelterModule.Models.Applications;
+using ShelterModule.Results;
 
 namespace ShelterModule.Services.Interfaces.Applications;
 
 public interface IApplicationCommand
 {
-    Task<Application?> CreateAsync(Guid announcementId, Guid adopterId, CancellationToken token = default);
-    Task<Application?> WithdrawAsync(Guid applicationId, CancellationToken token = default);
-    Task<Application?> AcceptAsync(Guid applicationId, CancellationToken token = default);
-    Task<Application?> RejectAsync(Guid applicationId, CancellationToken token = default);
+    Task<Result<Application>> CreateAsync(Guid announcementId, Guid adopterId, CancellationToken token = default);
+    Task<Result<Application>> WithdrawAsync(Guid id, CancellationToken token = default);
+    Task<Result<Application>> AcceptAsync(Guid id, CancellationToken token = default);
+    Task<Result<Application>> RejectAsync(Guid id, CancellationToken token = default);
 }

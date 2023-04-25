@@ -1,8 +1,10 @@
 ﻿using Database;
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
+using ShelterModule.Models.Adopters;
 using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Applications;
+using ShelterModule.Results;
 using ShelterModule.Services.Interfaces.Applications;
 
 namespace ShelterModule.Services.Implementations.Applications;
@@ -16,13 +18,27 @@ public sealed class ApplicationCommand : IApplicationCommand
         _context = context;
     }
 
-    public async Task<Application?> CreateAsync(Guid announcementId, Guid adopterId, CancellationToken token = default)
+    public async Task<Result<Application>> CreateAsync(Guid announcementId, Guid adopterId,
+        CancellationToken token = default)
     {
-        if (!_context.Adopters.Where(adopter => adopter.Status != AdopterStatus.Deleted).
-                      Any(adopter => adopter.Id == adopterId)
-            || !_context.Announcements.Where(announcement => announcement.Status != (int)AnnouncementStatus.Deleted).
-                         Any(announcement => announcement.Id == announcementId))
-            return null;
+        var adopter = await _context.Adopters.Where(adopter => adopter.Status != AdopterStatus.Deleted).
+                                     FirstOrDefaultAsync(adopter => adopter.Id == adopterId, token);
+        var announcement = await _context.Announcements.
+                                          Where(announcement => announcement.Status != (int)AnnouncementStatus.Deleted).
+                                          FirstOrDefaultAsync(announcement => announcement.Id == announcementId, token);
+
+        if (adopter is null)
+            return new NotFound(adopterId, nameof(Adopter));
+        if (announcement is null)
+            return new NotFound(announcementId, nameof(Announcement));
+
+        if (adopter.Status == AdopterStatus.Blocked)
+            return new InvalidOperation("Adopter is blocked");
+
+        if (announcement.Status == (int)AnnouncementStatus.Closed)
+            return new InvalidOperation("Announcement is closed");
+        if (announcement.Status == (int)AnnouncementStatus.DuringVerification)
+            return new InvalidOperation("Announcement is not verified");
 
         var id = Guid.NewGuid();
         _context.Applications.Add(new ApplicationEntity
@@ -40,31 +56,56 @@ public sealed class ApplicationCommand : IApplicationCommand
                                                      FirstAsync(app => app.Id == id, token));
     }
 
-    public Task<Application?> WithdrawAsync(Guid applicationId, CancellationToken token = default)
-    {
-        return SetStateAsync(applicationId, ApplicationState.Withdrawn, token);
-    }
-
-    public Task<Application?> AcceptAsync(Guid applicationId, CancellationToken token = default)
-    {
-        return SetStateAsync(applicationId, ApplicationState.Accepted, token);
-    }
-
-    public Task<Application?> RejectAsync(Guid applicationId, CancellationToken token = default)
-    {
-        return SetStateAsync(applicationId, ApplicationState.Rejected, token);
-    }
-
-    private async Task<Application?> SetStateAsync(Guid id, ApplicationState state, CancellationToken token = default)
+    public async Task<Result<Application>> WithdrawAsync(Guid id, CancellationToken token = default)
     {
         var entity = await _context.Applications.Include(app => app.Announcement).
                                     Include(app => app.Adopter).
                                     FirstOrDefaultAsync(app => app.Id == id, token);
 
         if (entity is null)
-            return null;
+            return new NotFound(id, nameof(Application));
 
-        entity.State = state;
+        entity.State = ApplicationState.Withdrawn;
+        await _context.SaveChangesAsync(token);
+
+        return Application.FromEntity(entity);
+    }
+
+    public async Task<Result<Application>> AcceptAsync(Guid id, CancellationToken token = default)
+    {
+        var entity = await _context.Applications.Include(app => app.Announcement).
+                                    Include(app => app.Adopter).
+                                    FirstOrDefaultAsync(app => app.Id == id, token);
+
+        if (entity is null)
+            return new NotFound(id, nameof(Application));
+
+        if (entity.State == ApplicationState.Withdrawn)
+            return new InvalidOperation("Application was withdrawn");
+        if (entity.State == ApplicationState.Rejected)
+            return new InvalidOperation("Application was rejected");
+
+        entity.State = ApplicationState.Accepted;
+        await _context.SaveChangesAsync(token);
+
+        return Application.FromEntity(entity);
+    }
+
+    public async Task<Result<Application>> RejectAsync(Guid id, CancellationToken token = default)
+    {
+        var entity = await _context.Applications.Include(app => app.Announcement).
+                                    Include(app => app.Adopter).
+                                    FirstOrDefaultAsync(app => app.Id == id, token);
+
+        if (entity is null)
+            return new NotFound(id, nameof(Application));
+
+        if (entity.State == ApplicationState.Withdrawn)
+            return new InvalidOperation("Application was withdrawn");
+        if (entity.State == ApplicationState.Accepted)
+            return new InvalidOperation("Application was accepted");
+
+        entity.State = ApplicationState.Accepted;
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(entity);

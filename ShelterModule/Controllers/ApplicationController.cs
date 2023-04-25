@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Applications;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Applications;
@@ -60,14 +59,10 @@ public sealed class ApplicationController : ControllerBase
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        var application = await _command.CreateAsync(request.AnnouncementId, User.GetId(), HttpContext.RequestAborted);
-        return application is not null
-            ? Created(new Uri(application.Id.ToString(), UriKind.Relative), application.ToResponse())
-            : NotFound(new NotFoundResponse
-            {
-                Id = request.AnnouncementId.ToString(),
-                ResourceName = nameof(Announcement)
-            });
+        var result = await _command.CreateAsync(request.AnnouncementId, User.GetId(), HttpContext.RequestAborted);
+        return result.HasValue
+            ? Created(new Uri(result.Value.Id.ToString(), UriKind.Relative), result.Value.ToResponse())
+            : result.State.ToActionResult();
     }
 
     [HttpGet]
@@ -119,9 +114,8 @@ public sealed class ApplicationController : ControllerBase
         if (application.Adopter.Id != User.GetId())
             return Forbid();
 
-        await _command.WithdrawAsync(id, HttpContext.RequestAborted);
-
-        return Ok();
+        var result = await _command.WithdrawAsync(id, HttpContext.RequestAborted);
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
     [HttpPut]
@@ -147,9 +141,8 @@ public sealed class ApplicationController : ControllerBase
         if (application.Announcement.AuthorId != User.GetId())
             return Forbid();
 
-        await _command.AcceptAsync(id, HttpContext.RequestAborted);
-
-        return Ok();
+        var result = await _command.AcceptAsync(id, HttpContext.RequestAborted);
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
     [HttpPut]
@@ -175,8 +168,7 @@ public sealed class ApplicationController : ControllerBase
         if (application.Announcement.AuthorId != User.GetId())
             return Forbid();
 
-        await _command.RejectAsync(id, HttpContext.RequestAborted);
-
-        return Ok();
+        var result = await _command.RejectAsync(id, HttpContext.RequestAborted);
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 }

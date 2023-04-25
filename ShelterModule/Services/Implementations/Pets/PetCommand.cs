@@ -9,10 +9,12 @@ namespace ShelterModule.Services.Implementations.Pets;
 public class PetCommand : IPetCommand
 {
     private readonly PetShareDbContext _dbContext;
+    private readonly IImageStorage _imageStorage;
 
-    public PetCommand(PetShareDbContext dbContext)
+    public PetCommand(PetShareDbContext dbContext, IImageStorage imageStorage)
     {
         _dbContext = dbContext;
+        _imageStorage = imageStorage;
     }
 
     public async Task<Pet> AddAsync(Pet pet, CancellationToken token = default)
@@ -48,7 +50,7 @@ public class PetCommand : IPetCommand
         if (entity is null)
             return null;
 
-        entity.Photo = "some-url.jpg"; // TODO: Implement
+        entity.Photo = await _imageStorage.UploadImageAsync(photo);
         await _dbContext.SaveChangesAsync(token);
 
         return Pet.FromEntity(entity);

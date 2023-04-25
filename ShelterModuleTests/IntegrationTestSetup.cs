@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Database;
 using Flurl.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using ShelterModule;
 using ShelterModule.Controllers;
+using ShelterModule.Services;
 
 namespace ShelterModuleTests;
 
@@ -76,6 +78,8 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                 ConfigureTestServices(services =>
                 {
                     services.RemoveAll<IHostedService>();
+                    services.RemoveAll<IImageStorage>();
+                    services.AddSingleton<IImageStorage, TestImageStorage>();
                     ConfigureServices(services);
                 });
     }
@@ -114,6 +118,14 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         await context.Database.EnsureDeletedAsync();
         await base.DisposeAsync();
+    }
+
+    private sealed class TestImageStorage : IImageStorage
+    {
+        public Task<string> UploadImageAsync(IFormFile image)
+        {
+            return Task.FromResult("photo.jpg");
+        }
     }
 }
 

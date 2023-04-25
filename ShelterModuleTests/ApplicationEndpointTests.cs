@@ -150,6 +150,17 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 LastUpdateDate = _now - TimeSpan.FromDays(1),
                 AuthorId = _shelters[0].Id,
                 PetId = _pets[0].Id
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "announcement6",
+                Description = "description",
+                CreationDate = _now - TimeSpan.FromDays(46),
+                Status = (int)AnnouncementStatus.Deleted,
+                LastUpdateDate = _now - TimeSpan.FromDays(45),
+                AuthorId = _shelters[0].Id,
+                PetId = _pets[0].Id
             }
         };
         _adopters = new AdopterEntity[]
@@ -368,13 +379,26 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task PostShouldNotCreateApplicationIfAnnouncementIsNotVerified()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("applications").
+                                    PostJsonAsync(new ApplicationRequest
+                                    {
+                                        AnnouncementId = _announcements[3].Id
+                                    });
+
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
     public async Task PostShouldNotCreateApplicationIfAnnouncementIsDeleted()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
         var response = await client.Request("applications").
                                     PostJsonAsync(new ApplicationRequest
                                     {
-                                        AnnouncementId = _announcements[2].Id
+                                        AnnouncementId = _announcements[5].Id
                                     });
 
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
@@ -382,7 +406,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {
-                  Id = _announcements[2].Id.ToString(),
+                  Id = _announcements[5].Id.ToString(),
                   ResourceName = nameof(Announcement)
               });
     }

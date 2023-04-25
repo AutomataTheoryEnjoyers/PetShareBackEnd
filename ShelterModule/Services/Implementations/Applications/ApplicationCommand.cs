@@ -105,7 +105,7 @@ public sealed class ApplicationCommand : IApplicationCommand
         if (entity.State == ApplicationState.Accepted)
             return new InvalidOperation("Application was accepted");
 
-        entity.State = ApplicationState.Accepted;
+        entity.State = ApplicationState.Rejected;
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(entity);

@@ -24,6 +24,16 @@ public static class ClaimsExtensions
     {
         return user.IsInRole(Roles.Admin);
     }
+
+    public static bool IsShelter(this ClaimsPrincipal user)
+    {
+        return user.IsInRole(Roles.Shelter);
+    }
+
+    public static bool IsAdopter(this ClaimsPrincipal user)
+    {
+        return user.IsInRole(Roles.Adopter);
+    }
 }
 
 public static class Roles

@@ -10,11 +10,13 @@ using ShelterModule.Services;
 using ShelterModule.Services.Implementations;
 using ShelterModule.Services.Implementations.Adopters;
 using ShelterModule.Services.Implementations.Announcements;
+using ShelterModule.Services.Implementations.Applications;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
 using ShelterModule.Services.Interfaces;
 using ShelterModule.Services.Interfaces.Adopters;
 using ShelterModule.Services.Interfaces.Announcements;
+using ShelterModule.Services.Interfaces.Applications;
 using ShelterModule.Services.Interfaces.Pets;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -80,6 +82,8 @@ public class Program
         services.AddScoped<IAnnouncementCommand, AnnouncementCommand>();
         services.AddScoped<IAdopterCommand, AdopterCommand>();
         services.AddScoped<IAdopterQuery, AdopterQuery>();
+        services.AddScoped<IApplicationCommand, ApplicationCommand>();
+        services.AddScoped<IApplicationQuery, ApplicationQuery>();
         services.AddSingleton<IImageStorage, ImgurImageStorage>();
     }
 

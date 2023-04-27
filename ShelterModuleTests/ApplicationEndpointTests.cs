@@ -204,7 +204,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
             {
                 Id = Guid.NewGuid(),
                 CreationTime = _now - TimeSpan.FromHours(13),
-                State = ApplicationState.Submitted,
+                LastUpdateTime = _now - TimeSpan.FromHours(13),
+                State = ApplicationState.Created,
                 AdopterId = _adopters[0].Id,
                 AnnouncementId = _announcements[0].Id
             },
@@ -212,7 +213,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
             {
                 Id = Guid.NewGuid(),
                 CreationTime = _now - TimeSpan.FromHours(12),
-                State = ApplicationState.Submitted,
+                LastUpdateTime = _now - TimeSpan.FromHours(12),
+                State = ApplicationState.Created,
                 AdopterId = _adopters[1].Id,
                 AnnouncementId = _announcements[1].Id
             }
@@ -248,7 +250,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  {
                      Id = _applications[0].Id,
                      CreationTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Submitted,
+                     LastUpdateTime = _now - TimeSpan.FromHours(13),
+                     State = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -258,13 +261,26 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          Status = AdopterStatus.Active,
                          Address = _adopters[0].Address
                      },
-                     AnnouncementId = _announcements[0].Id
+                     AnnouncementId = _announcements[0].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[0].Id,
+                         Title = "announcement1",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(10),
+                         LastUpdateDate = _now - TimeSpan.FromDays(5),
+                         ClosingDate = null,
+                         Status = (int)AnnouncementStatus.Open,
+                         AuthorId = _shelters[0].Id,
+                         PetId = _pets[0].Id
+                     }
                  },
                  new()
                  {
                      Id = _applications[1].Id,
                      CreationTime = _now - TimeSpan.FromHours(12),
-                     State = ApplicationState.Submitted,
+                     LastUpdateTime = _now - TimeSpan.FromHours(12),
+                     State = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[1].Id,
@@ -274,7 +290,19 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          Status = AdopterStatus.Active,
                          Address = _adopters[1].Address
                      },
-                     AnnouncementId = _announcements[1].Id
+                     AnnouncementId = _announcements[1].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[1].Id,
+                         Title = "announcement2",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(2),
+                         LastUpdateDate = _now - TimeSpan.FromDays(1),
+                         ClosingDate = null,
+                         Status = (int)AnnouncementStatus.Open,
+                         AuthorId = _shelters[1].Id,
+                         PetId = _pets[1].Id
+                     }
                  }
              });
     }
@@ -291,7 +319,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  {
                      Id = _applications[0].Id,
                      CreationTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Submitted,
+                     LastUpdateTime = _now - TimeSpan.FromHours(13),
+                     State = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -301,7 +330,19 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          Status = AdopterStatus.Active,
                          Address = _adopters[0].Address
                      },
-                     AnnouncementId = _announcements[0].Id
+                     AnnouncementId = _announcements[0].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[0].Id,
+                         Title = "announcement1",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(10),
+                         LastUpdateDate = _now - TimeSpan.FromDays(5),
+                         ClosingDate = null,
+                         Status = (int)AnnouncementStatus.Open,
+                         AuthorId = _shelters[0].Id,
+                         PetId = _pets[0].Id
+                     }
                  }
              });
     }
@@ -318,7 +359,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  {
                      Id = _applications[0].Id,
                      CreationTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Submitted,
+                     LastUpdateTime = _now - TimeSpan.FromHours(13),
+                     State = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -328,7 +370,19 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          Status = AdopterStatus.Active,
                          Address = _adopters[0].Address
                      },
-                     AnnouncementId = _announcements[0].Id
+                     AnnouncementId = _announcements[0].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[0].Id,
+                         Title = "announcement1",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(10),
+                         LastUpdateDate = _now - TimeSpan.FromDays(5),
+                         ClosingDate = null,
+                         Status = (int)AnnouncementStatus.Open,
+                         AuthorId = _shelters[0].Id,
+                         PetId = _pets[0].Id
+                     }
                  }
              });
     }
@@ -358,11 +412,14 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                     AnnouncementId = _announcements[4].Id,
                     AdopterId = _adopters[0].Id,
                     CreationTime = DateTime.Now,
-                    State = ApplicationState.Submitted
+                    LastUpdateTime = DateTime.Now,
+                    State = ApplicationState.Created
                 },
                                options => options.Excluding(app => app.Adopter).
                                                   Excluding(app => app.Announcement).
-                                                  Excluding(app => app.CreationTime));
+                                                  Excluding(app => app.CreationTime).
+                                                  Excluding(app => app.LastUpdateTime)).
+                And.Match<ApplicationEntity>(app => app.CreationTime == app.LastUpdateTime);
     }
 
     [Fact]
@@ -442,7 +499,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
             {
                 Id = _applications[0].Id,
                 CreationTime = _now - TimeSpan.FromHours(13),
-                State = ApplicationState.Submitted,
+                LastUpdateTime = _now - TimeSpan.FromHours(13),
+                State = ApplicationState.Created.ToString(),
                 Adopter = new AdopterResponse
                 {
                     Id = _adopters[0].Id,
@@ -452,7 +510,19 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                     Status = AdopterStatus.Active,
                     Address = _adopters[0].Address
                 },
-                AnnouncementId = _announcements[0].Id
+                AnnouncementId = _announcements[0].Id,
+                Announcement = new AnnouncementResponse
+                {
+                    Id = _announcements[0].Id,
+                    Title = "announcement1",
+                    Description = "description",
+                    CreationDate = _now - TimeSpan.FromDays(10),
+                    LastUpdateDate = _now - TimeSpan.FromDays(5),
+                    ClosingDate = null,
+                    Status = (int)AnnouncementStatus.Open,
+                    AuthorId = _shelters[0].Id,
+                    PetId = _pets[0].Id
+                }
             });
     }
 
@@ -492,7 +562,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Withdrawn);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Withdrawn);
+        application.LastUpdateTime.Should().NotBe(application.CreationTime);
     }
 
     [Fact]
@@ -505,7 +577,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Created);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 
     [Fact]
@@ -518,7 +592,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Accepted);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Accepted);
+        application.LastUpdateTime.Should().NotBe(application.CreationTime);
     }
 
     [Fact]
@@ -531,7 +607,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Created);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 
     [Fact]
@@ -546,7 +624,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
 
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Withdrawn);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Withdrawn);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 
     [Fact]
@@ -561,7 +641,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         var response = await client.Request("applications", _applications[0].Id, "accept").PutAsync();
 
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Rejected);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Rejected);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 
     [Fact]
@@ -574,7 +656,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Rejected);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Rejected);
+        application.LastUpdateTime.Should().NotBe(application.CreationTime);
     }
 
     [Fact]
@@ -589,7 +673,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         var response = await client.Request("applications", _applications[0].Id, "reject").PutAsync();
 
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Accepted);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Accepted);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 
     [Fact]
@@ -602,6 +688,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
 
         using var scope = _testSuite.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Applications.Single(app => app.Id == _applications[0].Id).State.Should().Be(ApplicationState.Submitted);
+        var application = context.Applications.Single(app => app.Id == _applications[0].Id);
+        application.State.Should().Be(ApplicationState.Created);
+        application.LastUpdateTime.Should().Be(application.CreationTime);
     }
 }

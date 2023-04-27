@@ -9,6 +9,8 @@ public sealed class ApplicationEntity
 
     public required DateTime CreationTime { get; init; }
 
+    public required DateTime LastUpdateTime { get; set; }
+
     public required ApplicationState State { get; set; }
 
     public required Guid AnnouncementId { get; init; }
@@ -24,7 +26,7 @@ public sealed class ApplicationEntity
 
 public enum ApplicationState
 {
-    Submitted,
+    Created,
     Accepted,
     Rejected,
     Withdrawn

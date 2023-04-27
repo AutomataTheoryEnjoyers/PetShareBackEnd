@@ -119,6 +119,9 @@ namespace Database.Migrations
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("LastUpdateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("State")
                         .HasColumnType("int");
 

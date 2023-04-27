@@ -41,11 +41,13 @@ public sealed class ApplicationCommand : IApplicationCommand
             return new InvalidOperation("Announcement is not verified");
 
         var id = Guid.NewGuid();
+        var now = DateTime.Now;
         _context.Applications.Add(new ApplicationEntity
         {
             Id = id,
-            CreationTime = DateTime.Now,
-            State = ApplicationState.Submitted,
+            CreationTime = now,
+            LastUpdateTime = now,
+            State = ApplicationState.Created,
             AdopterId = adopterId,
             AnnouncementId = announcementId
         });
@@ -66,6 +68,7 @@ public sealed class ApplicationCommand : IApplicationCommand
             return new NotFound(id, nameof(Application));
 
         entity.State = ApplicationState.Withdrawn;
+        entity.LastUpdateTime = DateTime.Now;
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(entity);
@@ -86,6 +89,7 @@ public sealed class ApplicationCommand : IApplicationCommand
             return new InvalidOperation("Application was rejected");
 
         entity.State = ApplicationState.Accepted;
+        entity.LastUpdateTime = DateTime.Now;
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(entity);
@@ -106,6 +110,7 @@ public sealed class ApplicationCommand : IApplicationCommand
             return new InvalidOperation("Application was accepted");
 
         entity.State = ApplicationState.Rejected;
+        entity.LastUpdateTime = DateTime.Now;
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(entity);

@@ -17,6 +17,7 @@ namespace Database.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     State = table.Column<int>(type: "int", nullable: false),
                     AnnouncementId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AdopterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)

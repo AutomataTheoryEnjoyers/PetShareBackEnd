@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    [Migration("20230424132247_AddApplications")]
+    [Migration("20230427193727_AddApplications")]
     partial class AddApplications
     {
         /// <inheritdoc />
@@ -120,6 +120,9 @@ namespace Database.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("State")

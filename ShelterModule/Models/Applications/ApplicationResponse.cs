@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Database.Entities;
 using ShelterModule.Models.Adopters;
+using ShelterModule.Models.Announcements;
 
 namespace ShelterModule.Models.Applications;
 
@@ -13,10 +13,16 @@ public sealed class ApplicationResponse
     public required DateTime CreationTime { get; init; }
 
     [Required]
-    public required ApplicationState State { get; init; }
+    public required DateTime LastUpdateTime { get; init; }
+
+    [Required]
+    public required string State { get; init; }
 
     [Required]
     public required Guid AnnouncementId { get; init; }
+
+    [Required]
+    public required AnnouncementResponse Announcement { get; init; }
 
     [Required]
     public required AdopterResponse Adopter { get; init; }

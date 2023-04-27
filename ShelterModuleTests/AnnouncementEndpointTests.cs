@@ -80,8 +80,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        //_testSetup.Dispose();
-        await Task.CompletedTask;
+        await _testSetup.DisposeAsync();
     }
 
     [Fact]

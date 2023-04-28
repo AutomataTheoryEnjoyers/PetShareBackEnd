@@ -2,6 +2,8 @@
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Pets;
+using ShelterModule.Results;
+using ShelterModule.Services.Interfaces;
 using ShelterModule.Services.Interfaces.Pets;
 
 namespace ShelterModule.Services.Implementations.Pets;
@@ -9,10 +11,12 @@ namespace ShelterModule.Services.Implementations.Pets;
 public class PetCommand : IPetCommand
 {
     private readonly PetShareDbContext _dbContext;
+    private readonly IImageStorage _imageStorage;
 
-    public PetCommand(PetShareDbContext dbContext)
+    public PetCommand(PetShareDbContext dbContext, IImageStorage imageStorage)
     {
         _dbContext = dbContext;
+        _imageStorage = imageStorage;
     }
 
     public async Task<Pet> AddAsync(Pet pet, CancellationToken token = default)
@@ -41,14 +45,18 @@ public class PetCommand : IPetCommand
         return Pet.FromEntity(entity);
     }
 
-    public async Task<Pet?> SetPhotoAsync(Guid id, IFormFile photo, CancellationToken token = default)
+    public async Task<Result<Pet>> SetPhotoAsync(Guid id, IFormFile photo, CancellationToken token = default)
     {
         var entity = await _dbContext.Pets.Where(e => e.Status != PetStatus.Deleted).
                                       FirstOrDefaultAsync(e => e.Id == id, token);
         if (entity is null)
-            return null;
+            return new NotFound(id, nameof(Pet));
 
-        entity.Photo = "some-url.jpg"; // TODO: Implement
+        var uploadResult = await _imageStorage.UploadImageAsync(photo);
+        if (!uploadResult.HasValue)
+            return uploadResult.State;
+
+        entity.Photo = uploadResult.Value;
         await _dbContext.SaveChangesAsync(token);
 
         return Pet.FromEntity(entity);

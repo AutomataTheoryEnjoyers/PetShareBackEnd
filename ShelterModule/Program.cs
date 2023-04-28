@@ -7,11 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ShelterModule.Configuration;
 using ShelterModule.Services;
+using ShelterModule.Services.Implementations;
 using ShelterModule.Services.Implementations.Adopters;
 using ShelterModule.Services.Implementations.Announcements;
 using ShelterModule.Services.Implementations.Applications;
 using ShelterModule.Services.Implementations.Pets;
 using ShelterModule.Services.Implementations.Shelters;
+using ShelterModule.Services.Interfaces;
 using ShelterModule.Services.Interfaces.Adopters;
 using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Applications;
@@ -82,6 +84,7 @@ public class Program
         services.AddScoped<IAdopterQuery, AdopterQuery>();
         services.AddScoped<IApplicationCommand, ApplicationCommand>();
         services.AddScoped<IApplicationQuery, ApplicationQuery>();
+        services.AddSingleton<IImageStorage, ImgurImageStorage>();
     }
 
     private static void ConfigureOptions(WebApplicationBuilder builder)
@@ -95,6 +98,8 @@ public class Program
         }
 
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(JwtConfiguration.SectionName));
+        builder.Services.Configure<ImgurConfiguration>(builder.Configuration.
+                                                               GetSection(ImgurConfiguration.SectionName));
     }
 
     private static void ConfigureJwt(IServiceCollection services, IConfiguration config)

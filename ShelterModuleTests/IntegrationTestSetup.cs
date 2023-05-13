@@ -73,7 +73,8 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                       [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
                                           CreateConnectionString(),
                                       ["Jwt:ValidIssuer"] = "test-issuer",
-                                      ["Jwt:ValidAudience"] = "test-audience"
+                                      ["Jwt:ValidAudience"] = "test-audience",
+                                      ["Jwt:SigningKey"] = "testKey1234567890"
                                   });
                 }).
                 ConfigureTestServices(services =>

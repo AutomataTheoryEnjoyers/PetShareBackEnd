@@ -26,6 +26,7 @@ public sealed class ApplicationController : ControllerBase
     [Authorize(Roles = $"{Roles.Admin}, {Roles.Adopter}, {Roles.Shelter}")]
     [ProducesResponseType(typeof(IReadOnlyList<ApplicationResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll()
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
@@ -53,6 +54,7 @@ public sealed class ApplicationController : ControllerBase
     [Authorize(Roles = Roles.Adopter)]
     [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Post(ApplicationRequest request)
     {

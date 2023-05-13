@@ -38,6 +38,8 @@ public sealed class AdopterController : ControllerBase
     [Authorize(Roles = Roles.Unassigned)]
     [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AdopterResponse>> Post(AdopterRequest request)
     {
         var adopter = Adopter.FromRequest(request);
@@ -49,6 +51,8 @@ public sealed class AdopterController : ControllerBase
     [Route("{id:guid}")]
     [Authorize(Roles = $"{Roles.Adopter}, {Roles.Admin}")]
     [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdopterResponse>> Get(Guid id)
     {
@@ -73,6 +77,8 @@ public sealed class AdopterController : ControllerBase
     [Route("{id:guid}")]
     [Authorize(Roles = Roles.Admin)]
     [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdopterResponse>> Put(Guid id, AdopterUpdateRequest request)
     {
@@ -118,6 +124,7 @@ public sealed class AdopterController : ControllerBase
 
     [HttpGet]
     [Route("{id:guid}/isVerified")]
+    [Authorize(Roles = Roles.Shelter)]
     [ProducesResponseType(typeof(AdopterVerificationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

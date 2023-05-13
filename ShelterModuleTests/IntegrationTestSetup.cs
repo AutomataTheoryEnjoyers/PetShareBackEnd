@@ -98,7 +98,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, role),
+            new(Roles.RoleClaimName, role),
             new(ClaimsExtensions.IdClaim, id.ToString())
         };
 

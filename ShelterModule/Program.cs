@@ -116,7 +116,6 @@ public class Program
                  AddJwtBearer(options =>
                  {
                      options.RequireHttpsMetadata = false;
-
                      options.Events = new JwtBearerEvents
                      {
                          OnMessageReceived = context =>

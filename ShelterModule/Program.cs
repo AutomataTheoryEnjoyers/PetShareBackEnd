@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using Azure.Identity;
 using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using ShelterModule.Configuration;
 using ShelterModule.Services;
 using ShelterModule.Services.Implementations;
@@ -116,7 +117,6 @@ public class Program
                  AddJwtBearer(options =>
                  {
                      options.RequireHttpsMetadata = false;
-
                      options.Events = new JwtBearerEvents
                      {
                          OnMessageReceived = context =>
@@ -127,11 +127,12 @@ public class Program
 
                              context.Options.TokenValidationParameters.ValidateIssuer = true;
                              context.Options.TokenValidationParameters.ValidateAudience = true;
-                             context.Options.TokenValidationParameters.ValidateIssuerSigningKey = false;
+                             context.Options.TokenValidationParameters.ValidateIssuerSigningKey = true;
+                             context.Options.TokenValidationParameters.ValidateLifetime = true;
                              context.Options.TokenValidationParameters.ValidIssuer = settings.ValidIssuer;
                              context.Options.TokenValidationParameters.ValidAudience = settings.ValidAudience;
-                             context.Options.TokenValidationParameters.SignatureValidator = (token, _) =>
-                                 new JwtSecurityTokenHandler().ReadJwtToken(token);
+                             context.Options.TokenValidationParameters.IssuerSigningKey =
+                                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SigningKey));
                              return Task.CompletedTask;
                          }
                      };

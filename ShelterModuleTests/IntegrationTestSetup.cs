@@ -73,7 +73,8 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                       [$"ConnectionStrings:{PetShareDbContext.DbConnectionStringName}"] =
                                           CreateConnectionString(),
                                       ["Jwt:ValidIssuer"] = "test-issuer",
-                                      ["Jwt:ValidAudience"] = "test-audience"
+                                      ["Jwt:ValidAudience"] = "test-audience",
+                                      ["Jwt:SigningKey"] = "testKey1234567890"
                                   });
                 }).
                 ConfigureTestServices(services =>
@@ -98,7 +99,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, role),
+            new(Roles.RoleClaimName, role),
             new(ClaimsExtensions.IdClaim, id.ToString())
         };
 

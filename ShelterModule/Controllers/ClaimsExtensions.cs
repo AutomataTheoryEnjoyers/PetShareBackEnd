@@ -38,8 +38,10 @@ public static class ClaimsExtensions
 
 public static class Roles
 {
-    public const string Admin = "Admin";
-    public const string Shelter = "Shelter";
-    public const string Adopter = "Adopter";
-    public const string Unassigned = "Unassigned";
+    public const string Admin = "admin";
+    public const string Shelter = "shelter";
+    public const string Adopter = "adopter";
+    public const string Unassigned = "unassigned";
+
+    public const string RoleClaimName = "role";
 }

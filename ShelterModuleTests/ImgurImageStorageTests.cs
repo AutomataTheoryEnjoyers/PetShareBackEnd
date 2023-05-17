@@ -39,8 +39,12 @@ public sealed class ImgurImageStorageTests
 
         result.HasValue.Should().BeTrue();
 
-        var bytes = await result.Value.GetBytesAsync();
-        bytes.Should().NotBeEmpty();
+        try
+        {
+            var bytes = await result.Value.GetBytesAsync();
+            bytes.Should().NotBeEmpty();
+        }
+        catch (FlurlHttpException e) when (e.StatusCode == StatusCodes.Status429TooManyRequests) { }
     }
 
     [Fact]

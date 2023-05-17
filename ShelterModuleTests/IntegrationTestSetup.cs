@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Database;
 using Flurl.Http;
 using Microsoft.AspNetCore.Hosting;
@@ -74,7 +75,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                           CreateConnectionString(),
                                       ["Jwt:ValidIssuer"] = "test-issuer",
                                       ["Jwt:ValidAudience"] = "test-audience",
-                                      ["Jwt:SigningKey"] = "testKey1234567890"
+                                      ["Jwt:SigningKey"] = TestRsaKey.PublicKey
                                   });
                 }).
                 ConfigureTestServices(services =>
@@ -95,7 +96,7 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
         return host;
     }
 
-    public static string CreateTestJwtToken(string role, Guid id)
+    public static string CreateTestJwtToken(string role, Guid id, string privateKey)
     {
         var claims = new List<Claim>
         {
@@ -103,13 +104,16 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
             new(ClaimsExtensions.IdClaim, id.ToString())
         };
 
+        var rsa = RSA.Create();
+        rsa.ImportRSAPrivateKey(Convert.FromBase64String(privateKey), out _);
+
         var jwtSecurityToken = new JwtSecurityToken("test-issuer",
                                                     "test-audience",
                                                     claims,
                                                     expires: DateTime.Now.AddMinutes(5),
                                                     signingCredentials: new
-                                                        SigningCredentials(new SymmetricSecurityKey("testKey1234567890"u8.ToArray()),
-                                                                           SecurityAlgorithms.HmacSha256));
+                                                        SigningCredentials(new RsaSecurityKey(rsa),
+                                                                           SecurityAlgorithms.RsaSha256));
         return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
     }
 
@@ -131,11 +135,25 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
     }
 }
 
+public static class TestRsaKey
+{
+    static TestRsaKey()
+    {
+        using var rsa = RSA.Create();
+        PublicKey = Convert.ToBase64String(rsa.ExportRSAPublicKey());
+        PrivateKey = Convert.ToBase64String(rsa.ExportRSAPrivateKey());
+    }
+
+    public static string PublicKey { get; }
+    public static string PrivateKey { get; }
+}
+
 public static class FlurlClientExtensions
 {
     public static FlurlClient WithAuth(this FlurlClient client, string role, Guid? id = null)
     {
-        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id ?? Guid.Empty));
+        return client.WithOAuthBearerToken(IntegrationTestSetup.CreateTestJwtToken(role, id ?? Guid.Empty,
+                                                                                   TestRsaKey.PrivateKey));
     }
 }
 

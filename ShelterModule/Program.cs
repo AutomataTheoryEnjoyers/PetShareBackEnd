@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.Security.Cryptography;
 using Azure.Identity;
 using Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -109,6 +109,13 @@ public class Program
                           ?? throw new ValidationException("JWT options could not be bound to config object");
         Validator.ValidateObject(jwtSettings, new ValidationContext(jwtSettings));
 
+        services.AddTransient<RsaSecurityKey>(provider =>
+        {
+            var settings = provider.GetRequiredService<IOptions<JwtConfiguration>>().Value;
+            var rsa = RSA.Create();
+            rsa.ImportRSAPublicKey(Convert.FromBase64String(settings.SigningKey), out _);
+            return new RsaSecurityKey(rsa);
+        });
         services.AddAuthentication(options =>
                  {
                      options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -124,6 +131,7 @@ public class Program
                              var settings = context.HttpContext.RequestServices.
                                                     GetRequiredService<IOptions<JwtConfiguration>>().
                                                     Value;
+                             var rsaKey = context.HttpContext.RequestServices.GetRequiredService<RsaSecurityKey>();
 
                              context.Options.TokenValidationParameters.ValidateIssuer = true;
                              context.Options.TokenValidationParameters.ValidateAudience = true;
@@ -131,8 +139,7 @@ public class Program
                              context.Options.TokenValidationParameters.ValidateLifetime = true;
                              context.Options.TokenValidationParameters.ValidIssuer = settings.ValidIssuer;
                              context.Options.TokenValidationParameters.ValidAudience = settings.ValidAudience;
-                             context.Options.TokenValidationParameters.IssuerSigningKey =
-                                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SigningKey));
+                             context.Options.TokenValidationParameters.IssuerSigningKey = rsaKey;
                              return Task.CompletedTask;
                          }
                      };

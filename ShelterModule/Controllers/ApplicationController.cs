@@ -25,8 +25,13 @@ public sealed class ApplicationController : ControllerBase
         _validator = validator;
     }
 
-    private MultipleApplicationsResponse ApplyPagination(int pageNumber, int pageSize, List<ApplicationResponse> applications)
+    private MultipleApplicationsResponse ApplyPagination(int? pageNumber, int? pageSize, List<ApplicationResponse> applications)
     {
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageSize == null)
+            pageSize = 10;
+
         if (pageNumber * pageSize > applications.Count)
             return null;
 
@@ -35,9 +40,9 @@ public sealed class ApplicationController : ControllerBase
 
         return new MultipleApplicationsResponse
         {
-            applications = applications.GetRange(pageNumber * pageSize, pageSize),
-            pageNumber = pageNumber,
-            count = pageSize
+            applications = applications.GetRange(pageNumber.Value * pageSize.Value, pageSize.Value),
+            pageNumber = pageNumber.Value,
+            count = pageSize.Value
         };
     }
 
@@ -73,7 +78,8 @@ public sealed class ApplicationController : ControllerBase
         if(applicationsToReturn == null)
             throw new UnreachableException();
 
-        return ApplyPagination(pageNumber, pageCount, applicationsToReturn);
+        var response = ApplyPagination(pageNumber, pageCount, applicationsToReturn);
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
     }
 
     [HttpPost]
@@ -112,8 +118,9 @@ public sealed class ApplicationController : ControllerBase
                 Id = announcementId.ToString(),
                 ResourceName = nameof(Application)
             });
-
-        return ApplyPagination(pageNumber, pageCount, applicationList.Select(a => a.ToResponse()).ToList());
+        
+        var response = ApplyPagination(pageNumber, pageCount, applicationList.Select(a => a.ToResponse()).ToList());
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
     }
 
     [HttpPut]

@@ -4,6 +4,7 @@ using ShelterModule.Models.Announcements;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Pets;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ShelterModule.Controllers;
 
@@ -22,6 +23,27 @@ public class AnnouncementController : ControllerBase
         _command = command;
         _petQuery = petQuery;
         _validator = validator;
+    }
+
+    private MultipleAnnouncementsResponse ApplyPagination(int? pageNumber, int? pageSize, List<AnnouncementResponse> announcements)
+    {
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageSize == null)
+            pageSize = 10;
+
+        if (pageNumber * pageSize > announcements.Count)
+            return null;
+
+        if (pageNumber * pageSize + pageSize < announcements.Count)
+            pageSize = announcements.Count - pageNumber * pageSize;
+
+        return new MultipleAnnouncementsResponse
+        {
+            announcements = announcements.GetRange(pageNumber.Value * pageSize.Value, pageSize.Value),
+            pageNumber = pageNumber.Value,
+            count = pageSize.Value
+        };
     }
 
     /// <summary>
@@ -52,12 +74,16 @@ public class AnnouncementController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [Route("announcements")]
-    [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]
-    public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered(
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(MultipleAnnouncementsResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<MultipleAnnouncementsResponse>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
-        return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).
+        var allFiltered =  (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).
                                                                                      ToList();
+
+        var response = ApplyPagination(query.pageNumber, query.pageCount, allFiltered);
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
     }
 
     /// <summary>
@@ -68,15 +94,19 @@ public class AnnouncementController : ControllerBase
     [Route("shelter/announcements")]
     [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<AnnouncementResponse>>> GetFromShelter()
+    public async Task<ActionResult<MultipleAnnouncementsResponse>> GetFromShelter(int? pageNumber, int? pageCount)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        return (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
-               Select(a => a.ToResponse()).
-               ToList();
+        var allFiltered =  (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
+        Select(a => a.ToResponse()).
+        ToList();
+
+        var response = ApplyPagination(pageNumber, pageCount, allFiltered);
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
     }
 
     /// <summary>

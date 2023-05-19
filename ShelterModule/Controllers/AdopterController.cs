@@ -27,7 +27,8 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<AdopterResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<MultipleAdoptersResponse>> GetAll(int pageNumber, int pageCount)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<MultipleAdoptersResponse>> GetAll(int? pageNumber, int? pageCount)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
@@ -37,7 +38,7 @@ public sealed class AdopterController : ControllerBase
         if (pageCount == null)
             pageCount = 10;
 
-        var adopterPagedResponse = await _query.GetPagedAsync(pageNumber, pageCount, HttpContext.RequestAborted);
+        var adopterPagedResponse = await _query.GetPagedAsync(pageNumber.Value, pageCount.Value, HttpContext.RequestAborted);
 
         if (adopterPagedResponse == null)
         {
@@ -48,7 +49,7 @@ public sealed class AdopterController : ControllerBase
         return new MultipleAdoptersResponse
         {
             adopters = adopterList,
-            pageNumber = pageNumber,
+            pageNumber = pageNumber.Value,
         };
         
     }

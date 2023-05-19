@@ -23,8 +23,8 @@ public class AnnouncementQuery : IAnnouncementQuery
             filteredAnnouncements = filteredAnnouncements.Where(a => query.Species.Contains(a.Pet.Species));
         if (query.Breeds is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => query.Breeds.Contains(a.Pet.Breed));
-        if (query.Cities is not null)
-            filteredAnnouncements = filteredAnnouncements.Where(a => query.Cities.Contains(a.Pet.Shelter.Address.City));
+        if (query.Locations is not null)
+            filteredAnnouncements = filteredAnnouncements.Where(a => query.Locations.Contains(a.Pet.Shelter.Address.City));
         if (query.MinAge is not null)
             filteredAnnouncements =
                 filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now)

@@ -46,9 +46,26 @@ public sealed class ShelterController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
-    public async Task<IReadOnlyList<ShelterResponse>> GetAll()
+    public async Task<ActionResult<MultipleSheltersResponse>> GetAll(int pageNumber, int pageCount)
     {
-        return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageCount == null)
+            pageCount = 10;
+
+        var shelterPagedResponse = await _query.GetPagedAsync(pageNumber, pageCount, HttpContext.RequestAborted);
+
+        if(shelterPagedResponse == null)
+        {
+            return BadRequest("Wrong pageNumber and pageCount parameters.");
+        }
+
+        var shelterList = shelterPagedResponse.Select(s => s.ToResponse()).ToList();
+        return new MultipleSheltersResponse
+        {
+            shelters = shelterList,
+            pageNumber = pageNumber,
+        };
     }
 
     /// <summary>

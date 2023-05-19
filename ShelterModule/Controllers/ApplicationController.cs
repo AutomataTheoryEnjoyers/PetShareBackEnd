@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using ShelterModule.Models.Adopters;
 using ShelterModule.Models.Applications;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Applications;
@@ -22,32 +25,55 @@ public sealed class ApplicationController : ControllerBase
         _validator = validator;
     }
 
+    private MultipleApplicationsResponse ApplyPagination(int pageNumber, int pageSize, List<ApplicationResponse> applications)
+    {
+        if (pageNumber * pageSize > applications.Count)
+            return null;
+
+        if (pageNumber * pageSize + pageSize < applications.Count)
+            pageSize = applications.Count - pageNumber * pageSize;
+
+        return new MultipleApplicationsResponse
+        {
+            applications = applications.GetRange(pageNumber * pageSize, pageSize),
+            pageNumber = pageNumber,
+            count = pageSize
+        };
+    }
+
     [HttpGet]
     [Authorize(Roles = $"{Roles.Admin}, {Roles.Adopter}, {Roles.Shelter}")]
     [ProducesResponseType(typeof(IReadOnlyList<ApplicationResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll()
+    public async Task<ActionResult<MultipleApplicationsResponse>> GetAll(int pageNumber, int pageCount)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
+        List<ApplicationResponse> applicationsToReturn = null;
         if (User.IsAdmin())
-            return (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(app => app.ToResponse()).ToList();
-
+        {
+            applicationsToReturn = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(app => app.ToResponse()).ToList();
+        }
         if (User.IsAdopter())
-            return (await _query.GetAllForAdopterAsync(User.GetId(), HttpContext.RequestAborted)
+        {
+            applicationsToReturn = (await _query.GetAllForAdopterAsync(User.GetId(), HttpContext.RequestAborted)
                     ?? throw new UnreachableException()).
                    Select(app => app.ToResponse()).
                    ToList();
-
+        }
         if (User.IsShelter())
-            return (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)
+        {
+            applicationsToReturn = (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)
                     ?? throw new UnreachableException()).
                    Select(app => app.ToResponse()).
                    ToList();
+        }
+        if(applicationsToReturn == null)
+            throw new UnreachableException();
 
-        throw new UnreachableException();
+        return ApplyPagination(pageNumber, pageCount, applicationsToReturn);
     }
 
     [HttpPost]
@@ -74,23 +100,20 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApplicationResponse>> Get(Guid id)
+    public async Task<ActionResult<MultipleApplicationsResponse>> GetForAnnouncement(Guid announcementId, int pageNumber, int pageCount)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
-        if (application is null)
+        var applicationList = await _query.GetByAnnouncementId(announcementId, HttpContext.RequestAborted);
+        if (applicationList is null)
             return NotFound(new NotFoundResponse
             {
-                Id = id.ToString(),
+                Id = announcementId.ToString(),
                 ResourceName = nameof(Application)
             });
 
-        if (application.Announcement.AuthorId != User.GetId())
-            return Forbid();
-
-        return application.ToResponse();
+        return ApplyPagination(pageNumber, pageCount, applicationList.Select(a => a.ToResponse()).ToList());
     }
 
     [HttpPut]

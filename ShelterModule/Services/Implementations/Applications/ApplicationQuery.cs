@@ -1,6 +1,7 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Applications;
+using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Applications;
 
 namespace ShelterModule.Services.Implementations.Applications;
@@ -55,5 +56,17 @@ public sealed class ApplicationQuery : IApplicationQuery
                                     FirstOrDefaultAsync(app => app.Id == id, token);
 
         return entity is not null ? Application.FromEntity(entity) : null;
+    }
+
+    public async Task<IReadOnlyList<Application>?> GetByAnnouncementId(Guid announecemetID, CancellationToken token = default)
+    {
+        if (!_context.Announcements.Any(announcement => announcement.Id == announecemetID))
+            return null;
+
+        return await _context.Applications.Include(app => app.Announcement).
+                              Include(app => app.Adopter).
+                              Where(app => app.Announcement.Id == announecemetID).
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 }

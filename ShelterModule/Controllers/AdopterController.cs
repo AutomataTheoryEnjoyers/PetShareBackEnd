@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Adopters;
+using ShelterModule.Models.Shelters;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Adopters;
 
@@ -26,12 +27,30 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<AdopterResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<AdopterResponse>>> GetAll()
+    public async Task<ActionResult<MultipleAdoptersResponse>> GetAll(int pageNumber, int pageCount)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        return (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageCount == null)
+            pageCount = 10;
+
+        var adopterPagedResponse = await _query.GetPagedAsync(pageNumber, pageCount, HttpContext.RequestAborted);
+
+        if (adopterPagedResponse == null)
+        {
+            return BadRequest("Wrong pageNumber and pageCount parameters.");
+        }
+
+        var adopterList = adopterPagedResponse.Select(a => a.ToResponse()).ToList();
+        return new MultipleAdoptersResponse
+        {
+            adopters = adopterList,
+            pageNumber = pageNumber,
+        };
+        
     }
 
     [HttpPost]

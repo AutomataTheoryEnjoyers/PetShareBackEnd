@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Controllers;
 using ShelterModule.Models.Pets;
+using ShelterModule.Models.Shelters;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -87,7 +88,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
-                     ShelterId = _pet.ShelterId,
+                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                     Status = _pet.Status,
                      Sex = _pet.Sex.ToString()
                  }
              });
@@ -155,7 +157,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
-                     ShelterId = _pet.ShelterId,
+                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                     Status = _pet.Status,
                      Sex = _pet.Sex.ToString()
                  });
     }
@@ -237,7 +240,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Species = "test-species2",
             Birthday = DateTime.Now,
             Description = "test-description2",
-            Sex = "Female"
+            Sex = "Female",
+            PhotoUrl = "https://d-art.ppstatic.pl/kadry/k/r/1/bf/9e/5c42e1d5985fc_o_medium.jpg"
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet").PostJsonAsync(request);
@@ -252,8 +256,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Species = request.Species,
                    Birthday = request.Birthday,
                    Description = request.Description,
-                   PhotoUrl = null,
-                   ShelterId = _shelter.Id,
+                   PhotoUrl = request.PhotoUrl,
+                   Shelter = Shelter.FromEntity(_shelter).ToResponse(),
+                   Status = PetStatus.Active,
                    Sex = request.Sex
                }, options => options.Excluding(s => s.Id));
 
@@ -269,7 +274,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                     Birthday = request.Birthday,
                     Description = request.Description,
                     ShelterId = _shelter.Id,
-                    Photo = null,
+                    Photo = request.PhotoUrl,
                     Sex = PetSex.Female,
                     Status = PetStatus.Active
                 });
@@ -297,8 +302,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Species = _pet.Species,
                        Birthday = _pet.Birthday,
                        Description = request.Description,
-                       ShelterId = _shelter.Id,
+                       Shelter = Shelter.FromEntity(_shelter).ToResponse(),
                        PhotoUrl = _pet.Photo,
+                       Status = _pet.Status,
                        Sex = _pet.Sex.ToString()
                    });
 
@@ -341,7 +347,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Species = _pet.Species,
                        Birthday = _pet.Birthday,
                        Description = _pet.Description,
-                       ShelterId = _shelter.Id,
+                       Shelter = Shelter.FromEntity(_shelter).ToResponse(),
+                       Status = PetStatus.Deleted,
                        PhotoUrl = _pet.Photo,
                        Sex = _pet.Sex.ToString()
                    });

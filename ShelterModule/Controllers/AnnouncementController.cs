@@ -35,7 +35,7 @@ public class AnnouncementController : ControllerBase
         if (pageNumber * pageSize > announcements.Count)
             return null;
 
-        if (pageNumber * pageSize + pageSize < announcements.Count)
+        if (pageNumber * pageSize + pageSize > announcements.Count)
             pageSize = announcements.Count - pageNumber * pageSize;
 
         return new MultipleAnnouncementsResponse

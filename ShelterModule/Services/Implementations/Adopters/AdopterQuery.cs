@@ -37,17 +37,4 @@ public sealed class AdopterQuery : IAdopterQuery
 
         return await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId, token);
     }
-
-    public async Task<IReadOnlyList<Adopter>?> GetPagedAsync(int pageNumber, int pageSize, CancellationToken token = default)
-    {
-        List<Adopter> allAdopters = (await _context.Adopters.ToListAsync(token)).Select(Adopter.FromEntity).ToList();
-
-        if (pageNumber * pageSize > allAdopters.Count)
-            return null;
-
-        if (pageNumber * pageSize + pageSize < allAdopters.Count)
-            pageSize = allAdopters.Count - pageNumber * pageSize;
-
-        return allAdopters.GetRange(pageNumber * pageSize, pageSize);
-    }
 }

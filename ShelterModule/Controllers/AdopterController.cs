@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Adopters;
+using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Shelters;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Adopters;
@@ -21,10 +22,30 @@ public sealed class AdopterController : ControllerBase
         _command = command;
         _validator = validator;
     }
+    private static MultipleAdoptersResponse? ApplyPagination(int? pageNumber, int? pageSize, List<AdopterResponse> adopters)
+    {
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageSize == null)
+            pageSize = 10;
+
+        if (pageNumber * pageSize > adopters.Count)
+            return null;
+
+        if (pageNumber * pageSize + pageSize > adopters.Count)
+            pageSize = adopters.Count - pageNumber * pageSize;
+
+        return new MultipleAdoptersResponse
+        {
+            adopters = adopters.GetRange(pageNumber.Value * pageSize.Value, pageSize.Value),
+            pageNumber = pageNumber.Value,
+            count = pageSize.Value
+        };
+    }
 
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]
-    [ProducesResponseType(typeof(IReadOnlyList<AdopterResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MultipleAdoptersResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -38,20 +59,11 @@ public sealed class AdopterController : ControllerBase
         if (pageCount == null)
             pageCount = 10;
 
-        var adopterPagedResponse = await _query.GetPagedAsync(pageNumber.Value, pageCount.Value, HttpContext.RequestAborted);
+        var allAdopters = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(a => a.ToResponse()).ToList();
 
-        if (adopterPagedResponse == null)
-        {
-            return BadRequest("Wrong pageNumber and pageCount parameters.");
-        }
+        var response = ApplyPagination(pageNumber,pageCount,allAdopters);
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
 
-        var adopterList = adopterPagedResponse.Select(a => a.ToResponse()).ToList();
-        return new MultipleAdoptersResponse
-        {
-            adopters = adopterList,
-            pageNumber = pageNumber.Value,
-        };
-        
     }
 
     [HttpPost]

@@ -23,7 +23,7 @@ public class PetController : ControllerBase
         _shelterQuery = shelterQuery;
         _validator = validator;
     }
-    private MultiplePetsResponse ApplyPagination(int? pageNumber, int? pageSize, List<PetResponse> pets)
+    private static MultiplePetsResponse ApplyPagination(int? pageNumber, int? pageSize, List<PetResponse> pets)
     {
         if (pageNumber == null)
             pageNumber = 0;
@@ -33,7 +33,7 @@ public class PetController : ControllerBase
         if (pageNumber * pageSize > pets.Count)
             return null;
 
-        if (pageNumber * pageSize + pageSize < pets.Count)
+        if (pageNumber * pageSize + pageSize > pets.Count)
             pageSize = pets.Count - pageNumber * pageSize;
 
         return new MultiplePetsResponse

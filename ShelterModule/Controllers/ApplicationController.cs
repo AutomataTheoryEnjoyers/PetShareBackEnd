@@ -35,7 +35,7 @@ public sealed class ApplicationController : ControllerBase
         if (pageNumber * pageSize > applications.Count)
             return null;
 
-        if (pageNumber * pageSize + pageSize < applications.Count)
+        if (pageNumber * pageSize + pageSize > applications.Count)
             pageSize = applications.Count - pageNumber * pageSize;
 
         return new MultipleApplicationsResponse

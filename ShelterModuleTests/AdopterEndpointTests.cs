@@ -69,26 +69,13 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnAllAdopters()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
-        var adopters = await client.Request("adopter").GetJsonAsync<IEnumerable<AdopterResponse>>();
+        var adopters = await client.Request("adopter").GetJsonAsync<MultipleAdoptersResponse>();
         adopters.Should().
-                 BeEquivalentTo(new[]
+                 BeEquivalentTo(new MultipleAdoptersResponse
                  {
-                     new AdopterResponse
-                     {
-                         Id = _adopter.Id,
-                         UserName = "test-adopter",
-                         Email = "mail@mail.mail",
-                         PhoneNumber = "123456789",
-                         Status = AdopterStatus.Active,
-                         Address = new Address
-                         {
-                             Country = "test-country",
-                             Province = "test-province",
-                             City = "test-city",
-                             Street = "test-street",
-                             PostalCode = "test-postalCode"
-                         }
-                     }
+                     adopters = new[]{Adopter.FromEntity(_adopter).ToResponse()},
+                     pageNumber = 0,
+                     count = 1
                  });
     }
 

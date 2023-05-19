@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ShelterModule.Models.Pets;
 using ShelterModule.Models.Shelters;
 using ShelterModule.Services.Interfaces.Shelters;
 
@@ -16,6 +17,26 @@ public sealed class ShelterController : ControllerBase
     {
         _query = query;
         _command = command;
+    }
+    private static MultipleSheltersResponse ApplyPagination(int? pageNumber, int? pageSize, List<ShelterResponse> shelters)
+    {
+        if (pageNumber == null)
+            pageNumber = 0;
+        if (pageSize == null)
+            pageSize = 10;
+
+        if (pageNumber * pageSize > shelters.Count)
+            return null;
+
+        if (pageNumber * pageSize + pageSize > shelters.Count)
+            pageSize = shelters.Count - pageNumber * pageSize;
+
+        return new MultipleSheltersResponse
+        {
+            shelters = shelters.GetRange(pageNumber.Value * pageSize.Value, pageSize.Value),
+            pageNumber = pageNumber.Value,
+            count = pageSize.Value
+        };
     }
 
     /// <summary>
@@ -48,24 +69,16 @@ public sealed class ShelterController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<ShelterResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<MultipleSheltersResponse>> GetAll(int pageNumber, int pageCount)
     {
+
         if (pageNumber == null)
             pageNumber = 0;
         if (pageCount == null)
             pageCount = 10;
 
-        var shelterPagedResponse = await _query.GetPagedAsync(pageNumber, pageCount, HttpContext.RequestAborted);
+        var allAdopters = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
 
-        if(shelterPagedResponse == null)
-        {
-            return BadRequest("Wrong pageNumber and pageCount parameters.");
-        }
-
-        var shelterList = shelterPagedResponse.Select(s => s.ToResponse()).ToList();
-        return new MultipleSheltersResponse
-        {
-            shelters = shelterList,
-            pageNumber = pageNumber,
-        };
+        var response = ApplyPagination(pageNumber, pageCount, allAdopters);
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
     }
 
     /// <summary>

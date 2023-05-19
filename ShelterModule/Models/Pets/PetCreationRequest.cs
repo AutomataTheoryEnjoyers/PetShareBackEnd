@@ -21,6 +21,9 @@ public sealed class PetCreationRequest : IValidatableObject
     public required string Description { get; init; }
 
     [Required]
+    public required string PhotoUrl { get; init; }
+
+    [Required]
     public required string Sex { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

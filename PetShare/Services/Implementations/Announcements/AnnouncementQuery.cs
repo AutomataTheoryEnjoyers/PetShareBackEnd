@@ -17,7 +17,8 @@ public class AnnouncementQuery : IAnnouncementQuery
     public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQueryRequest query,
         CancellationToken token = default)
     {
-        var filteredAnnouncements = _context.Announcements.AsQueryable();
+        var filteredAnnouncements =
+            _context.Announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).AsQueryable();
 
         if (query.Species is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => query.Species.Contains(a.Pet.Species));

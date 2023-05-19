@@ -62,8 +62,7 @@ public sealed class AdopterController : ControllerBase
         var allAdopters = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(a => a.ToResponse()).ToList();
 
         var response = ApplyPagination(pageNumber,pageCount,allAdopters);
-        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : response;
-
+        return response == null ? BadRequest("Wrong pageNumber and pageCount parameters.") : Ok(response);
     }
 
     [HttpPost]

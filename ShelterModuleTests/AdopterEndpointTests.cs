@@ -69,8 +69,9 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnAllAdopters()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
-        var adopters = await client.Request("adopter").GetJsonAsync<MultipleAdoptersResponse>();
-        adopters.Should().
+        var response = await client.Request("adopter").GetAsync();
+        var responseBody = response.GetJsonAsync<MultipleAdoptersResponse>();
+        responseBody.Result.Should().
                  BeEquivalentTo(new MultipleAdoptersResponse
                  {
                      adopters = new[]{Adopter.FromEntity(_adopter).ToResponse()},

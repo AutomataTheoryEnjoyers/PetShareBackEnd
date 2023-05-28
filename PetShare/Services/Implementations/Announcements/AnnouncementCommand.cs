@@ -1,6 +1,7 @@
 ﻿using Database;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Announcements;
+using PetShare.Results;
 using PetShare.Services.Interfaces.Announcements;
 
 namespace PetShare.Services.Implementations.Announcements;
@@ -14,18 +15,25 @@ public class AnnouncementCommand : IAnnouncementCommand
         _dbContext = dbContext;
     }
 
-    public async Task<Announcement> AddAsync(Announcement announcement, CancellationToken token = default)
+    public async Task<Result> AddAsync(Announcement announcement, CancellationToken token = default)
     {
+        if (!await _dbContext.Shelters.AnyAsync(shelter => shelter.Id == announcement.AuthorId, token))
+            return new InvalidOperation($"There is no shelter with ID {announcement.AuthorId}");
+
+        if (!await _dbContext.Pets.AnyAsync(pet => pet.Id == announcement.PetId, token))
+            return new InvalidOperation($"There is no pet with ID {announcement.PetId}");
+
         var entityAnnouncement = announcement.ToEntity();
         _dbContext.Announcements.Add(entityAnnouncement);
         await _dbContext.SaveChangesAsync(token);
-        return announcement;
+        return Result.Ok;
     }
 
     public async Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request,
         CancellationToken token = default)
     {
-        var entityToUpdate = await _dbContext.Announcements.FirstOrDefaultAsync(e => e.Id == id, token);
+        var entityToUpdate = await _dbContext.Announcements.Where(e => e.Status != (int)AnnouncementStatus.Deleted).
+                                              FirstOrDefaultAsync(e => e.Id == id, token);
         if (entityToUpdate is null)
             return null;
 

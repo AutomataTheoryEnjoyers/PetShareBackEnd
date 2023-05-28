@@ -64,11 +64,7 @@ public sealed class AdopterController : ControllerBase
 
         var adopter = await _query.GetByIdAsync(id);
         if (adopter is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Adopter)
-            });
+            return NotFound(NotFoundResponse.Adopter(id));
 
         return adopter.ToResponse();
     }
@@ -87,11 +83,7 @@ public sealed class AdopterController : ControllerBase
 
         var adopter = await _command.SetStatusAsync(id, request.Status);
         if (adopter is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Adopter)
-            });
+            return NotFound(NotFoundResponse.Adopter(id));
 
         return adopter.ToResponse();
     }
@@ -110,16 +102,7 @@ public sealed class AdopterController : ControllerBase
             return Unauthorized();
 
         var result = await _command.VerifyForShelterAsync(id, User.GetId());
-        return result switch
-        {
-            true => Ok(),
-            false => BadRequest(),
-            null => NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Adopter)
-            })
-        };
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
     [HttpGet]
@@ -134,12 +117,8 @@ public sealed class AdopterController : ControllerBase
             return Unauthorized();
 
         var result = await _query.IsVerifiedForShelterAsync(id, User.GetId());
-        if (result is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Adopter)
-            });
+        if (!result.HasValue)
+            return result.State.ToActionResult();
 
         return new AdopterVerificationResponse
         {

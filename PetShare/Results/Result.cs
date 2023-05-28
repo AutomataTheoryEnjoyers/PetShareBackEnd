@@ -2,11 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PetShare.Results;
 
-public sealed class Result<T>
+public class Result
 {
-    public Result(T value)
+    public Result()
     {
-        Value = value;
         HasValue = true;
     }
 
@@ -16,13 +15,32 @@ public sealed class Result<T>
         HasValue = false;
     }
 
-    [MemberNotNullWhen(true, nameof(Value))]
     [MemberNotNullWhen(false, nameof(State))]
-    public bool HasValue { get; }
-
-    public T? Value { get; }
+    public virtual bool HasValue { get; }
 
     public ResultState? State { get; }
+
+    public static Result Ok => new();
+
+    public static implicit operator Result(ResultState state)
+    {
+        return new Result(state);
+    }
+}
+
+public sealed class Result<T> : Result
+{
+    public Result(T value)
+    {
+        Value = value;
+    }
+
+    public Result(ResultState state) : base(state) { }
+
+    [MemberNotNullWhen(true, nameof(Value))]
+    public override bool HasValue => base.HasValue;
+
+    public T? Value { get; }
 
     public static implicit operator Result<T>(T value)
     {

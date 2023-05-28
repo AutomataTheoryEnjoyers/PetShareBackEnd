@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Applications;
 using PetShare.Services.Interfaces.Applications;
@@ -25,7 +26,7 @@ public sealed class ApplicationQuery : IApplicationQuery
     public async Task<IReadOnlyList<Application>?> GetAllForAdopterAsync(Guid adopterId,
         CancellationToken token = default)
     {
-        if (!_context.Adopters.Any(adopter => adopter.Id == adopterId))
+        if (!_context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).Any(adopter => adopter.Id == adopterId))
             return null;
 
         return await _context.Applications.Include(app => app.Announcement).

@@ -32,11 +32,7 @@ public class PetController : ControllerBase
     {
         var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (pet is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Pet),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Pet(id));
 
         return pet.ToResponse();
     }
@@ -76,7 +72,8 @@ public class PetController : ControllerBase
             return Unauthorized();
 
         var pet = Pet.FromRequest(request, User.GetId());
-        return (await _command.AddAsync(pet, HttpContext.RequestAborted)).ToResponse();
+        await _command.AddAsync(pet, HttpContext.RequestAborted);
+        return pet.ToResponse();
     }
 
     /// <summary>
@@ -97,22 +94,14 @@ public class PetController : ControllerBase
 
         var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (pet is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Pet),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Pet(id));
 
         if (User.TryGetId() != pet.ShelterId)
             return Forbid();
 
         var updatedPet = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (updatedPet is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Pet),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Pet(id));
 
         return updatedPet.ToResponse();
     }
@@ -135,11 +124,7 @@ public class PetController : ControllerBase
 
         var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (pet is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Pet),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Pet(id));
 
         if (User.TryGetId() != pet.ShelterId)
             return Forbid();

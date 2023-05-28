@@ -81,11 +81,7 @@ public sealed class ApplicationController : ControllerBase
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (application is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Application)
-            });
+            return NotFound(NotFoundResponse.Application(id));
 
         if (application.Announcement.AuthorId != User.GetId())
             return Forbid();
@@ -107,11 +103,7 @@ public sealed class ApplicationController : ControllerBase
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (application is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Application)
-            });
+            return NotFound(NotFoundResponse.Application(id));
 
         if (application.Adopter.Id != User.GetId())
             return Forbid();
@@ -134,11 +126,7 @@ public sealed class ApplicationController : ControllerBase
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (application is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Application)
-            });
+            return NotFound(NotFoundResponse.Application(id));
 
         if (application.Announcement.AuthorId != User.GetId())
             return Forbid();
@@ -161,11 +149,7 @@ public sealed class ApplicationController : ControllerBase
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (application is null)
-            return NotFound(new NotFoundResponse
-            {
-                Id = id.ToString(),
-                ResourceName = nameof(Application)
-            });
+            return NotFound(NotFoundResponse.Application(id));
 
         if (application.Announcement.AuthorId != User.GetId())
             return Forbid();

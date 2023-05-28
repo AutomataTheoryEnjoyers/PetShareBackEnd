@@ -463,7 +463,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {
-                  Id = _announcements[5].Id.ToString(),
+                  Id = _announcements[5].Id,
                   ResourceName = nameof(Announcement)
               });
     }
@@ -484,7 +484,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {
-                  Id = invalidId.ToString(),
+                  Id = invalidId,
                   ResourceName = nameof(Announcement)
               });
     }
@@ -538,7 +538,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         error.Should().
               BeEquivalentTo(new NotFoundResponse
               {
-                  Id = invalidId.ToString(),
+                  Id = invalidId,
                   ResourceName = nameof(Application)
               });
     }

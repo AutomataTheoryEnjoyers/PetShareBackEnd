@@ -45,7 +45,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        //_testSetup.Dispose();
+        _testSetup.Dispose();
         return Task.CompletedTask;
     }
 
@@ -104,7 +104,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   ResourceName = nameof(Shelter),
-                  Id = wrongId.ToString()
+                  Id = wrongId
               });
     }
 
@@ -212,7 +212,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   ResourceName = nameof(Shelter),
-                  Id = wrongId.ToString()
+                  Id = wrongId
               });
     }
 }

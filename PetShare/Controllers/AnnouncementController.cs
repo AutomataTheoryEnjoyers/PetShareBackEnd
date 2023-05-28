@@ -37,11 +37,7 @@ public class AnnouncementController : ControllerBase
     {
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (announcement is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
         return announcement.ToResponse();
     }
@@ -94,11 +90,9 @@ public class AnnouncementController : ControllerBase
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        if (await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted) is null)
-            return BadRequest();
-
         var announcement = Announcement.FromRequest(request, User.GetId());
-        return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
+        var result = await _command.AddAsync(announcement, HttpContext.RequestAborted);
+        return result.HasValue ? announcement.ToResponse() : result.State.ToActionResult();
     }
 
     /// <summary>
@@ -119,22 +113,14 @@ public class AnnouncementController : ControllerBase
 
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (announcement is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
-        if (User.TryGetId() != announcement.AuthorId)
+        if (User.GetId() != announcement.AuthorId)
             return Forbid();
 
         var updated = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (updated is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
         return updated.ToResponse();
     }

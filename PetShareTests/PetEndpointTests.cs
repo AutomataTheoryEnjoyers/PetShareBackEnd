@@ -207,7 +207,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   ResourceName = nameof(Pet),
-                  Id = petId.ToString()
+                  Id = petId
               });
     }
 
@@ -223,7 +223,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   ResourceName = nameof(Pet),
-                  Id = wrongId.ToString()
+                  Id = wrongId
               });
     }
 
@@ -382,7 +382,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   ResourceName = nameof(Pet),
-                  Id = wrongId.ToString()
+                  Id = wrongId
               });
     }
 

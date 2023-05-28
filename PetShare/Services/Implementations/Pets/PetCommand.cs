@@ -19,11 +19,10 @@ public class PetCommand : IPetCommand
         _imageStorage = imageStorage;
     }
 
-    public async Task<Pet> AddAsync(Pet pet, CancellationToken token = default)
+    public Task AddAsync(Pet pet, CancellationToken token = default)
     {
         _dbContext.Pets.Add(pet.ToEntity());
-        await _dbContext.SaveChangesAsync(token);
-        return pet;
+        return _dbContext.SaveChangesAsync(token);
     }
 
     public async Task<Pet?> UpdateAsync(Guid id, PetUpdateRequest request, CancellationToken token = default)

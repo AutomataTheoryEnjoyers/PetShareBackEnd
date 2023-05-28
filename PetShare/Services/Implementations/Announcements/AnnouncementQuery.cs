@@ -44,14 +44,18 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).Include(a => a.Pet.Shelter).ToListAsync(token)).
+        return (await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+                               Where(a => a.AuthorId == shelterId).
+                               Include(a => a.Pet.Shelter).
+                               ToListAsync(token)).
                Select(Announcement.FromEntity).
                ToList();
     }
 
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        var entity = await _context.Announcements.Include(x => x.Author).
+        var entity = await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+                                    Include(x => x.Author).
                                     Include(x => x.Pet).
                                     FirstOrDefaultAsync(e => e.Id == id, token);
         return entity is null ? null : Announcement.FromEntity(entity);

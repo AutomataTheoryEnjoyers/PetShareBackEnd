@@ -39,11 +39,7 @@ public class AnnouncementController : ControllerBase
     {
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (announcement is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
         return announcement.ToResponse();
     }
@@ -122,22 +118,14 @@ public class AnnouncementController : ControllerBase
 
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (announcement is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
-        if (User.TryGetId() != announcement.AuthorId)
+        if (User.GetId() != announcement.AuthorId)
             return Forbid();
 
         var updated = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
         if (updated is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Announcement),
-                Id = id
-            });
+            return NotFound(NotFoundResponse.Announcement(id));
 
         return updated.ToResponse();
     }

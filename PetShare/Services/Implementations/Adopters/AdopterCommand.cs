@@ -2,6 +2,8 @@
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Adopters;
+using PetShare.Models.Shelters;
+using PetShare.Results;
 using PetShare.Services.Interfaces.Adopters;
 
 namespace PetShare.Services.Implementations.Adopters;
@@ -34,17 +36,19 @@ public sealed class AdopterCommand : IAdopterCommand
         return Adopter.FromEntity(entity);
     }
 
-    public async Task<bool?> VerifyForShelterAsync(Guid id, Guid shelterId, CancellationToken token = default)
+    public async Task<Result> VerifyForShelterAsync(Guid id, Guid shelterId, CancellationToken token = default)
     {
         var adopterEntity = await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
                                            FirstOrDefaultAsync(e => e.Id == id, token);
         var shelterEntity = await _context.Shelters.FirstOrDefaultAsync(e => e.Id == shelterId, token);
 
-        if (adopterEntity is null || shelterEntity is null)
-            return null;
+        if (adopterEntity is null)
+            return new NotFound(id, nameof(Adopter));
+        if (shelterEntity is null)
+            return new NotFound(shelterId, nameof(Shelter));
 
         if (await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == shelterId, token))
-            return false;
+            return new InvalidOperation("Adopter is already verified for this shelter");
 
         _context.Verifications.Add(new AdopterVerificationEntity
         {
@@ -52,6 +56,6 @@ public sealed class AdopterCommand : IAdopterCommand
             ShelterId = shelterId
         });
         await _context.SaveChangesAsync(token);
-        return true;
+        return Result.Ok;
     }
 }

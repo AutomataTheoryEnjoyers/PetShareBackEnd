@@ -31,11 +31,7 @@ public sealed class ShelterController : ControllerBase
     {
         var shelter = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
         if (shelter is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Shelter),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Shelter(id));
 
         return shelter.ToResponse();
     }
@@ -82,11 +78,7 @@ public sealed class ShelterController : ControllerBase
     {
         var shelter = await _command.SetAuthorizationAsync(id, request.IsAuthorized, HttpContext.RequestAborted);
         if (shelter is null)
-            return NotFound(new NotFoundResponse
-            {
-                ResourceName = nameof(Shelter),
-                Id = id.ToString()
-            });
+            return NotFound(NotFoundResponse.Shelter(id));
 
         return shelter.ToResponse();
     }

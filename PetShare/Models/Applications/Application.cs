@@ -15,7 +15,7 @@ public sealed class Application
 
     public ApplicationResponse ToResponse()
     {
-        return new()
+        return new ApplicationResponse
         {
             Id = Id,
             CreationDate = CreationTime,
@@ -29,7 +29,7 @@ public sealed class Application
 
     public static Application FromEntity(ApplicationEntity entity)
     {
-        return new()
+        return new Application
         {
             Id = entity.Id,
             State = entity.State,

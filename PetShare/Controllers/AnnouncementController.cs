@@ -5,7 +5,6 @@ using PetShare.Models.Announcements;
 using PetShare.Models.Pets;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Announcements;
-using PetShare.Services.Interfaces.Pets;
 
 namespace PetShare.Controllers;
 
@@ -13,16 +12,14 @@ namespace PetShare.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
-    private readonly IPetQuery _petQuery;
     private readonly IAnnouncementQuery _query;
     private readonly TokenValidator _validator;
 
-    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery,
+    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command,
         TokenValidator validator)
     {
         _query = query;
         _command = command;
-        _petQuery = petQuery;
         _validator = validator;
     }
 
@@ -59,7 +56,7 @@ public class AnnouncementController : ControllerBase
     }
 
     /// <summary>
-    ///     Gets all announcements created by shelter specified in token claims
+    ///     Gets all announcements created by shelter specified in JWT claims. Requires shelter role
     /// </summary>
     [HttpGet]
     [Authorize(Roles = Roles.Shelter)]
@@ -78,7 +75,7 @@ public class AnnouncementController : ControllerBase
     }
 
     /// <summary>
-    ///     Creates new announcement
+    ///     Creates new announcement. Requires shelter role
     /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Shelter)]
@@ -101,7 +98,7 @@ public class AnnouncementController : ControllerBase
     }
 
     /// <summary>
-    ///     Updates specified announcement
+    ///     Updates specified announcement. Requires shelter role
     /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]

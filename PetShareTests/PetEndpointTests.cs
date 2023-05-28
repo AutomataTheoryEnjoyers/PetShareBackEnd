@@ -5,8 +5,8 @@ using FluentAssertions;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using PetShare;
 using PetShare.Controllers;
+using PetShare.Models;
 using PetShare.Models.Pets;
 using Xunit;
 

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetShare.Models;
 using PetShare.Models.Applications;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Applications;
@@ -22,6 +23,12 @@ public sealed class ApplicationController : ControllerBase
         _validator = validator;
     }
 
+    /// <summary>
+    ///     For admin, returns all applications.
+    ///     For adopter, returns all applications created by them.
+    ///     For shelter, returns all applications for announcements created by this shelter.
+    ///     Requires any of these roles
+    /// </summary>
     [HttpGet]
     [Authorize(Roles = $"{Roles.Admin}, {Roles.Adopter}, {Roles.Shelter}")]
     [ProducesResponseType(typeof(IReadOnlyList<ApplicationResponse>), StatusCodes.Status200OK)]
@@ -50,6 +57,9 @@ public sealed class ApplicationController : ControllerBase
         throw new UnreachableException();
     }
 
+    /// <summary>
+    ///     Creates an application. Requires adopter role
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Adopter)]
     [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status201Created)]
@@ -67,6 +77,9 @@ public sealed class ApplicationController : ControllerBase
             : result.State.ToActionResult();
     }
 
+    /// <summary>
+    ///     Returns application with a given ID. Requires shelter role
+    /// </summary>
     [HttpGet]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}")]
@@ -89,6 +102,9 @@ public sealed class ApplicationController : ControllerBase
         return application.ToResponse();
     }
 
+    /// <summary>
+    ///     Withdraws an application. Requires adopter role
+    /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Adopter)]
     [Route("{id:guid}/withdraw")]
@@ -112,6 +128,9 @@ public sealed class ApplicationController : ControllerBase
         return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
+    /// <summary>
+    ///     Accepts an application. Requires shelter role
+    /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}/accept")]
@@ -135,6 +154,9 @@ public sealed class ApplicationController : ControllerBase
         return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
+    /// <summary>
+    ///     Accepts an application. Requires shelter role
+    /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
     [Route("{id:guid}/reject")]

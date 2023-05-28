@@ -10,13 +10,13 @@ public sealed class ApplicationResponse
     public required Guid Id { get; init; }
 
     [Required]
-    public required DateTime CreationTime { get; init; }
+    public required DateTime CreationDate { get; init; }
 
     [Required]
-    public required DateTime LastUpdateTime { get; init; }
+    public required DateTime LastUpdateDate { get; init; }
 
     [Required]
-    public required string State { get; init; }
+    public required string ApplicationStatus { get; init; }
 
     [Required]
     public required Guid AnnouncementId { get; init; }

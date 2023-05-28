@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShelterModule.Models.Pets;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShelterModule.Models.Announcements;
 
@@ -8,10 +9,7 @@ public sealed class AnnouncementResponse
     public required Guid Id { get; init; }
 
     [Required]
-    public required Guid AuthorId { get; init; }
-
-    [Required]
-    public required Guid PetId { get; init; }
+    public required PetResponse Pet { get; init; }
 
     [Required]
     public required string Title { get; init; } = null!;

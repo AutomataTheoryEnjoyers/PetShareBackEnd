@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using ShelterModule.Models.Pets;
 
 namespace ShelterModule.Models.Announcements;
 
@@ -6,7 +7,7 @@ public sealed class Announcement
 {
     public Guid Id { get; init; }
     public required Guid AuthorId { get; init; }
-    public required Guid PetId { get; init; }
+    public required Pet Pet { get; init; }
     public required string Title { get; init; } = null!;
     public required string Description { get; init; } = null!;
     public required DateTime CreationDate { get; init; }
@@ -20,7 +21,8 @@ public sealed class Announcement
         {
             Id = Id,
             AuthorId = AuthorId,
-            PetId = PetId,
+            PetId = Pet.Id,
+            //Pet = Pet.ToEntity(),
             Title = Title,
             Description = Description,
             CreationDate = CreationDate,
@@ -36,7 +38,7 @@ public sealed class Announcement
         {
             Id = entity.Id,
             AuthorId = entity.AuthorId,
-            PetId = entity.PetId,
+            Pet = Pet.FromEntity(entity.Pet),
             Title = entity.Title,
             Description = entity.Description,
             CreationDate = entity.CreationDate,
@@ -51,8 +53,7 @@ public sealed class Announcement
         return new AnnouncementResponse
         {
             Id = Id,
-            AuthorId = AuthorId,
-            PetId = PetId,
+            Pet = Pet.ToResponse(),
             Title = Title,
             Description = Description,
             CreationDate = CreationDate,
@@ -62,13 +63,13 @@ public sealed class Announcement
         };
     }
 
-    public static Announcement FromRequest(AnnouncementCreationRequest request, Guid shelterId)
+    public static Announcement FromRequest(AnnouncementCreationRequest request, Guid shelterId, Pet pet)
     {
         return new Announcement
         {
             Id = Guid.NewGuid(),
             AuthorId = shelterId,
-            PetId = request.PetId,
+            Pet = pet,
             Title = request.Title,
             Description = request.Description,
             CreationDate = DateTime.Now,

@@ -11,6 +11,7 @@ using ShelterModule.Controllers;
 using ShelterModule.Models.Adopters;
 using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Applications;
+using ShelterModule.Models.Pets;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -249,9 +250,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -271,16 +272,15 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
                          Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  },
                  new()
                  {
                      Id = _applications[1].Id,
-                     CreationTime = _now - TimeSpan.FromHours(12),
-                     LastUpdateTime = _now - TimeSpan.FromHours(12),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(12),
+                     LastUpdateDate = _now - TimeSpan.FromHours(12),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[1].Id,
@@ -300,8 +300,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          LastUpdateDate = _now - TimeSpan.FromDays(1),
                          ClosingDate = null,
                          Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[1].Id,
-                         PetId = _pets[1].Id
+                         Pet = Pet.FromEntity(_pets[1]).ToResponse()
                      }
                  }
              });
@@ -318,9 +317,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -340,8 +339,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
                          Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  }
              });
@@ -358,9 +356,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -380,8 +378,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
                          Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  }
              });
@@ -498,9 +495,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
             BeEquivalentTo(new ApplicationResponse
             {
                 Id = _applications[0].Id,
-                CreationTime = _now - TimeSpan.FromHours(13),
-                LastUpdateTime = _now - TimeSpan.FromHours(13),
-                State = ApplicationState.Created.ToString(),
+                CreationDate = _now - TimeSpan.FromHours(13),
+                LastUpdateDate = _now - TimeSpan.FromHours(13),
+                ApplicationStatus = ApplicationState.Created.ToString(),
                 Adopter = new AdopterResponse
                 {
                     Id = _adopters[0].Id,
@@ -520,8 +517,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                     LastUpdateDate = _now - TimeSpan.FromDays(5),
                     ClosingDate = null,
                     Status = (int)AnnouncementStatus.Open,
-                    AuthorId = _shelters[0].Id,
-                    PetId = _pets[0].Id
+                    Pet = Pet.FromEntity(_pets[0]).ToResponse()
                 }
             });
     }

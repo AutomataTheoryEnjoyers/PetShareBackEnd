@@ -17,7 +17,7 @@ public class AnnouncementQuery : IAnnouncementQuery
     public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQueryRequest query,
         CancellationToken token = default)
     {
-        var filteredAnnouncements = _context.Announcements.AsQueryable();
+        var filteredAnnouncements = _context.Announcements.Include(x => x.Pet.Shelter).AsQueryable();
 
         if (query.Species is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => query.Species.Contains(a.Pet.Species));
@@ -42,7 +42,7 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).ToListAsync(token)).
+        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).Include(a => a.Pet).ToListAsync(token)).
                Select(Announcement.FromEntity).
                ToList();
     }

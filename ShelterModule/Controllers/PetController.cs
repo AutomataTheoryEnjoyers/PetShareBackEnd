@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Pets;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Pets;
+using ShelterModule.Services.Interfaces.Shelters;
 
 namespace ShelterModule.Controllers;
 
@@ -11,12 +12,14 @@ public class PetController : ControllerBase
 {
     private readonly IPetCommand _command;
     private readonly IPetQuery _query;
+    private readonly IShelterQuery _shelterQuery;
     private readonly TokenValidator _validator;
 
-    public PetController(IPetQuery query, IPetCommand command, TokenValidator validator)
+    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery, TokenValidator validator)
     {
         _query = query;
         _command = command;
+        _shelterQuery = shelterQuery;
         _validator = validator;
     }
 
@@ -75,7 +78,12 @@ public class PetController : ControllerBase
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        var pet = Pet.FromRequest(request, User.GetId());
+        var shelter = await _shelterQuery.GetByIdAsync(User.GetId());
+
+        if (shelter == null)
+            return Unauthorized();
+
+        var pet = Pet.FromRequest(request, shelter);
         return (await _command.AddAsync(pet, HttpContext.RequestAborted)).ToResponse();
     }
 
@@ -103,7 +111,7 @@ public class PetController : ControllerBase
                 Id = id.ToString()
             });
 
-        if (User.TryGetId() != pet.ShelterId)
+        if (User.TryGetId() != pet.Shelter.Id)
             return Forbid();
 
         var updatedPet = await _command.UpdateAsync(id, request, HttpContext.RequestAborted);
@@ -141,7 +149,7 @@ public class PetController : ControllerBase
                 Id = id.ToString()
             });
 
-        if (User.TryGetId() != pet.ShelterId)
+        if (User.TryGetId() != pet.Shelter.Id)
             return Forbid();
 
         var result = await _command.SetPhotoAsync(id, file, HttpContext.RequestAborted);

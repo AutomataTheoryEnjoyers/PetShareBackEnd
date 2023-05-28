@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ShelterModule.Controllers;
 using ShelterModule.Models.Announcements;
+using ShelterModule.Models.Pets;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -64,7 +65,10 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             LastUpdateDate = DateTime.Now,
 
             AuthorId = _shelter.Id,
-            PetId = _pet.Id
+            Author = _shelter,
+            PetId = _pet.Id,
+            Pet = _pet,
+            
         };
     }
 
@@ -102,8 +106,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                           }
                       });
     }
@@ -127,8 +130,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                           }
                       });
     }
@@ -171,8 +173,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                           }
                       });
     }
@@ -200,8 +201,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                           }
                       });
     }
@@ -223,8 +223,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                           ClosingDate = _announcement.ClosingDate,
                           Status = _announcement.Status,
                           LastUpdateDate = _announcement.LastUpdateDate,
-                          AuthorId = _announcement.AuthorId,
-                          PetId = _announcement.PetId
+                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                       });
     }
 
@@ -260,8 +259,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
                             Status = 0,
-                            PetId = request.PetId,
-                            AuthorId = _shelter.Id
+                            Pet = Pet.FromEntity(_pet).ToResponse(),
                         },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
@@ -304,8 +302,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Title = _announcement.Title,
                                 Description = request.Description,
                                 Status = (int)request.Status,
-                                AuthorId = _announcement.AuthorId,
-                                PetId = _announcement.PetId,
+                                Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                                 CreationDate = _announcement.CreationDate,
                                 ClosingDate = null,
                                 LastUpdateDate = _announcement.LastUpdateDate
@@ -321,10 +318,10 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     Title = updatedAnnouncement.Title,
                     Description = updatedAnnouncement.Description,
                     Status = updatedAnnouncement.Status,
-                    AuthorId = updatedAnnouncement.AuthorId,
-                    PetId = updatedAnnouncement.PetId,
+                    PetId = updatedAnnouncement.Pet.Id, 
                     CreationDate = updatedAnnouncement.CreationDate,
-                    LastUpdateDate = updatedAnnouncement.LastUpdateDate
+                    LastUpdateDate = updatedAnnouncement.LastUpdateDate,
+                    AuthorId = _shelter.Id,
                 });
     }
 

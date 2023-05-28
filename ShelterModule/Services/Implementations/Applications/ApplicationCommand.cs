@@ -54,7 +54,7 @@ public sealed class ApplicationCommand : IApplicationCommand
         await _context.SaveChangesAsync(token);
 
         return Application.FromEntity(await _context.Applications.Include(app => app.Adopter).
-                                                     Include(app => app.Announcement).
+                                                     Include(app => app.Announcement.Pet.Shelter).
                                                      FirstAsync(app => app.Id == id, token));
     }
 

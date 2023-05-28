@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PetShare.Models;
 
 namespace PetShare.Results;
 

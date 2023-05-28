@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetShare.Models;
 using PetShare.Models.Adopters;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Adopters;
@@ -21,6 +22,9 @@ public sealed class AdopterController : ControllerBase
         _validator = validator;
     }
 
+    /// <summary>
+    ///     Returns all adopters. Requires admin role
+    /// </summary>
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]
     [ProducesResponseType(typeof(IReadOnlyList<AdopterResponse>), StatusCodes.Status200OK)]
@@ -34,6 +38,9 @@ public sealed class AdopterController : ControllerBase
         return (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
     }
 
+    /// <summary>
+    ///     Creates new adopter. Requires unassigned role
+    /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Unassigned)]
     [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status200OK)]
@@ -47,6 +54,9 @@ public sealed class AdopterController : ControllerBase
         return adopter.ToResponse();
     }
 
+    /// <summary>
+    ///     Returns an adopter with given ID. Requires admin role to fetch any ID, and adopter role to fetch their ID
+    /// </summary>
     [HttpGet]
     [Route("{id:guid}")]
     [Authorize(Roles = $"{Roles.Adopter}, {Roles.Admin}")]
@@ -69,6 +79,9 @@ public sealed class AdopterController : ControllerBase
         return adopter.ToResponse();
     }
 
+    /// <summary>
+    ///     Updates adopter. Requires admin role
+    /// </summary>
     [HttpPut]
     [Route("{id:guid}")]
     [Authorize(Roles = Roles.Admin)]
@@ -88,6 +101,10 @@ public sealed class AdopterController : ControllerBase
         return adopter.ToResponse();
     }
 
+    /// <summary>
+    ///     Verifies adopter with ID given in route for shelter which sent the request (whose ID is in JWT claims).
+    ///     Requires shelter role
+    /// </summary>
     [HttpPut]
     [Route("{id:guid}/verify")]
     [Authorize(Roles = Roles.Shelter)]
@@ -105,6 +122,10 @@ public sealed class AdopterController : ControllerBase
         return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 
+    /// <summary>
+    ///     Checks if adopter with ID given in route is verified for shelter whose ID is in JWT claims. Requires shelter
+    ///     role
+    /// </summary>
     [HttpGet]
     [Route("{id:guid}/isVerified")]
     [Authorize(Roles = Roles.Shelter)]

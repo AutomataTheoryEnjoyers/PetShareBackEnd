@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetShare.Models;
 using PetShare.Models.Shelters;
 using PetShare.Services.Interfaces.Shelters;
 
@@ -48,7 +49,7 @@ public sealed class ShelterController : ControllerBase
     }
 
     /// <summary>
-    ///     Creates new shelter
+    ///     Creates new shelter. Requires unassigned role
     /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Unassigned)]
@@ -64,7 +65,7 @@ public sealed class ShelterController : ControllerBase
     }
 
     /// <summary>
-    ///     Updates authorization status of a shelter with specified ID
+    ///     Updates authorization status of a shelter with specified ID. Requires admin role
     /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Admin)]

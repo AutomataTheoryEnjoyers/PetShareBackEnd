@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PetShare.Models;
 using PetShare.Models.Pets;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Pets;
@@ -38,7 +39,7 @@ public class PetController : ControllerBase
     }
 
     /// <summary>
-    ///     Returns all pets
+    ///     Returns all pets from a given shelter. Requires shelter role
     /// </summary>
     [HttpGet]
     [Route("shelter/pets")]
@@ -57,7 +58,7 @@ public class PetController : ControllerBase
     }
 
     /// <summary>
-    ///     Creates new pet
+    ///     Creates new pet. Requires shelter role
     /// </summary>
     [HttpPost]
     [Route("pet")]
@@ -77,7 +78,7 @@ public class PetController : ControllerBase
     }
 
     /// <summary>
-    ///     Updates pet record with specified ID
+    ///     Updates pet with specified ID. Requires shelter role
     /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
@@ -107,7 +108,7 @@ public class PetController : ControllerBase
     }
 
     /// <summary>
-    ///     Updates pet photo
+    ///     Updates pet photo. Requires shelter role
     /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Shelter)]

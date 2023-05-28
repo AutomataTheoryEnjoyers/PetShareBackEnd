@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PetShare;
+namespace PetShare.Models;
 
 public sealed class NotFoundResponse
 {

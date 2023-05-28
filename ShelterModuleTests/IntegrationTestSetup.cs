@@ -75,7 +75,8 @@ public class IntegrationTestSetup : WebApplicationFactory<Program>
                                           CreateConnectionString(),
                                       ["Jwt:ValidIssuer"] = "test-issuer",
                                       ["Jwt:ValidAudience"] = "test-audience",
-                                      ["Jwt:SigningKey"] = TestRsaKey.PublicKey
+                                      ["Jwt:SigningKey"] = TestRsaKey.PublicKey,
+                                      ["Jwt:KeyIsPem"] = "false"
                                   });
                 }).
                 ConfigureTestServices(services =>

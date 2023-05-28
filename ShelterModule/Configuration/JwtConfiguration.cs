@@ -14,4 +14,7 @@ public sealed class JwtConfiguration
 
     [Required]
     public required string SigningKey { get; init; }
+
+    [Required]
+    public required bool KeyIsPem { get; init; }
 }

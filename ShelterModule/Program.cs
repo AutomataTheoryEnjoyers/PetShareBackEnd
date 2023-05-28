@@ -113,7 +113,10 @@ public class Program
         {
             var settings = provider.GetRequiredService<IOptions<JwtConfiguration>>().Value;
             var rsa = RSA.Create();
-            rsa.ImportRSAPublicKey(Convert.FromBase64String(settings.SigningKey), out _);
+            if (settings.KeyIsPem)
+                rsa.ImportFromPem(settings.SigningKey);
+            else
+                rsa.ImportRSAPublicKey(Convert.FromBase64String(settings.SigningKey), out _);
             return new RsaSecurityKey(rsa);
         });
         services.AddAuthentication(options =>

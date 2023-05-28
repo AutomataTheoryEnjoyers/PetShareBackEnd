@@ -35,7 +35,7 @@ public class Program
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options => options.IncludeXmlComments("PetShare.xml"));
 
         var app = builder.Build();
 

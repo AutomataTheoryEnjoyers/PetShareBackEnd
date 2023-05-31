@@ -89,11 +89,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements").GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -103,7 +103,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
                               AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              PetId = _announcement.PetId,
+                              IsLiked = false
                           }
                       });
     }
@@ -158,11 +159,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -172,7 +173,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
                               AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              PetId = _announcement.PetId,
+                              IsLiked = false
                           }
                       });
     }
@@ -187,11 +189,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -201,7 +203,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Status = _announcement.Status,
                               LastUpdateDate = _announcement.LastUpdateDate,
                               AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              PetId = _announcement.PetId,
+                              IsLiked = false
                           }
                       });
     }

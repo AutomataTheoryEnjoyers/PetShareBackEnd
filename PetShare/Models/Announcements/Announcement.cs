@@ -78,6 +78,26 @@ public sealed class Announcement
     }
 }
 
+public sealed record AnnouncementWithLike(Announcement Announcement, bool IsLiked)
+{
+    public LikedAnnouncementResponse ToResponse()
+    {
+        return new LikedAnnouncementResponse
+        {
+            Id = Announcement.Id,
+            AuthorId = Announcement.AuthorId,
+            PetId = Announcement.PetId,
+            Title = Announcement.Title,
+            Description = Announcement.Description,
+            CreationDate = Announcement.CreationDate,
+            ClosingDate = Announcement.ClosingDate,
+            Status = (int)Announcement.Status,
+            LastUpdateDate = Announcement.LastUpdateDate,
+            IsLiked = IsLiked
+        };
+    }
+}
+
 public enum AnnouncementStatus
 {
     Open = 0,

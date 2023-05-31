@@ -234,7 +234,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldReturnAllWithNoFilters()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest());
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters());
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open),
@@ -245,7 +245,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     public async Task ShouldFilterBySpecies()
     {
         var species = new[] { "Dog", "Cat" };
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Species = species
         });
@@ -259,7 +259,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldFilterByBreed()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Breeds = new[] { "Grey" }
         });
@@ -273,7 +273,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldFilterByAge()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             MinAge = 3,
             MaxAge = 50
@@ -291,7 +291,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldFilterByCities()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Cities = new[] { "Brazil" }
         });
@@ -305,7 +305,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldFilterByShelterNames()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             ShelterNames = new[] { "Shelter 1" }
         });
@@ -319,7 +319,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldReturnEmptyListIfNothingMatches()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             ShelterNames = new[] { "Shelter 8" }
         });

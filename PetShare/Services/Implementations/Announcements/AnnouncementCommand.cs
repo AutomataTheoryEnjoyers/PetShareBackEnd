@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Announcements;
 using PetShare.Results;
@@ -47,5 +48,26 @@ public class AnnouncementCommand : IAnnouncementCommand
 
         await _dbContext.SaveChangesAsync(token);
         return Announcement.FromEntity(entityToUpdate);
+    }
+
+    public async Task<Result> LikeAsync(Guid id, Guid adopterId, CancellationToken token = default)
+    {
+        if (!await _dbContext.Announcements.AnyAsync(announcement => announcement.Id == id, token))
+            return new AnnouncementNotFound(id);
+
+        if (!await _dbContext.Adopters.AnyAsync(adopter => adopter.Id == adopterId, token))
+            return new AdopterNotFound(adopterId);
+
+        if (await _dbContext.Likes.AnyAsync(like => like.AdopterId == adopterId && like.AnnouncementId == id, token))
+            return new InvalidOperation("Announcement is already liked");
+
+        _dbContext.Likes.Add(new LikedAnnouncementEntity
+        {
+            AdopterId = adopterId,
+            AnnouncementId = id
+        });
+        await _dbContext.SaveChangesAsync(token);
+
+        return Result.Ok;
     }
 }

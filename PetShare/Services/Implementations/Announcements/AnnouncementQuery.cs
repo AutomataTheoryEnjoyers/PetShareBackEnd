@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Announcements;
 using PetShare.Services.Interfaces.Announcements;
@@ -14,31 +15,44 @@ public class AnnouncementQuery : IAnnouncementQuery
         _context = context;
     }
 
-    public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQueryRequest query,
+    public async Task<IReadOnlyList<AnnouncementWithLike>> GetAllFilteredAsync(AnnouncementFilters filters,
         CancellationToken token = default)
     {
         var filteredAnnouncements =
             _context.Announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).AsQueryable();
 
-        if (query.Species is not null)
-            filteredAnnouncements = filteredAnnouncements.Where(a => query.Species.Contains(a.Pet.Species));
-        if (query.Breeds is not null)
-            filteredAnnouncements = filteredAnnouncements.Where(a => query.Breeds.Contains(a.Pet.Breed));
-        if (query.Cities is not null)
-            filteredAnnouncements = filteredAnnouncements.Where(a => query.Cities.Contains(a.Pet.Shelter.Address.City));
-        if (query.MinAge is not null)
+        if (filters.Species is not null)
+            filteredAnnouncements = filteredAnnouncements.Where(a => filters.Species.Contains(a.Pet.Species));
+        if (filters.Breeds is not null)
+            filteredAnnouncements = filteredAnnouncements.Where(a => filters.Breeds.Contains(a.Pet.Breed));
+        if (filters.Cities is not null)
+            filteredAnnouncements =
+                filteredAnnouncements.Where(a => filters.Cities.Contains(a.Pet.Shelter.Address.City));
+        if (filters.MinAge is not null)
             filteredAnnouncements =
                 filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now)
-                                                 >= query.MinAge);
-        if (query.MaxAge is not null)
+                                                 >= filters.MinAge);
+        if (filters.MaxAge is not null)
             filteredAnnouncements =
                 filteredAnnouncements.Where(a => EF.Functions.DateDiffYear(a.Pet.Birthday, DateTime.Now)
-                                                 <= query.MaxAge);
-        if (query.ShelterNames is not null)
+                                                 <= filters.MaxAge);
+        if (filters.ShelterNames is not null)
             filteredAnnouncements =
-                filteredAnnouncements.Where(a => query.ShelterNames.Contains(a.Pet.Shelter.FullShelterName));
+                filteredAnnouncements.Where(a => filters.ShelterNames.Contains(a.Pet.Shelter.FullShelterName));
 
-        return await filteredAnnouncements.Select(e => Announcement.FromEntity(e)).ToListAsync(token);
+        var announcementsWithLikes = filters.MarkLikedBy is { } adopterId
+            ? filteredAnnouncements.Select(a =>
+                                               new EntityWithLike(a,
+                                                                  _context.Likes.Where(l => l.AdopterId == adopterId).
+                                                                           Any(l => l.AnnouncementId == a.Id)))
+            : filteredAnnouncements.Select(a => new EntityWithLike(a, false));
+
+        if (filters.IncludeOnlyLiked)
+            announcementsWithLikes = announcementsWithLikes.Where(a => a.IsLiked);
+
+        return await announcementsWithLikes.
+                     Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.IsLiked)).
+                     ToListAsync(token);
     }
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
@@ -58,4 +72,6 @@ public class AnnouncementQuery : IAnnouncementQuery
                                     FirstOrDefaultAsync(e => e.Id == id, token);
         return entity is null ? null : Announcement.FromEntity(entity);
     }
+
+    private record EntityWithLike(AnnouncementEntity Entity, bool IsLiked);
 }

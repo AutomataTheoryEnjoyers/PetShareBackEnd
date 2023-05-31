@@ -11,6 +11,7 @@ namespace PetShareTests;
 [Trait("Category", "Unit")]
 public sealed class AnnouncementQueryTests : IAsyncLifetime
 {
+    private readonly IReadOnlyList<AdopterEntity> _adopters;
     private readonly IReadOnlyList<AnnouncementEntity> _announcements;
     private readonly TestDbConnectionString _connection;
     private readonly PetShareDbContext _context;
@@ -114,6 +115,42 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         };
         _pets = _shelters.SelectMany(GeneratePets).ToList();
         _announcements = _pets.SelectMany(CreateManyAnnouncements).ToList();
+
+        _adopters = new[]
+        {
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-1",
+                Email = "69mr-destruction69@gmail.com",
+                PhoneNumber = "678456333",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Georgia",
+                    City = "Sarayevo",
+                    PostalCode = "69-420",
+                    Province = "South Park",
+                    Street = "Food"
+                }
+            },
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-2",
+                Email = "hhhhhhh@gmail.com",
+                PhoneNumber = "668099282",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Roman Empire",
+                    City = "Rome",
+                    PostalCode = "RO-MEE",
+                    Province = "Romania",
+                    Street = "Roman"
+                }
+            }
+        };
     }
 
     public async Task InitializeAsync()
@@ -121,6 +158,16 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         _context.Shelters.AddRange(_shelters);
         _context.Pets.AddRange(_pets);
         _context.Announcements.AddRange(_announcements);
+        _context.Adopters.AddRange(_adopters);
+        _context.Likes.AddRange(new LikedAnnouncementEntity
+        {
+            AdopterId = _adopters[0].Id,
+            AnnouncementId = _announcements.First(a => a.PetId == _pets.First(p => p.Name == "Reginald").Id).Id
+        }, new LikedAnnouncementEntity
+        {
+            AdopterId = _adopters[0].Id,
+            AnnouncementId = _announcements.Last(a => a.PetId == _pets.First(p => p.Name == "Amy").Id).Id
+        });
         await _context.SaveChangesAsync();
     }
 
@@ -130,7 +177,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    private IReadOnlyList<PetEntity> GeneratePets(ShelterEntity shelter)
+    private static IReadOnlyList<PetEntity> GeneratePets(ShelterEntity shelter)
     {
         return new[]
         {
@@ -202,7 +249,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         };
     }
 
-    private AnnouncementEntity CreateAnnouncementForPet(PetEntity pet, AnnouncementStatus status)
+    private static AnnouncementEntity CreateAnnouncementForPet(PetEntity pet, AnnouncementStatus status)
     {
         return new AnnouncementEntity
         {
@@ -324,5 +371,29 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
             ShelterNames = new[] { "Shelter 8" }
         });
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ShouldReturnInfoAboutLikes()
+    {
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
+        {
+            MarkLikedBy = _adopters[0].Id
+        });
+        result.Should().HaveCount(_announcements.Count(a => a.Status == (int)AnnouncementStatus.Open));
+        result.Single(a => a.IsLiked).Announcement.PetId.Should().Be(_pets[0].Id);
+    }
+
+    [Fact]
+    public async Task ShouldFilterByLiked()
+    {
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
+        {
+            MarkLikedBy = _adopters[0].Id,
+            IncludeOnlyLiked = true
+        });
+        result.Should().HaveCount(1);
+        result[0].Announcement.PetId.Should().Be(_pets[0].Id);
+        result[0].IsLiked.Should().BeTrue();
     }
 }

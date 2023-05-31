@@ -22,12 +22,11 @@ public sealed class Announcement
             Id = Id,
             AuthorId = AuthorId,
             PetId = Pet.Id,
-            //Pet = Pet.ToEntity(),
             Title = Title,
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = (int)Status,
+            Status = Status,
             LastUpdateDate = LastUpdateDate
         };
     }
@@ -43,7 +42,7 @@ public sealed class Announcement
             Description = entity.Description,
             CreationDate = entity.CreationDate,
             ClosingDate = entity.ClosingDate,
-            Status = (AnnouncementStatus)entity.Status,
+            Status = entity.Status,
             LastUpdateDate = entity.LastUpdateDate
         };
     }
@@ -58,7 +57,7 @@ public sealed class Announcement
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = (int)Status,
+            Status = Status.ToString(),
             LastUpdateDate = LastUpdateDate
         };
     }
@@ -77,12 +76,4 @@ public sealed class Announcement
             LastUpdateDate = DateTime.Now
         };
     }
-}
-
-public enum AnnouncementStatus
-{
-    Open = 0,
-    Closed = 1,
-    DuringVerification = 2,
-    Deleted = 3
 }

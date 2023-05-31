@@ -24,7 +24,7 @@ public sealed class ApplicationCommand : IApplicationCommand
         var adopter = await _context.Adopters.Where(adopter => adopter.Status != AdopterStatus.Deleted).
                                      FirstOrDefaultAsync(adopter => adopter.Id == adopterId, token);
         var announcement = await _context.Announcements.
-                                          Where(announcement => announcement.Status != (int)AnnouncementStatus.Deleted).
+                                          Where(announcement => announcement.Status != AnnouncementStatus.Deleted).
                                           FirstOrDefaultAsync(announcement => announcement.Id == announcementId, token);
 
         if (adopter is null)
@@ -35,10 +35,8 @@ public sealed class ApplicationCommand : IApplicationCommand
         if (adopter.Status == AdopterStatus.Blocked)
             return new InvalidOperation("Adopter is blocked");
 
-        if (announcement.Status == (int)AnnouncementStatus.Closed)
+        if (announcement.Status == AnnouncementStatus.Closed)
             return new InvalidOperation("Announcement is closed");
-        if (announcement.Status == (int)AnnouncementStatus.DuringVerification)
-            return new InvalidOperation("Announcement is not verified");
 
         var id = Guid.NewGuid();
         var now = DateTime.Now;

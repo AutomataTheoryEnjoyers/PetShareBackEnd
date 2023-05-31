@@ -6,7 +6,6 @@ namespace ShelterModule.Models.Pets;
 public class Pet
 {
     public Guid Id { get; init; }
-    //public required Guid ShelterId { get; init; }
     public required Shelter Shelter {get; init;}
     public required string Name { get; init; }
     public required string Species { get; init; }
@@ -81,7 +80,7 @@ public class Pet
             PhotoUrl = Photo,
             Shelter = Shelter.ToResponse(),
             Sex = Sex.ToString(),
-            Status = Status
+            Status = Status.ToString()
         };
     }
 }

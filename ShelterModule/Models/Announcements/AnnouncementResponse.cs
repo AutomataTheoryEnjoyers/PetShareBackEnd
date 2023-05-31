@@ -23,7 +23,7 @@ public sealed class AnnouncementResponse
     public required DateTime? ClosingDate { get; init; }
 
     [Required]
-    public required int Status { get; init; }
+    public required string Status { get; init; }
 
     [Required]
     public required DateTime LastUpdateDate { get; init; }

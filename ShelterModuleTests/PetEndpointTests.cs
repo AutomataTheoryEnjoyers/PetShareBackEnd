@@ -89,7 +89,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
                      Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                     Status = _pet.Status,
+                     Status = _pet.Status.ToString(),
                      Sex = _pet.Sex.ToString()
                  }
              });
@@ -158,7 +158,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
                      Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                     Status = _pet.Status,
+                     Status = _pet.Status.ToString(),
                      Sex = _pet.Sex.ToString()
                  });
     }
@@ -258,7 +258,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Description = request.Description,
                    PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
                    Shelter = Shelter.FromEntity(_shelter).ToResponse(),
-                   Status = _pet.Status,
+                   Status = _pet.Status.ToString(),
                    Sex = request.Sex
                }, options => options.Excluding(s => s.Id));
 
@@ -303,7 +303,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Birthday = _pet.Birthday,
                        Description = request.Description,
                        Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                       Status = _pet.Status,
+                       Status = _pet.Status.ToString(),
                        PhotoUrl = _pet.Photo,
                        Sex = _pet.Sex.ToString()
                    });
@@ -348,7 +348,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Birthday = _pet.Birthday,
                        Description = _pet.Description,
                        Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                       Status = PetStatus.Deleted,
+                       Status = PetStatus.Deleted.ToString(),
                        PhotoUrl = _pet.Photo,
                        Sex = _pet.Sex.ToString()
                    });

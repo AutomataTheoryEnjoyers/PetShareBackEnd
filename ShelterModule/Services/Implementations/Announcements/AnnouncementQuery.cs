@@ -42,7 +42,7 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).Include(a => a.Pet).ToListAsync(token)).
+        return (await _context.Announcements.Where(a => a.AuthorId == shelterId).Include(a => a.Pet.Shelter).ToListAsync(token)).
                Select(Announcement.FromEntity).
                ToList();
     }

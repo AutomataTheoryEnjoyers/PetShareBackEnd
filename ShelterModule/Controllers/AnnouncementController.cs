@@ -99,7 +99,7 @@ public class AnnouncementController : ControllerBase
         if (pet is null)
             return BadRequest();
 
-        var announcement = Announcement.FromRequest(request, User.GetId(),pet);
+        var announcement = Announcement.FromRequest(request, User.GetId(), pet);
         return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
     }
 

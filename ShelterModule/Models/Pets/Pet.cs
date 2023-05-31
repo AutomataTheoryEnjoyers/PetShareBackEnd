@@ -6,7 +6,7 @@ namespace ShelterModule.Models.Pets;
 public class Pet
 {
     public Guid Id { get; init; }
-    public required Shelter Shelter {get; init;}
+    public required Shelter Shelter { get; init; }
     public required string Name { get; init; }
     public required string Species { get; init; }
     public required string Breed { get; init; }

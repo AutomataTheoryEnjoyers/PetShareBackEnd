@@ -68,7 +68,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             Author = _shelter,
             PetId = _pet.Id,
             Pet = _pet,
-            
+
         };
     }
 
@@ -318,7 +318,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     Title = updatedAnnouncement.Title,
                     Description = updatedAnnouncement.Description,
                     Status = Enum.Parse<AnnouncementStatus>(updatedAnnouncement.Status),
-                    PetId = updatedAnnouncement.Pet.Id, 
+                    PetId = updatedAnnouncement.Pet.Id,
                     CreationDate = updatedAnnouncement.CreationDate,
                     LastUpdateDate = updatedAnnouncement.LastUpdateDate,
                     AuthorId = _shelter.Id,

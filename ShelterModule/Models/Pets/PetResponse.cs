@@ -33,6 +33,6 @@ public sealed class PetResponse
     [Required]
     public required string Sex { get; init; }
 
-    [Required]  
+    [Required]
     public required ShelterResponse Shelter { get; init; }
 }

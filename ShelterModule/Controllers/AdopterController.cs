@@ -125,10 +125,10 @@ public sealed class AdopterController : ControllerBase
     [HttpGet]
     [Route("{id:guid}/isVerified")]
     [Authorize(Roles = Roles.Shelter)]
-    [ProducesResponseType(typeof(AdopterVerificationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<AdopterVerificationResponse>> IsVerified(Guid id)
+    public async Task<ActionResult<bool>> IsVerified(Guid id)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
@@ -140,10 +140,6 @@ public sealed class AdopterController : ControllerBase
                 Id = id.ToString(),
                 ResourceName = nameof(Adopter)
             });
-
-        return new AdopterVerificationResponse
-        {
-            IsVerified = result.Value
-        };
+        return result.Value;
     }
 }

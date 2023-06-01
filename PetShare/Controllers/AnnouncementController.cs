@@ -47,10 +47,11 @@ public class AnnouncementController : ControllerBase
     [AllowAnonymous]
     [Route("announcements")]
     [ProducesResponseType(typeof(IReadOnlyList<LikedAnnouncementResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IReadOnlyList<LikedAnnouncementResponse>>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (User.IsAdopter() && await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
         return (await

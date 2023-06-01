@@ -41,17 +41,18 @@ public class AnnouncementQuery : IAnnouncementQuery
                 filteredAnnouncements.Where(a => filters.ShelterNames.Contains(a.Pet.Shelter.FullShelterName));
 
         var announcementsWithLikes = filters.MarkLikedBy is { } adopterId
-            ? filteredAnnouncements.Select(a =>
-                                               new EntityWithLike(a,
-                                                                  _context.Likes.Where(l => l.AdopterId == adopterId).
-                                                                           Any(l => l.AnnouncementId == a.Id)))
-            : filteredAnnouncements.Select(a => new EntityWithLike(a, false));
+            ? filteredAnnouncements.Select(a => new
+            {
+                Entity = a,
+                Liked = _context.Likes.Any(l => l.AdopterId == adopterId && l.AnnouncementId == a.Id)
+            })
+            : filteredAnnouncements.Select(a => new { Entity = a, Liked = false });
 
         if (filters.IncludeOnlyLiked)
-            announcementsWithLikes = announcementsWithLikes.Where(a => a.IsLiked);
+            announcementsWithLikes = announcementsWithLikes.Where(a => a.Liked);
 
         return await announcementsWithLikes.
-                     Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.IsLiked)).
+                     Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.Liked)).
                      ToListAsync(token);
     }
 

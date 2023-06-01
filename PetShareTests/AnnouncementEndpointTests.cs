@@ -376,21 +376,18 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var announcements =
             await client.Request("announcements").GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
-                      ContainEquivalentOf(new[]
+                      ContainEquivalentOf(new LikedAnnouncementResponse
                       {
-                          new LikedAnnouncementResponse
-                          {
-                              Id = _announcement.Id,
-                              Title = _announcement.Title,
-                              Description = _announcement.Description,
-                              CreationDate = _announcement.CreationDate,
-                              ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status,
-                              LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId,
-                              IsLiked = true
-                          }
+                          Id = _announcement.Id,
+                          Title = _announcement.Title,
+                          Description = _announcement.Description,
+                          CreationDate = _announcement.CreationDate,
+                          ClosingDate = _announcement.ClosingDate,
+                          Status = _announcement.Status,
+                          LastUpdateDate = _announcement.LastUpdateDate,
+                          AuthorId = _announcement.AuthorId,
+                          PetId = _announcement.PetId,
+                          IsLiked = true
                       });
     }
 }

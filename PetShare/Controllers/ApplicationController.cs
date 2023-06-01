@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
 using PetShare.Models.Applications;
 using PetShare.Services;
+using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
 
 namespace PetShare.Controllers;
@@ -12,13 +13,16 @@ namespace PetShare.Controllers;
 [Route("applications")]
 public sealed class ApplicationController : ControllerBase
 {
+    private readonly IAnnouncementQuery _announcementQuery;
     private readonly IApplicationCommand _command;
     private readonly IApplicationQuery _query;
     private readonly TokenValidator _validator;
 
-    public ApplicationController(IApplicationQuery query, IApplicationCommand command, TokenValidator validator)
+    public ApplicationController(IApplicationQuery query, IApplicationCommand command,
+        IAnnouncementQuery announcementQuery, TokenValidator validator)
     {
         _query = query;
+        _announcementQuery = announcementQuery;
         _command = command;
         _validator = validator;
     }
@@ -96,7 +100,8 @@ public sealed class ApplicationController : ControllerBase
         if (applications is null)
             return NotFound(NotFoundResponse.Announcement(announcementId));
 
-        if (applications.Count > 0 && applications[0].Announcement.AuthorId != User.GetId())
+        if ((await _announcementQuery.GetByIdAsync(announcementId, HttpContext.RequestAborted))?.AuthorId
+            != User.GetId())
             return Forbid();
 
         return applications.Select(app => app.ToResponse()).ToList();

@@ -81,7 +81,8 @@ public class PetController : ControllerBase
             return Unauthorized();
 
         var pet = Pet.FromRequest(request, shelter);
-        return (await _command.AddAsync(pet, HttpContext.RequestAborted)).ToResponse();
+        await _command.AddAsync(pet, HttpContext.RequestAborted);
+        return pet.ToResponse();
     }
 
     /// <summary>

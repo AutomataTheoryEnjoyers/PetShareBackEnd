@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using PetShare.Models.Announcements;
 using PetShare.Services.Interfaces.Announcements;
@@ -17,7 +18,7 @@ public class AnnouncementQuery : IAnnouncementQuery
     public async Task<IReadOnlyList<Announcement>> GetAllFilteredAsync(GetAllAnnouncementsFilteredQueryRequest query,
         CancellationToken token = default)
     {
-        var filteredAnnouncements = _context.Announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).
+        var filteredAnnouncements = _context.Announcements.Where(a => a.Status == AnnouncementStatus.Open).
                                              Include(x => x.Pet.Shelter).
                                              AsQueryable();
 
@@ -44,7 +45,7 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+        return (await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
                                Where(a => a.AuthorId == shelterId).
                                Include(a => a.Pet.Shelter).
                                ToListAsync(token)).
@@ -54,7 +55,7 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        var entity = await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+        var entity = await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
                                     Include(x => x.Author).
                                     Include(x => x.Pet).
                                     FirstOrDefaultAsync(e => e.Id == id, token);

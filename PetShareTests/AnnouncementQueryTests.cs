@@ -76,40 +76,40 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
                     Province = "Armenia",
                     Street = "Wear"
                 }
-                // },
-                // new ShelterEntity
-                // {
-                //     Id = Guid.NewGuid(),
-                //     UserName = "shelter3",
-                //     FullShelterName = "Shelter 3",
-                //     Email = "shelter3@mail.com",
-                //     PhoneNumber = "729837501",
-                //     IsAuthorized = false,
-                //     Address = new Address
-                //     {
-                //         Country = "Netherlands",
-                //         City = "New Mexico",
-                //         PostalCode = "66-666",
-                //         Province = "Albuquerque",
-                //         Street = "Saul"
-                //     }
-                // },
-                // new ShelterEntity
-                // {
-                //     Id = Guid.NewGuid(),
-                //     UserName = "shelter4",
-                //     FullShelterName = "Shelter 4",
-                //     Email = "shelter4@mail.com",
-                //     PhoneNumber = "898989898",
-                //     IsAuthorized = null,
-                //     Address = new Address
-                //     {
-                //         Country = "England",
-                //         City = "Lodz",
-                //         PostalCode = "78-121",
-                //         Province = "Greece",
-                //         Street = "Lubliana"
-                //     }
+            },
+            new ShelterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter3",
+                FullShelterName = "Shelter 3",
+                Email = "shelter3@mail.com",
+                PhoneNumber = "729837501",
+                IsAuthorized = false,
+                Address = new Address
+                {
+                    Country = "Netherlands",
+                    City = "New Mexico",
+                    PostalCode = "66-666",
+                    Province = "Albuquerque",
+                    Street = "Saul"
+                }
+            },
+            new ShelterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter4",
+                FullShelterName = "Shelter 4",
+                Email = "shelter4@mail.com",
+                PhoneNumber = "898989898",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "England",
+                    City = "Lodz",
+                    PostalCode = "78-121",
+                    Province = "Greece",
+                    Street = "Lubliana"
+                }
             }
         };
         _pets = _shelters.SelectMany(GeneratePets).ToList();
@@ -130,7 +130,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    private IReadOnlyList<PetEntity> GeneratePets(ShelterEntity shelter)
+    private static IReadOnlyList<PetEntity> GeneratePets(ShelterEntity shelter)
     {
         return new[]
         {
@@ -202,7 +202,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         };
     }
 
-    private AnnouncementEntity CreateAnnouncementForPet(PetEntity pet, AnnouncementStatus status)
+    private static AnnouncementEntity CreateAnnouncementForPet(PetEntity pet, AnnouncementStatus status)
     {
         return new AnnouncementEntity
         {
@@ -216,7 +216,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
             PetId = pet.Id,
             Title = $"{pet.Name} is up for adoption!",
             Description = $"Here's {pet.Name}'s description: {pet.Description}. Please adopt ASAP!",
-            Status = (int)status
+            Status = status
         };
     }
 
@@ -224,7 +224,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     {
         return new[]
         {
-            CreateAnnouncementForPet(pet, AnnouncementStatus.DuringVerification),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Open),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Closed),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Deleted)
@@ -252,7 +251,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => species.Contains(_pets.Single(p => p.Id == a.PetId).Species)),
+                                             Where(a => species.Contains(_pets.Single(p => p.Id == a.Pet.Id).Species)),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -266,7 +265,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => _pets.Single(p => p.Id == a.PetId).Breed == "Grey"),
+                                             Where(a => _pets.Single(p => p.Id == a.Pet.Id).Breed == "Grey"),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -281,9 +280,9 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.PetId).Birthday
+                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.Pet.Id).Birthday
                                                         >= TimeSpan.FromDays(3 * 365)).
-                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.PetId).Birthday
+                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.Pet.Id).Birthday
                                                         <= TimeSpan.FromDays(50 * 365)),
                               options => options.WithoutStrictOrdering());
     }

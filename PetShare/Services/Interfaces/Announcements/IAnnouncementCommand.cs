@@ -5,6 +5,6 @@ namespace PetShare.Services.Interfaces.Announcements;
 
 public interface IAnnouncementCommand
 {
-    public Task<Result> AddAsync(Announcement announcement, CancellationToken token = default);
-    public Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request, CancellationToken token = default);
+    Task<Result> AddAsync(Announcement announcement, CancellationToken token = default);
+    Task<Announcement?> UpdateAsync(Guid id, AnnouncementPutRequest request, CancellationToken token = default);
 }

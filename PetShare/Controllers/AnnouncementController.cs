@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
 using PetShare.Models.Announcements;
-using PetShare.Models.Pets;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Announcements;
+using PetShare.Services.Interfaces.Pets;
 
 namespace PetShare.Controllers;
 
@@ -12,13 +12,15 @@ namespace PetShare.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
+    private readonly IPetQuery _petQuery;
     private readonly IAnnouncementQuery _query;
     private readonly TokenValidator _validator;
 
-    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command,
+    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery,
         TokenValidator validator)
     {
         _query = query;
+        _petQuery = petQuery;
         _command = command;
         _validator = validator;
     }
@@ -94,7 +96,8 @@ public class AnnouncementController : ControllerBase
             return BadRequest();
 
         var announcement = Announcement.FromRequest(request, User.GetId(), pet);
-        return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
+        var result = await _command.AddAsync(announcement, HttpContext.RequestAborted);
+        return result.HasValue ? announcement.ToResponse() : result.State.ToActionResult();
     }
 
     /// <summary>

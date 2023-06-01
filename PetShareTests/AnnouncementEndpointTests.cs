@@ -255,7 +255,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
                             Status = AnnouncementStatus.Open.ToString(),
-                            Pet = Pet.FromEntity(_pet).ToResponse(),
+                            Pet = Pet.FromEntity(_pet).ToResponse()
                         },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
@@ -297,7 +297,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Id = _announcement.Id,
                                 Title = _announcement.Title,
                                 Description = request.Description,
-                                Status = request.Status.ToString(),
+                                Status = request.Status,
                                 Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                                 CreationDate = _announcement.CreationDate,
                                 ClosingDate = null,
@@ -317,7 +317,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     PetId = updatedAnnouncement.Pet.Id,
                     CreationDate = updatedAnnouncement.CreationDate,
                     LastUpdateDate = updatedAnnouncement.LastUpdateDate,
-                    AuthorId = _shelter.Id,
+                    AuthorId = _shelter.Id
                 });
     }
 

@@ -1,6 +1,5 @@
-﻿using Database.Entities;
-using ShelterModule.Models.Shelters;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using PetShare.Models.Shelters;
 
 namespace PetShare.Models.Pets;
 

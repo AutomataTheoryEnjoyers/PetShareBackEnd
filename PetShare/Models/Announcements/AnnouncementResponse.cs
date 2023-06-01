@@ -1,5 +1,5 @@
-﻿using ShelterModule.Models.Pets;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using PetShare.Models.Pets;
 
 namespace PetShare.Models.Announcements;
 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models;
 using PetShare.Models.Pets;
+using PetShare.Models.Shelters;
 using Xunit;
 
 namespace PetShareTests;
@@ -240,7 +241,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Birthday = DateTime.Now,
             Description = "test-description2",
             Sex = "Female",
-            PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+            PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png"
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet").PostJsonAsync(request);

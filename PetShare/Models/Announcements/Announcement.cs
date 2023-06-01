@@ -1,5 +1,5 @@
 ﻿using Database.Entities;
-using ShelterModule.Models.Pets;
+using PetShare.Models.Pets;
 
 namespace PetShare.Models.Announcements;
 

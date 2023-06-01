@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelterModule.Models.Announcements;
+using ShelterModule.Models.Pets;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Announcements;
 using ShelterModule.Services.Interfaces.Pets;
@@ -94,10 +95,11 @@ public class AnnouncementController : ControllerBase
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        if (await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted) is null)
+        Pet? pet = await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted);
+        if (pet is null)
             return BadRequest();
 
-        var announcement = Announcement.FromRequest(request, User.GetId());
+        var announcement = Announcement.FromRequest(request, User.GetId(), pet);
         return (await _command.AddAsync(announcement, HttpContext.RequestAborted)).ToResponse();
     }
 

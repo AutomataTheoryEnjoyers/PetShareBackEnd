@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ShelterModule;
 using ShelterModule.Controllers;
 using ShelterModule.Models.Pets;
+using ShelterModule.Models.Shelters;
 using Xunit;
 
 namespace ShelterModuleTests;
@@ -47,7 +48,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Species = "test-species",
             Birthday = DateTime.Now,
             Description = "test-description",
-            Photo = "test-photo",
+            Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
             ShelterId = _shelter.Id,
             Sex = PetSex.Unknown,
             Status = PetStatus.Active
@@ -87,7 +88,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
-                     ShelterId = _pet.ShelterId,
+                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                     Status = _pet.Status.ToString(),
                      Sex = _pet.Sex.ToString()
                  }
              });
@@ -126,7 +128,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Description = "description",
             Sex = PetSex.DoesNotApply,
             Birthday = DateTime.Today,
-            Photo = null,
+            Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
             Status = PetStatus.Deleted
         });
         await context.SaveChangesAsync();
@@ -155,7 +157,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Birthday = _pet.Birthday,
                      Description = _pet.Description,
                      PhotoUrl = _pet.Photo,
-                     ShelterId = _pet.ShelterId,
+                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                     Status = _pet.Status.ToString(),
                      Sex = _pet.Sex.ToString()
                  });
     }
@@ -194,7 +197,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Description = "description",
             Sex = PetSex.DoesNotApply,
             Birthday = DateTime.Today,
-            Photo = null,
+            Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
             Status = PetStatus.Deleted
         });
         await context.SaveChangesAsync();
@@ -237,7 +240,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Species = "test-species2",
             Birthday = DateTime.Now,
             Description = "test-description2",
-            Sex = "Female"
+            Sex = "Female",
+            PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("pet").PostJsonAsync(request);
@@ -252,8 +256,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Species = request.Species,
                    Birthday = request.Birthday,
                    Description = request.Description,
-                   PhotoUrl = null,
-                   ShelterId = _shelter.Id,
+                   PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+                   Shelter = Shelter.FromEntity(_shelter).ToResponse(),
+                   Status = _pet.Status.ToString(),
                    Sex = request.Sex
                }, options => options.Excluding(s => s.Id));
 
@@ -269,7 +274,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                     Birthday = request.Birthday,
                     Description = request.Description,
                     ShelterId = _shelter.Id,
-                    Photo = null,
+                    Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
                     Sex = PetSex.Female,
                     Status = PetStatus.Active
                 });
@@ -297,7 +302,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Species = _pet.Species,
                        Birthday = _pet.Birthday,
                        Description = request.Description,
-                       ShelterId = _shelter.Id,
+                       Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                       Status = _pet.Status.ToString(),
                        PhotoUrl = _pet.Photo,
                        Sex = _pet.Sex.ToString()
                    });
@@ -341,7 +347,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Species = _pet.Species,
                        Birthday = _pet.Birthday,
                        Description = _pet.Description,
-                       ShelterId = _shelter.Id,
+                       Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                       Status = PetStatus.Deleted.ToString(),
                        PhotoUrl = _pet.Photo,
                        Sex = _pet.Sex.ToString()
                    });

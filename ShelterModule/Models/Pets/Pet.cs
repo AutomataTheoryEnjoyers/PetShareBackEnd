@@ -1,17 +1,18 @@
 ﻿using Database.Entities;
+using ShelterModule.Models.Shelters;
 
 namespace ShelterModule.Models.Pets;
 
 public class Pet
 {
     public Guid Id { get; init; }
-    public required Guid ShelterId { get; init; }
+    public required Shelter Shelter { get; init; }
     public required string Name { get; init; }
     public required string Species { get; init; }
     public required string Breed { get; init; }
     public required DateTime Birthday { get; init; }
     public required string Description { get; init; }
-    public string? Photo { get; init; }
+    public required string Photo { get; init; }
     public required PetSex Sex { get; init; }
     public required PetStatus Status { get; init; }
 
@@ -26,7 +27,7 @@ public class Pet
             Birthday = Birthday,
             Description = Description,
             Photo = Photo,
-            ShelterId = ShelterId,
+            ShelterId = Shelter.Id,
             Sex = Sex,
             Status = Status
         };
@@ -43,13 +44,13 @@ public class Pet
             Birthday = entity.Birthday,
             Description = entity.Description,
             Photo = entity.Photo,
-            ShelterId = entity.ShelterId,
+            Shelter = Shelter.FromEntity(entity.Shelter),
             Sex = entity.Sex,
             Status = entity.Status
         };
     }
 
-    public static Pet FromRequest(PetCreationRequest request, Guid shelterId)
+    public static Pet FromRequest(PetCreationRequest request, Shelter shelter)
     {
         return new Pet
         {
@@ -59,8 +60,8 @@ public class Pet
             Breed = request.Breed,
             Birthday = request.Birthday,
             Description = request.Description,
-            Photo = null,
-            ShelterId = shelterId,
+            Photo = request.PhotoUrl,
+            Shelter = shelter,
             Sex = Enum.Parse<PetSex>(request.Sex),
             Status = PetStatus.Active
         };
@@ -77,8 +78,9 @@ public class Pet
             Birthday = Birthday,
             Description = Description,
             PhotoUrl = Photo,
-            ShelterId = ShelterId,
-            Sex = Sex.ToString()
+            Shelter = Shelter.ToResponse(),
+            Sex = Sex.ToString(),
+            Status = Status.ToString()
         };
     }
 }

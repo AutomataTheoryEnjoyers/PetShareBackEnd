@@ -1,4 +1,5 @@
 ﻿using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using ShelterModule.Models.Announcements;
 using ShelterModule.Services.Interfaces.Announcements;
@@ -31,9 +32,9 @@ public class AnnouncementCommand : IAnnouncementCommand
 
         entityToUpdate.Title = request.Title ?? entityToUpdate.Title;
         entityToUpdate.Description = request.Description ?? entityToUpdate.Description;
-        entityToUpdate.Status = request.Status ?? entityToUpdate.Status;
+        entityToUpdate.Status = request.Status is null ? entityToUpdate.Status : Enum.Parse<AnnouncementStatus>(request.Status);
 
-        if (entityToUpdate.Status == (int)AnnouncementStatus.Closed)
+        if (entityToUpdate.Status == AnnouncementStatus.Closed)
             entityToUpdate.ClosingDate = DateTime.Now;
         entityToUpdate.LastUpdateDate = DateTime.Now;
 

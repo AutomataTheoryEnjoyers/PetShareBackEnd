@@ -16,7 +16,7 @@ public sealed class ApplicationQuery : IApplicationQuery
 
     public async Task<IReadOnlyList<Application>> GetAllAsync(CancellationToken token = default)
     {
-        return await _context.Applications.Include(app => app.Announcement).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Select(app => Application.FromEntity(app)).
                               ToListAsync(token);
@@ -28,7 +28,7 @@ public sealed class ApplicationQuery : IApplicationQuery
         if (!_context.Adopters.Any(adopter => adopter.Id == adopterId))
             return null;
 
-        return await _context.Applications.Include(app => app.Announcement).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Adopter.Id == adopterId).
                               Select(app => Application.FromEntity(app)).
@@ -41,7 +41,7 @@ public sealed class ApplicationQuery : IApplicationQuery
         if (!_context.Shelters.Any(shelter => shelter.Id == shelterId))
             return null;
 
-        return await _context.Applications.Include(app => app.Announcement).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Announcement.AuthorId == shelterId).
                               Select(app => Application.FromEntity(app)).
@@ -50,7 +50,7 @@ public sealed class ApplicationQuery : IApplicationQuery
 
     public async Task<Application?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        var entity = await _context.Applications.Include(app => app.Announcement).
+        var entity = await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                                     Include(app => app.Adopter).
                                     FirstOrDefaultAsync(app => app.Id == id, token);
 

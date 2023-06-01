@@ -510,6 +510,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                      }
                  }
              });
+
     }
 
     [Fact]

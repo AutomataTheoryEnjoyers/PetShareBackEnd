@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models;
+using PetShare.Models.Announcements;
 using PetShare.Models.Shelters;
 using Xunit;
 
@@ -15,22 +16,59 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class ShelterEndpointTests : IAsyncLifetime
 {
-    private readonly ShelterEntity _shelter = new()
+    //private readonly ShelterEntity _shelter = new[]
+    //{
+    //    Id = Guid.NewGuid(),
+    //    UserName = "test-shelter",
+    //    Email = "mail@mail.mail",
+    //    PhoneNumber = "123456789",
+    //    FullShelterName = "Test Shelter",
+    //    IsAuthorized = null,
+    //    Address = new Address
+    //    {
+    //        Country = "test-country",
+    //        Province = "test-province",
+    //        City = "test-city",
+    //        Street = "test-street",
+    //        PostalCode = "test-postalCode"
+    //    }
+    //};
+    private readonly ShelterEntity[] _shelters = new ShelterEntity[]
     {
-        Id = Guid.NewGuid(),
-        UserName = "test-shelter",
-        Email = "mail@mail.mail",
-        PhoneNumber = "123456789",
-        FullShelterName = "Test Shelter",
-        IsAuthorized = null,
-        Address = new Address
-        {
-            Country = "test-country",
-            Province = "test-province",
-            City = "test-city",
-            Street = "test-street",
-            PostalCode = "test-postalCode"
-        }
+            new ()
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter1",
+                Email = "mail1@mail.mail",
+                PhoneNumber = "123456789",
+                FullShelterName = "Shelter 1",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "country",
+                    Province = "province",
+                    City = "city",
+                    Street = "street",
+                    PostalCode = "12-345"
+                }
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter2",
+                Email = "mail2@mail.mail",
+                PhoneNumber = "123123123",
+                FullShelterName = "Shelter 2",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "country",
+                    Province = "province",
+                    City = "city",
+                    Street = "street",
+                    PostalCode = "54-321"
+                }
+            }
     };
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -39,7 +77,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     {
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Shelters.Add(_shelter);
+        context.Shelters.AddRange(_shelters);
+        context.Set<ShelterEntity>().OrderBy(x => x.UserName);
         await context.SaveChangesAsync();
     }
 
@@ -55,41 +94,72 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelter").GetAsync();
         response.StatusCode.Should().Be(200);
-        var shelters = await response.GetJsonAsync<IEnumerable<ShelterResponse>>();
+        var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Should().
-                 BeEquivalentTo(new[]
-                 {
-                     new ShelterResponse
-                     {
-                         Id = _shelter.Id,
-                         UserName = _shelter.UserName,
-                         FullShelterName = _shelter.FullShelterName,
-                         Email = _shelter.Email,
-                         PhoneNumber = _shelter.PhoneNumber,
-                         IsAuthorized = _shelter.IsAuthorized,
-                         Address = _shelter.Address
-                     }
-                 });
+                BeEquivalentTo(new PaginatedSheltersResponse
+                {
+                    Shelters = _shelters.Select(s => Shelter.FromEntity(s).ToResponse()).ToArray(),
+                    PageNumber = 0,
+                    Count = 2
+                });
+    }
+
+    [Fact]
+    public async Task GetShouldFailWithWrongPaginationParams()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 10,
+            PageNumber = 10,
+        };
+        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 1,
+            PageNumber = 0,
+        };
+        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
+        shelters.Count.Should().Be(2);
+        shelters.PageNumber.Should().Be(0);
+        shelters.Shelters.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedEndFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 1,
+            PageNumber = 1,
+        };
+        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
+        shelters.Count.Should().Be(2);
+        shelters.PageNumber.Should().Be(1);
+        shelters.Shelters.Count.Should().Be(1);
     }
 
     [Fact]
     public async Task GetShouldFetchShelterById()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("shelter", _shelter.Id).GetAsync();
+        var response = await client.Request("shelter", _shelters[0].Id).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
         var shelters = await response.GetJsonAsync<ShelterResponse>();
         shelters.Should().
-                 BeEquivalentTo(new ShelterResponse
-                 {
-                     Id = _shelter.Id,
-                     UserName = _shelter.UserName,
-                     FullShelterName = _shelter.FullShelterName,
-                     Email = _shelter.Email,
-                     PhoneNumber = _shelter.PhoneNumber,
-                     IsAuthorized = _shelter.IsAuthorized,
-                     Address = _shelter.Address
-                 });
+                 BeEquivalentTo(Shelter.FromEntity(_shelters[0]).ToResponse());
     }
 
     [Fact]
@@ -161,7 +231,7 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task PutShouldAuthorizeShelter()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
-        var response = await client.Request("shelter", _shelter.Id).
+        var response = await client.Request("shelter", _shelters[0].Id).
                                     PutJsonAsync(new ShelterAuthorizationRequest
                                     {
                                         IsAuthorized = true
@@ -171,28 +241,28 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         newShelter.Should().
                    BeEquivalentTo(new ShelterResponse
                    {
-                       Id = _shelter.Id,
-                       UserName = _shelter.UserName,
-                       FullShelterName = _shelter.FullShelterName,
-                       Email = _shelter.Email,
-                       PhoneNumber = _shelter.PhoneNumber,
+                       Id = _shelters[0].Id,
+                       UserName = _shelters[0].UserName,
+                       FullShelterName = _shelters[0].FullShelterName,
+                       Email = _shelters[0].Email,
+                       PhoneNumber = _shelters[0].PhoneNumber,
                        IsAuthorized = true,
-                       Address = _shelter.Address
+                       Address = _shelters[0].Address
                    });
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Shelters.Single(e => e.Id == _shelter.Id).
+        context.Shelters.Single(e => e.Id == _shelters[0].Id).
                 Should().
                 BeEquivalentTo(new ShelterEntity
                 {
-                    Id = _shelter.Id,
-                    UserName = _shelter.UserName,
-                    FullShelterName = _shelter.FullShelterName,
-                    Email = _shelter.Email,
-                    PhoneNumber = _shelter.PhoneNumber,
+                    Id = _shelters[0].Id,
+                    UserName = _shelters[0].UserName,
+                    FullShelterName = _shelters[0].FullShelterName,
+                    Email = _shelters[0].Email,
+                    PhoneNumber = _shelters[0].PhoneNumber,
                     IsAuthorized = true,
-                    Address = _shelter.Address
+                    Address = _shelters[0].Address
                 });
     }
 

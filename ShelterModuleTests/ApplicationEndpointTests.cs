@@ -474,43 +474,47 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetShouldReturnApplicationById()
+    public async Task GetShouldReturnApplicationByAnnouncementId()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
-        var app = await client.Request("applications", _applications[0].Id).GetJsonAsync<ApplicationResponse>();
+        var app = await client.Request("applications", _announcements[0].Id).GetJsonAsync<IEnumerable<ApplicationResponse>>();
         app.Should().
-            BeEquivalentTo(new ApplicationResponse
-            {
-                Id = _applications[0].Id,
-                CreationDate = _now - TimeSpan.FromHours(13),
-                LastUpdateDate = _now - TimeSpan.FromHours(13),
-                ApplicationStatus = ApplicationState.Created.ToString(),
-                Adopter = new AdopterResponse
-                {
-                    Id = _adopters[0].Id,
-                    UserName = "adopter1",
-                    Email = "email1@mail.mail",
-                    PhoneNumber = "987654321",
-                    Status = AdopterStatus.Active,
-                    Address = _adopters[0].Address
-                },
-                AnnouncementId = _announcements[0].Id,
-                Announcement = new AnnouncementResponse
-                {
-                    Id = _announcements[0].Id,
-                    Title = "announcement1",
-                    Description = "description",
-                    CreationDate = _now - TimeSpan.FromDays(10),
-                    LastUpdateDate = _now - TimeSpan.FromDays(5),
-                    ClosingDate = null,
-                    Status = AnnouncementStatus.Open.ToString(),
-                    Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                }
-            });
+            BeEquivalentTo(new ApplicationResponse[]
+             {
+                 new()
+                 {
+                     Id = _applications[0].Id,
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
+                     Adopter = new AdopterResponse
+                     {
+                         Id = _adopters[0].Id,
+                         UserName = "adopter1",
+                         Email = "email1@mail.mail",
+                         PhoneNumber = "987654321",
+                         Status = AdopterStatus.Active,
+                         Address = _adopters[0].Address
+                     },
+                     AnnouncementId = _announcements[0].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[0].Id,
+                         Title = "announcement1",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(10),
+                         LastUpdateDate = _now - TimeSpan.FromDays(5),
+                         ClosingDate = null,
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
+                     }
+                 }
+             });
+
     }
 
     [Fact]
-    public async Task GetShouldReturn404IfApplicationDoesntExist()
+    public async Task GetForAnnouncementShouldReturn404IfAnnouncementDoesntExist()
     {
         var invalidId = Guid.NewGuid();
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
@@ -522,15 +526,15 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   Id = invalidId.ToString(),
-                  ResourceName = nameof(Application)
+                  ResourceName = nameof(Announcement)
               });
     }
 
     [Fact]
-    public async Task GetShouldReturn403IfApplicationBelongsToDifferentShelter()
+    public async Task GetShouldReturn403IfAnnouncementBelongsToDifferentShelter()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
-        var response = await client.Request("applications", _applications[1].Id).GetAsync();
+        var response = await client.Request("applications", _announcements[1].Id).GetAsync();
 
         response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
     }

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ShelterModule.Models.Announcements;
 using ShelterModule.Models.Applications;
 using ShelterModule.Services;
 using ShelterModule.Services.Interfaces.Applications;
@@ -69,28 +71,29 @@ public sealed class ApplicationController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = Roles.Shelter)]
-    [Route("{id:guid}")]
+    [Route("{announcementId:guid}")]
     [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApplicationResponse>> Get(Guid id)
+    public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetForAnnouncement(Guid announcementId)
     {
         if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
             return Unauthorized();
 
-        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
-        if (application is null)
+        var applications = await _query.GetAllForAnnouncementAsync(announcementId, HttpContext.RequestAborted);
+        if (applications is null)
             return NotFound(new NotFoundResponse
             {
-                Id = id.ToString(),
-                ResourceName = nameof(Application)
+                Id = announcementId.ToString(),
+                ResourceName = nameof(Announcement)
             });
+        if (applications == null) return NotFound();
 
-        if (application.Announcement.AuthorId != User.GetId())
+        if (applications.Count > 0 && applications[0].Announcement.AuthorId != User.GetId())
             return Forbid();
 
-        return application.ToResponse();
+        return applications.Select(app => app.ToResponse()).ToList();
     }
 
     [HttpPut]

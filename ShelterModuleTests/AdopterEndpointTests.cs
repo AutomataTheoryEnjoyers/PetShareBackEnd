@@ -202,12 +202,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id);
         var response1 = await client.Request("adopter", _adopter.Id, "isVerified").
-                                     GetJsonAsync<AdopterVerificationResponse>();
-        response1.Should().
-                  BeEquivalentTo(new AdopterVerificationResponse
-                  {
-                      IsVerified = false
-                  });
+                                     GetJsonAsync<bool>();
+        response1.Should().BeFalse();
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
@@ -219,12 +215,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         await context.SaveChangesAsync();
 
         var response2 = await client.Request("adopter", _adopter.Id, "isVerified").
-                                     GetJsonAsync<AdopterVerificationResponse>();
-        response2.Should().
-                  BeEquivalentTo(new AdopterVerificationResponse
-                  {
-                      IsVerified = true
-                  });
+                                     GetJsonAsync<bool>();
+        response2.Should().BeTrue();
     }
 
     [Fact]

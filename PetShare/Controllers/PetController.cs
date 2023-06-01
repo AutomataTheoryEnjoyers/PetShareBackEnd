@@ -52,7 +52,7 @@ public class PetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<PetResponse>>> GetAll()
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         return (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
@@ -72,7 +72,7 @@ public class PetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PetResponse>> Post(PetCreationRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var shelter = await _shelterQuery.GetByIdAsync(User.GetId());
@@ -98,7 +98,7 @@ public class PetController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PetResponse>> Put(Guid id, PetUpdateRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -128,7 +128,7 @@ public class PetController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> PostPhoto(IFormFile file, Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var pet = await _query.GetByIdAsync(id, HttpContext.RequestAborted);

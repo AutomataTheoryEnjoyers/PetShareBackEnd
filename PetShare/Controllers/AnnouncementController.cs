@@ -68,7 +68,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<AnnouncementResponse>>> GetFromShelter()
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         return (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
@@ -88,7 +88,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var pet = await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted);
@@ -113,7 +113,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);

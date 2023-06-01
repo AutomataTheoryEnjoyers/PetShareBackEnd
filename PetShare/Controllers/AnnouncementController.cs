@@ -4,6 +4,7 @@ using PetShare.Models;
 using PetShare.Models.Announcements;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Announcements;
+using PetShare.Services.Interfaces.Pets;
 
 namespace PetShare.Controllers;
 
@@ -11,13 +12,15 @@ namespace PetShare.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
+    private readonly IPetQuery _petQuery;
     private readonly IAnnouncementQuery _query;
     private readonly TokenValidator _validator;
 
-    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command,
+    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery,
         TokenValidator validator)
     {
         _query = query;
+        _petQuery = petQuery;
         _command = command;
         _validator = validator;
     }
@@ -51,7 +54,7 @@ public class AnnouncementController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<LikedAnnouncementResponse>>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
-        if (User.IsAdopter() && await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (User.IsAdopter() && !await _validator.ValidateClaims(User))
             return Unauthorized();
 
         return (await
@@ -71,7 +74,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<AnnouncementResponse>>> GetFromShelter()
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         return (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
@@ -91,10 +94,14 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AnnouncementResponse>> Post(AnnouncementCreationRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var announcement = Announcement.FromRequest(request, User.GetId());
+        var pet = await _petQuery.GetByIdAsync(request.PetId, HttpContext.RequestAborted);
+        if (pet is null)
+            return BadRequest();
+
+        var announcement = Announcement.FromRequest(request, User.GetId(), pet);
         var result = await _command.AddAsync(announcement, HttpContext.RequestAborted);
         return result.HasValue ? announcement.ToResponse() : result.State.ToActionResult();
     }
@@ -112,7 +119,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AnnouncementResponse>> Put(Guid id, AnnouncementPutRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var announcement = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -139,7 +146,7 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Like(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var result = await _command.LikeAsync(id, User.GetId());

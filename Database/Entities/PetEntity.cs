@@ -17,7 +17,7 @@ public sealed class PetEntity
     public required string Breed { get; set; }
     public required DateTime Birthday { get; set; }
     public required string Description { get; set; }
-    public string? Photo { get; set; }
+    public required string Photo { get; set; }
     public required PetSex Sex { get; set; }
     public required PetStatus Status { get; set; }
 }

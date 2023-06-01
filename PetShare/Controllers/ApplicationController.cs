@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
 using PetShare.Models.Applications;
 using PetShare.Services;
+using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
 
 namespace PetShare.Controllers;
@@ -12,13 +13,16 @@ namespace PetShare.Controllers;
 [Route("applications")]
 public sealed class ApplicationController : ControllerBase
 {
+    private readonly IAnnouncementQuery _announcementQuery;
     private readonly IApplicationCommand _command;
     private readonly IApplicationQuery _query;
     private readonly TokenValidator _validator;
 
-    public ApplicationController(IApplicationQuery query, IApplicationCommand command, TokenValidator validator)
+    public ApplicationController(IApplicationQuery query, IApplicationCommand command,
+        IAnnouncementQuery announcementQuery, TokenValidator validator)
     {
         _query = query;
+        _announcementQuery = announcementQuery;
         _command = command;
         _validator = validator;
     }
@@ -36,7 +40,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll()
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         if (User.IsAdmin())
@@ -68,7 +72,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Post(ApplicationRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var result = await _command.CreateAsync(request.AnnouncementId, User.GetId(), HttpContext.RequestAborted);
@@ -82,24 +86,25 @@ public sealed class ApplicationController : ControllerBase
     /// </summary>
     [HttpGet]
     [Authorize(Roles = Roles.Shelter)]
-    [Route("{id:guid}")]
+    [Route("{announcementId:guid}")]
     [ProducesResponseType(typeof(ApplicationResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ApplicationResponse>> Get(Guid id)
+    public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetForAnnouncement(Guid announcementId)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
-        if (application is null)
-            return NotFound(NotFoundResponse.Application(id));
+        var applications = await _query.GetAllForAnnouncementAsync(announcementId, HttpContext.RequestAborted);
+        if (applications is null)
+            return NotFound(NotFoundResponse.Announcement(announcementId));
 
-        if (application.Announcement.AuthorId != User.GetId())
+        if ((await _announcementQuery.GetByIdAsync(announcementId, HttpContext.RequestAborted))?.AuthorId
+            != User.GetId())
             return Forbid();
 
-        return application.ToResponse();
+        return applications.Select(app => app.ToResponse()).ToList();
     }
 
     /// <summary>
@@ -114,7 +119,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Withdraw(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -140,7 +145,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Accept(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);
@@ -166,7 +171,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Reject(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var application = await _query.GetByIdAsync(id, HttpContext.RequestAborted);

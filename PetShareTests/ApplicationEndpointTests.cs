@@ -11,6 +11,7 @@ using PetShare.Models;
 using PetShare.Models.Adopters;
 using PetShare.Models.Announcements;
 using PetShare.Models.Applications;
+using PetShare.Models.Pets;
 using Xunit;
 
 namespace PetShareTests;
@@ -113,7 +114,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 Title = "announcement2",
                 Description = "description",
                 CreationDate = _now - TimeSpan.FromDays(2),
-                Status = (int)AnnouncementStatus.Open,
+                Status = AnnouncementStatus.Open,
                 LastUpdateDate = _now - TimeSpan.FromDays(1),
                 AuthorId = _shelters[1].Id,
                 PetId = _pets[1].Id
@@ -124,7 +125,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 Title = "announcement3",
                 Description = "description",
                 CreationDate = _now - TimeSpan.FromDays(4),
-                Status = (int)AnnouncementStatus.Closed,
+                Status = AnnouncementStatus.Closed,
                 LastUpdateDate = _now - TimeSpan.FromDays(3),
                 AuthorId = _shelters[1].Id,
                 PetId = _pets[1].Id
@@ -135,7 +136,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 Title = "announcement4",
                 Description = "description",
                 CreationDate = _now - TimeSpan.FromDays(25),
-                Status = (int)AnnouncementStatus.DuringVerification,
+                Status = AnnouncementStatus.Open,
                 LastUpdateDate = _now - TimeSpan.FromDays(21),
                 AuthorId = _shelters[0].Id,
                 PetId = _pets[0].Id
@@ -146,7 +147,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 Title = "announcement5",
                 Description = "description",
                 CreationDate = _now - TimeSpan.FromDays(135),
-                Status = (int)AnnouncementStatus.Open,
+                Status = AnnouncementStatus.Open,
                 LastUpdateDate = _now - TimeSpan.FromDays(1),
                 AuthorId = _shelters[0].Id,
                 PetId = _pets[0].Id
@@ -157,7 +158,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                 Title = "announcement6",
                 Description = "description",
                 CreationDate = _now - TimeSpan.FromDays(46),
-                Status = (int)AnnouncementStatus.Deleted,
+                Status = AnnouncementStatus.Deleted,
                 LastUpdateDate = _now - TimeSpan.FromDays(45),
                 AuthorId = _shelters[0].Id,
                 PetId = _pets[0].Id
@@ -249,9 +250,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -270,17 +271,16 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          CreationDate = _now - TimeSpan.FromDays(10),
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
-                         Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  },
                  new()
                  {
                      Id = _applications[1].Id,
-                     CreationTime = _now - TimeSpan.FromHours(12),
-                     LastUpdateTime = _now - TimeSpan.FromHours(12),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(12),
+                     LastUpdateDate = _now - TimeSpan.FromHours(12),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[1].Id,
@@ -299,9 +299,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          CreationDate = _now - TimeSpan.FromDays(2),
                          LastUpdateDate = _now - TimeSpan.FromDays(1),
                          ClosingDate = null,
-                         Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[1].Id,
-                         PetId = _pets[1].Id
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[1]).ToResponse()
                      }
                  }
              });
@@ -318,9 +317,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -339,9 +338,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          CreationDate = _now - TimeSpan.FromDays(10),
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
-                         Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  }
              });
@@ -358,9 +356,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                  new()
                  {
                      Id = _applications[0].Id,
-                     CreationTime = _now - TimeSpan.FromHours(13),
-                     LastUpdateTime = _now - TimeSpan.FromHours(13),
-                     State = ApplicationState.Created.ToString(),
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
                      Adopter = new AdopterResponse
                      {
                          Id = _adopters[0].Id,
@@ -379,9 +377,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
                          CreationDate = _now - TimeSpan.FromDays(10),
                          LastUpdateDate = _now - TimeSpan.FromDays(5),
                          ClosingDate = null,
-                         Status = (int)AnnouncementStatus.Open,
-                         AuthorId = _shelters[0].Id,
-                         PetId = _pets[0].Id
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
                      }
                  }
              });
@@ -436,19 +433,6 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PostShouldNotCreateApplicationIfAnnouncementIsNotVerified()
-    {
-        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
-        var response = await client.Request("applications").
-                                    PostJsonAsync(new ApplicationRequest
-                                    {
-                                        AnnouncementId = _announcements[3].Id
-                                    });
-
-        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
-    }
-
-    [Fact]
     public async Task PostShouldNotCreateApplicationIfAnnouncementIsDeleted()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id).AllowAnyHttpStatus();
@@ -490,44 +474,47 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetShouldReturnApplicationById()
+    public async Task GetShouldReturnApplicationByAnnouncementId()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
-        var app = await client.Request("applications", _applications[0].Id).GetJsonAsync<ApplicationResponse>();
+        var app = await client.Request("applications", _announcements[0].Id).GetJsonAsync<IEnumerable<ApplicationResponse>>();
         app.Should().
-            BeEquivalentTo(new ApplicationResponse
-            {
-                Id = _applications[0].Id,
-                CreationTime = _now - TimeSpan.FromHours(13),
-                LastUpdateTime = _now - TimeSpan.FromHours(13),
-                State = ApplicationState.Created.ToString(),
-                Adopter = new AdopterResponse
-                {
-                    Id = _adopters[0].Id,
-                    UserName = "adopter1",
-                    Email = "email1@mail.mail",
-                    PhoneNumber = "987654321",
-                    Status = AdopterStatus.Active,
-                    Address = _adopters[0].Address
-                },
-                AnnouncementId = _announcements[0].Id,
-                Announcement = new AnnouncementResponse
-                {
-                    Id = _announcements[0].Id,
-                    Title = "announcement1",
-                    Description = "description",
-                    CreationDate = _now - TimeSpan.FromDays(10),
-                    LastUpdateDate = _now - TimeSpan.FromDays(5),
-                    ClosingDate = null,
-                    Status = (int)AnnouncementStatus.Open,
-                    AuthorId = _shelters[0].Id,
-                    PetId = _pets[0].Id
-                }
-            });
+            BeEquivalentTo(new ApplicationResponse[]
+             {
+                 new()
+                 {
+                     Id = _applications[0].Id,
+                     CreationDate = _now - TimeSpan.FromHours(13),
+                     LastUpdateDate = _now - TimeSpan.FromHours(13),
+                     ApplicationStatus = ApplicationState.Created.ToString(),
+                     Adopter = new AdopterResponse
+                     {
+                         Id = _adopters[0].Id,
+                         UserName = "adopter1",
+                         Email = "email1@mail.mail",
+                         PhoneNumber = "987654321",
+                         Status = AdopterStatus.Active,
+                         Address = _adopters[0].Address
+                     },
+                     AnnouncementId = _announcements[0].Id,
+                     Announcement = new AnnouncementResponse
+                     {
+                         Id = _announcements[0].Id,
+                         Title = "announcement1",
+                         Description = "description",
+                         CreationDate = _now - TimeSpan.FromDays(10),
+                         LastUpdateDate = _now - TimeSpan.FromDays(5),
+                         ClosingDate = null,
+                         Status = AnnouncementStatus.Open.ToString(),
+                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
+                     }
+                 }
+             });
+
     }
 
     [Fact]
-    public async Task GetShouldReturn404IfApplicationDoesntExist()
+    public async Task GetForAnnouncementShouldReturn404IfAnnouncementDoesntExist()
     {
         var invalidId = Guid.NewGuid();
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
@@ -539,15 +526,15 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
               BeEquivalentTo(new NotFoundResponse
               {
                   Id = invalidId,
-                  ResourceName = nameof(Application)
+                  ResourceName = nameof(Announcement)
               });
     }
 
     [Fact]
-    public async Task GetShouldReturn403IfApplicationBelongsToDifferentShelter()
+    public async Task GetShouldReturn403IfAnnouncementBelongsToDifferentShelter()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
-        var response = await client.Request("applications", _applications[1].Id).GetAsync();
+        var response = await client.Request("applications", _announcements[1].Id).GetAsync();
 
         response.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
     }

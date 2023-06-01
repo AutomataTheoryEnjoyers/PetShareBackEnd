@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models.Announcements;
+using PetShare.Models.Pets;
 using Xunit;
 
 namespace PetShareTests;
@@ -63,7 +64,6 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             CreationDate = DateTime.Now,
             Status = 0,
             LastUpdateDate = DateTime.Now,
-
             AuthorId = _shelter.Id,
             PetId = _pet.Id
         };
@@ -124,10 +124,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Description = _announcement.Description,
                               CreationDate = _announcement.CreationDate,
                               ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status,
+                              Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId,
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                               IsLiked = false
                           }
                       });
@@ -150,10 +149,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Description = _announcement.Description,
                               CreationDate = _announcement.CreationDate,
                               ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status,
+                              Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                           }
                       });
     }
@@ -194,10 +192,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Description = _announcement.Description,
                               CreationDate = _announcement.CreationDate,
                               ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status,
+                              Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId,
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                               IsLiked = false
                           }
                       });
@@ -224,10 +221,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               Description = _announcement.Description,
                               CreationDate = _announcement.CreationDate,
                               ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status,
+                              Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              AuthorId = _announcement.AuthorId,
-                              PetId = _announcement.PetId,
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                               IsLiked = false
                           }
                       });
@@ -248,10 +244,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                           Description = _announcement.Description,
                           CreationDate = _announcement.CreationDate,
                           ClosingDate = _announcement.ClosingDate,
-                          Status = _announcement.Status,
+                          Status = _announcement.Status.ToString(),
                           LastUpdateDate = _announcement.LastUpdateDate,
-                          AuthorId = _announcement.AuthorId,
-                          PetId = _announcement.PetId
+                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
                       });
     }
 
@@ -286,9 +281,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             CreationDate = DateTime.Now,
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
-                            Status = 0,
-                            PetId = request.PetId,
-                            AuthorId = _shelter.Id
+                            Status = AnnouncementStatus.Open.ToString(),
+                            Pet = Pet.FromEntity(_pet).ToResponse()
                         },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
@@ -306,7 +300,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     CreationDate = newAnnouncement.CreationDate,
                     ClosingDate = newAnnouncement.ClosingDate,
                     LastUpdateDate = newAnnouncement.LastUpdateDate,
-                    Status = newAnnouncement.Status,
+                    Status = Enum.Parse<AnnouncementStatus>(newAnnouncement.Status),
                     AuthorId = _shelter.Id,
                     PetId = request.PetId
                 });
@@ -317,7 +311,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     {
         var request = new AnnouncementPutRequest
         {
-            Status = (int)AnnouncementStatus.DuringVerification,
+            Status = AnnouncementStatus.Open.ToString(),
             Description = "test-description-updated"
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
@@ -330,9 +324,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Id = _announcement.Id,
                                 Title = _announcement.Title,
                                 Description = request.Description,
-                                Status = (int)request.Status,
-                                AuthorId = _announcement.AuthorId,
-                                PetId = _announcement.PetId,
+                                Status = request.Status,
+                                Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                                 CreationDate = _announcement.CreationDate,
                                 ClosingDate = null,
                                 LastUpdateDate = _announcement.LastUpdateDate
@@ -347,11 +340,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     Id = updatedAnnouncement.Id,
                     Title = updatedAnnouncement.Title,
                     Description = updatedAnnouncement.Description,
-                    Status = updatedAnnouncement.Status,
-                    AuthorId = updatedAnnouncement.AuthorId,
-                    PetId = updatedAnnouncement.PetId,
+                    Status = Enum.Parse<AnnouncementStatus>(updatedAnnouncement.Status),
+                    PetId = updatedAnnouncement.Pet.Id,
                     CreationDate = updatedAnnouncement.CreationDate,
-                    LastUpdateDate = updatedAnnouncement.LastUpdateDate
+                    LastUpdateDate = updatedAnnouncement.LastUpdateDate,
+                    AuthorId = _shelter.Id
                 });
     }
 
@@ -361,7 +354,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var wrongAnnouncementId = Guid.NewGuid();
         var request = new AnnouncementPutRequest
         {
-            Status = (int)AnnouncementStatus.DuringVerification,
+            Status = AnnouncementStatus.Open.ToString(),
             Description = "test-description-updated"
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
@@ -383,10 +376,9 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                           Description = _announcement.Description,
                           CreationDate = _announcement.CreationDate,
                           ClosingDate = _announcement.ClosingDate,
-                          Status = _announcement.Status,
+                          Status = _announcement.Status.ToString(),
                           LastUpdateDate = _announcement.LastUpdateDate,
-                          AuthorId = _announcement.AuthorId,
-                          PetId = _announcement.PetId,
+                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
                           IsLiked = true
                       });
     }

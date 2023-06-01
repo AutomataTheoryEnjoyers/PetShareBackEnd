@@ -21,45 +21,33 @@ public sealed class TokenValidator
     ///     an existing shelter
     /// </summary>
     /// <param name="user"> <see cref="ClaimsPrincipal" /> containing user claims </param>
-    /// <returns> <see cref="TokenValidationResult" /> with validation result </returns>
-    public async Task<TokenValidationResult> ValidateClaims(ClaimsPrincipal user)
+    /// <returns> <c> true </c> if token claims are valid, <c> false </c> otherwise </returns>
+    public async Task<bool> ValidateClaims(ClaimsPrincipal user)
     {
         if (user.IsInRole(Roles.Unassigned))
-            return TokenValidationResult.Valid;
+            return true;
 
         if (user.IsInRole(Roles.Admin))
-            return TokenValidationResult.Valid;
+            return true;
 
         if (user.IsInRole(Roles.Shelter))
         {
             var id = user.TryGetId();
             if (id is null)
-                return TokenValidationResult.NoIdClaim;
+                return false;
 
-            return await _shelterQuery.GetByIdAsync(id.Value) is null
-                ? TokenValidationResult.InvalidId
-                : TokenValidationResult.Valid;
+            return await _shelterQuery.GetByIdAsync(id.Value) is not null;
         }
 
         if (user.IsInRole(Roles.Adopter))
         {
             var id = user.TryGetId();
             if (id is null)
-                return TokenValidationResult.NoIdClaim;
+                return false;
 
-            return await _adopterQuery.GetByIdAsync(id.Value) is null
-                ? TokenValidationResult.InvalidId
-                : TokenValidationResult.Valid;
+            return await _adopterQuery.GetByIdAsync(id.Value) is not null;
         }
 
-        return TokenValidationResult.InvalidRole;
+        return false;
     }
-}
-
-public enum TokenValidationResult
-{
-    Valid,
-    InvalidRole,
-    NoIdClaim,
-    InvalidId
 }

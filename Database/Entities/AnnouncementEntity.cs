@@ -25,7 +25,15 @@ public sealed class AnnouncementEntity
 
     public DateTime? ClosingDate { get; set; }
 
-    public required int Status { get; set; }
+    public required AnnouncementStatus Status { get; set; }
 
     public required DateTime LastUpdateDate { get; set; }
 }
+
+public enum AnnouncementStatus
+{
+    Open = 0,
+    Closed = 1,
+    Deleted = 3
+}
+

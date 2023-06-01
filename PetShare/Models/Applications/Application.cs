@@ -18,9 +18,9 @@ public sealed class Application
         return new ApplicationResponse
         {
             Id = Id,
-            CreationTime = CreationTime,
-            LastUpdateTime = LastUpdateTime,
-            State = State.ToString(),
+            CreationDate = CreationTime,
+            LastUpdateDate = LastUpdateTime,
+            ApplicationStatus = State.ToString(),
             AnnouncementId = Announcement.Id,
             Announcement = Announcement.ToResponse(),
             Adopter = Adopter.ToResponse()

@@ -6,5 +6,5 @@ public sealed class AnnouncementPutRequest
 
     public string? Description { get; init; }
 
-    public int? Status { get; init; }
+    public string? Status { get; init; }
 }

@@ -77,80 +77,44 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
                     Province = "Armenia",
                     Street = "Wear"
                 }
-                // },
-                // new ShelterEntity
-                // {
-                //     Id = Guid.NewGuid(),
-                //     UserName = "shelter3",
-                //     FullShelterName = "Shelter 3",
-                //     Email = "shelter3@mail.com",
-                //     PhoneNumber = "729837501",
-                //     IsAuthorized = false,
-                //     Address = new Address
-                //     {
-                //         Country = "Netherlands",
-                //         City = "New Mexico",
-                //         PostalCode = "66-666",
-                //         Province = "Albuquerque",
-                //         Street = "Saul"
-                //     }
-                // },
-                // new ShelterEntity
-                // {
-                //     Id = Guid.NewGuid(),
-                //     UserName = "shelter4",
-                //     FullShelterName = "Shelter 4",
-                //     Email = "shelter4@mail.com",
-                //     PhoneNumber = "898989898",
-                //     IsAuthorized = null,
-                //     Address = new Address
-                //     {
-                //         Country = "England",
-                //         City = "Lodz",
-                //         PostalCode = "78-121",
-                //         Province = "Greece",
-                //         Street = "Lubliana"
-                //     }
+            },
+            new ShelterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter3",
+                FullShelterName = "Shelter 3",
+                Email = "shelter3@mail.com",
+                PhoneNumber = "729837501",
+                IsAuthorized = false,
+                Address = new Address
+                {
+                    Country = "Netherlands",
+                    City = "New Mexico",
+                    PostalCode = "66-666",
+                    Province = "Albuquerque",
+                    Street = "Saul"
+                }
+            },
+            new ShelterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter4",
+                FullShelterName = "Shelter 4",
+                Email = "shelter4@mail.com",
+                PhoneNumber = "898989898",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "England",
+                    City = "Lodz",
+                    PostalCode = "78-121",
+                    Province = "Greece",
+                    Street = "Lubliana"
+                }
             }
         };
         _pets = _shelters.SelectMany(GeneratePets).ToList();
         _announcements = _pets.SelectMany(CreateManyAnnouncements).ToList();
-
-        _adopters = new[]
-        {
-            new AdopterEntity
-            {
-                Id = Guid.NewGuid(),
-                UserName = "adopter-1",
-                Email = "69mr-destruction69@gmail.com",
-                PhoneNumber = "678456333",
-                Status = AdopterStatus.Active,
-                Address = new Address
-                {
-                    Country = "Georgia",
-                    City = "Sarayevo",
-                    PostalCode = "69-420",
-                    Province = "South Park",
-                    Street = "Food"
-                }
-            },
-            new AdopterEntity
-            {
-                Id = Guid.NewGuid(),
-                UserName = "adopter-2",
-                Email = "hhhhhhh@gmail.com",
-                PhoneNumber = "668099282",
-                Status = AdopterStatus.Active,
-                Address = new Address
-                {
-                    Country = "Roman Empire",
-                    City = "Rome",
-                    PostalCode = "RO-MEE",
-                    Province = "Romania",
-                    Street = "Roman"
-                }
-            }
-        };
     }
 
     public async Task InitializeAsync()
@@ -272,7 +236,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
             PetId = pet.Id,
             Title = $"{pet.Name} is up for adoption!",
             Description = $"Here's {pet.Name}'s description: {pet.Description}. Please adopt ASAP!",
-            Status = (int)status
+            Status = status
         };
     }
 
@@ -280,7 +244,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     {
         return new[]
         {
-            CreateAnnouncementForPet(pet, AnnouncementStatus.DuringVerification),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Open),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Closed),
             CreateAnnouncementForPet(pet, AnnouncementStatus.Deleted)
@@ -308,9 +271,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
                                              Where(a => a.Announcement.Status is AnnouncementStatus.Open).
-                                             Where(a =>
-                                                       species.Contains(_pets.Single(p => p.Id == a.Announcement.PetId).
-                                                                              Species)),
+                                             Where(a => species.Contains(a.Announcement.Pet.Species)),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -324,8 +285,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
                                              Where(a => a.Announcement.Status is AnnouncementStatus.Open).
-                                             Where(a => _pets.Single(p => p.Id == a.Announcement.PetId).Breed
-                                                        == "Grey"),
+                                             Where(a => a.Announcement.Pet.Breed == "Grey"),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -340,12 +300,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
                                              Where(a => a.Announcement.Status is AnnouncementStatus.Open).
-                                             Where(a => DateTime.Now
-                                                        - _pets.Single(p => p.Id == a.Announcement.PetId).Birthday
-                                                        >= TimeSpan.FromDays(3 * 365)).
-                                             Where(a => DateTime.Now
-                                                        - _pets.Single(p => p.Id == a.Announcement.PetId).Birthday
-                                                        <= TimeSpan.FromDays(50 * 365)),
+                                             Where(a => DateTime.Now.AddYears(-3) >= a.Announcement.Pet.Birthday).
+                                             Where(a => DateTime.Now.AddYears(-50) <= a.Announcement.Pet.Birthday),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -359,9 +315,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
                                              Where(a => a.Announcement.Status is AnnouncementStatus.Open).
-                                             Where(a => _shelters.Single(s => s.Id == a.Announcement.AuthorId).
-                                                                  Address.City
-                                                        == "Brazil"), options => options.WithoutStrictOrdering());
+                                             Where(a => a.Announcement.Pet.Shelter.Address.City == "Brazil"),
+                              options => options.WithoutStrictOrdering());
     }
 
     [Fact]
@@ -374,9 +329,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
                                              Where(a => a.Announcement.Status is AnnouncementStatus.Open).
-                                             Where(a => _shelters.Single(s => s.Id == a.Announcement.AuthorId).
-                                                                  FullShelterName
-                                                        == "Shelter 1"), options => options.WithoutStrictOrdering());
+                                             Where(a => a.Announcement.Pet.Shelter.FullShelterName == "Shelter 1"),
+                              options => options.WithoutStrictOrdering());
     }
 
     [Fact]
@@ -396,8 +350,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         {
             MarkLikedBy = _adopters[0].Id
         });
-        result.Should().HaveCount(_announcements.Count(a => a.Status == (int)AnnouncementStatus.Open));
-        result.Single(a => a.IsLiked).Announcement.PetId.Should().Be(_pets[0].Id);
+        result.Should().HaveCount(_announcements.Count(a => a.Status == AnnouncementStatus.Open));
+        result.Single(a => a.IsLiked).Announcement.Pet.Id.Should().Be(_pets[0].Id);
     }
 
     [Fact]
@@ -409,7 +363,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
             IncludeOnlyLiked = true
         });
         result.Should().HaveCount(1);
-        result[0].Announcement.PetId.Should().Be(_pets[0].Id);
+        result[0].Announcement.Pet.Id.Should().Be(_pets[0].Id);
         result[0].IsLiked.Should().BeTrue();
     }
 }

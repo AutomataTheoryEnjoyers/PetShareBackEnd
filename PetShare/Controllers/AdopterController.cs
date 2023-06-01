@@ -32,7 +32,7 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<AdopterResponse>>> GetAll()
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         return (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
@@ -66,7 +66,7 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdopterResponse>> Get(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         if (!User.IsAdmin() && User.GetId() != id)
@@ -91,7 +91,7 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AdopterResponse>> Put(Guid id, AdopterUpdateRequest request)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var adopter = await _command.SetStatusAsync(id, request.Status);
@@ -115,7 +115,7 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Verify(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var result = await _command.VerifyForShelterAsync(id, User.GetId());
@@ -129,21 +129,15 @@ public sealed class AdopterController : ControllerBase
     [HttpGet]
     [Route("{id:guid}/isVerified")]
     [Authorize(Roles = Roles.Shelter)]
-    [ProducesResponseType(typeof(AdopterVerificationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<AdopterVerificationResponse>> IsVerified(Guid id)
+    public async Task<ActionResult<bool>> IsVerified(Guid id)
     {
-        if (await _validator.ValidateClaims(User) is not TokenValidationResult.Valid)
+        if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var result = await _query.IsVerifiedForShelterAsync(id, User.GetId());
-        if (!result.HasValue)
-            return result.State.ToActionResult();
-
-        return new AdopterVerificationResponse
-        {
-            IsVerified = result.Value
-        };
+        return result.HasValue ? result.Value : result.State.ToActionResult();
     }
 }

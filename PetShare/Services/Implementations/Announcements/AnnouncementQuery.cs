@@ -18,8 +18,9 @@ public class AnnouncementQuery : IAnnouncementQuery
     public async Task<IReadOnlyList<AnnouncementWithLike>> GetAllFilteredAsync(AnnouncementFilters filters,
         CancellationToken token = default)
     {
-        var filteredAnnouncements =
-            _context.Announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).AsQueryable();
+        var filteredAnnouncements = _context.Announcements.Include(a => a.Pet.Shelter).
+                                             Where(a => a.Status == AnnouncementStatus.Open).
+                                             AsQueryable();
 
         if (filters.Species is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => filters.Species.Contains(a.Pet.Species));
@@ -58,8 +59,9 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+        return (await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
                                Where(a => a.AuthorId == shelterId).
+                               Include(a => a.Pet.Shelter).
                                ToListAsync(token)).
                Select(Announcement.FromEntity).
                ToList();
@@ -67,12 +69,10 @@ public class AnnouncementQuery : IAnnouncementQuery
 
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)
     {
-        var entity = await _context.Announcements.Where(a => a.Status != (int)AnnouncementStatus.Deleted).
+        var entity = await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
                                     Include(x => x.Author).
                                     Include(x => x.Pet).
                                     FirstOrDefaultAsync(e => e.Id == id, token);
         return entity is null ? null : Announcement.FromEntity(entity);
     }
-
-    private record EntityWithLike(AnnouncementEntity Entity, bool IsLiked);
 }

@@ -4,6 +4,7 @@ using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database.Migrations
 {
     [DbContext(typeof(PetShareDbContext))]
-    partial class PetShareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230528222218_SpecTweaks")]
+    partial class SpecTweaks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,21 +135,6 @@ namespace Database.Migrations
                     b.HasIndex("AnnouncementId");
 
                     b.ToTable("Applications");
-                });
-
-            modelBuilder.Entity("Database.Entities.LikedAnnouncementEntity", b =>
-                {
-                    b.Property<Guid>("AdopterId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AnnouncementId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("AdopterId", "AnnouncementId");
-
-                    b.HasIndex("AnnouncementId");
-
-                    b.ToTable("Likes");
                 });
 
             modelBuilder.Entity("Database.Entities.PetEntity", b =>
@@ -302,25 +290,6 @@ namespace Database.Migrations
                 });
 
             modelBuilder.Entity("Database.Entities.ApplicationEntity", b =>
-                {
-                    b.HasOne("Database.Entities.AdopterEntity", "Adopter")
-                        .WithMany()
-                        .HasForeignKey("AdopterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Database.Entities.AnnouncementEntity", "Announcement")
-                        .WithMany()
-                        .HasForeignKey("AnnouncementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Adopter");
-
-                    b.Navigation("Announcement");
-                });
-
-            modelBuilder.Entity("Database.Entities.LikedAnnouncementEntity", b =>
                 {
                     b.HasOne("Database.Entities.AdopterEntity", "Adopter")
                         .WithMany()

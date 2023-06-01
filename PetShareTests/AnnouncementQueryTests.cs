@@ -251,7 +251,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => species.Contains(_pets.Single(p => p.Id == a.Pet.Id).Species)),
+                                             Where(a => species.Contains(a.Pet.Species)),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -265,7 +265,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => _pets.Single(p => p.Id == a.Pet.Id).Breed == "Grey"),
+                                             Where(a => a.Pet.Breed == "Grey"),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -280,10 +280,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.Pet.Id).Birthday
-                                                        >= TimeSpan.FromDays(3 * 365)).
-                                             Where(a => DateTime.Now - _pets.Single(p => p.Id == a.Pet.Id).Birthday
-                                                        <= TimeSpan.FromDays(50 * 365)),
+                                             Where(a => DateTime.Now.AddYears(-3) >= a.Pet.Birthday).
+                                             Where(a => DateTime.Now.AddYears(-50) <= a.Pet.Birthday),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -297,8 +295,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => _shelters.Single(s => s.Id == a.AuthorId).Address.City
-                                                        == "Brazil"), options => options.WithoutStrictOrdering());
+                                             Where(a => a.Pet.Shelter.Address.City == "Brazil"),
+                              options => options.WithoutStrictOrdering());
     }
 
     [Fact]
@@ -311,8 +309,8 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         result.Should().
                BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
                                              Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => _shelters.Single(s => s.Id == a.AuthorId).FullShelterName
-                                                        == "Shelter 1"), options => options.WithoutStrictOrdering());
+                                             Where(a => a.Pet.Shelter.FullShelterName == "Shelter 1"),
+                              options => options.WithoutStrictOrdering());
     }
 
     [Fact]

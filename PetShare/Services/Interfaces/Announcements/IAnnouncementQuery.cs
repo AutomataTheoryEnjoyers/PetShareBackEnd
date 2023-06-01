@@ -4,10 +4,9 @@ namespace PetShare.Services.Interfaces.Announcements;
 
 public interface IAnnouncementQuery
 {
-    public Task<IReadOnlyList<AnnouncementWithLike>> GetAllFilteredAsync(AnnouncementFilters filters,
+    Task<IReadOnlyList<AnnouncementWithLike>> GetAllFilteredAsync(AnnouncementFilters filters,
         CancellationToken token = default);
 
-    public Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default);
-
-    public Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default);
+    Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default);
+    Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default);
 }

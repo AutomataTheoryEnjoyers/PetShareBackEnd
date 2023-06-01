@@ -477,40 +477,40 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnApplicationByAnnouncementId()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
-        var app = await client.Request("applications", _announcements[0].Id).GetJsonAsync<IEnumerable<ApplicationResponse>>();
+        var app = await client.Request("applications", _announcements[0].Id).
+                               GetJsonAsync<IEnumerable<ApplicationResponse>>();
         app.Should().
             BeEquivalentTo(new ApplicationResponse[]
-             {
-                 new()
-                 {
-                     Id = _applications[0].Id,
-                     CreationDate = _now - TimeSpan.FromHours(13),
-                     LastUpdateDate = _now - TimeSpan.FromHours(13),
-                     ApplicationStatus = ApplicationState.Created.ToString(),
-                     Adopter = new AdopterResponse
-                     {
-                         Id = _adopters[0].Id,
-                         UserName = "adopter1",
-                         Email = "email1@mail.mail",
-                         PhoneNumber = "987654321",
-                         Status = AdopterStatus.Active,
-                         Address = _adopters[0].Address
-                     },
-                     AnnouncementId = _announcements[0].Id,
-                     Announcement = new AnnouncementResponse
-                     {
-                         Id = _announcements[0].Id,
-                         Title = "announcement1",
-                         Description = "description",
-                         CreationDate = _now - TimeSpan.FromDays(10),
-                         LastUpdateDate = _now - TimeSpan.FromDays(5),
-                         ClosingDate = null,
-                         Status = AnnouncementStatus.Open.ToString(),
-                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                     }
-                 }
-             });
-
+            {
+                new()
+                {
+                    Id = _applications[0].Id,
+                    CreationDate = _now - TimeSpan.FromHours(13),
+                    LastUpdateDate = _now - TimeSpan.FromHours(13),
+                    ApplicationStatus = ApplicationState.Created.ToString(),
+                    Adopter = new AdopterResponse
+                    {
+                        Id = _adopters[0].Id,
+                        UserName = "adopter1",
+                        Email = "email1@mail.mail",
+                        PhoneNumber = "987654321",
+                        Status = AdopterStatus.Active,
+                        Address = _adopters[0].Address
+                    },
+                    AnnouncementId = _announcements[0].Id,
+                    Announcement = new AnnouncementResponse
+                    {
+                        Id = _announcements[0].Id,
+                        Title = "announcement1",
+                        Description = "description",
+                        CreationDate = _now - TimeSpan.FromDays(10),
+                        LastUpdateDate = _now - TimeSpan.FromDays(5),
+                        ClosingDate = null,
+                        Status = AnnouncementStatus.Open.ToString(),
+                        Pet = Pet.FromEntity(_pets[0]).ToResponse()
+                    }
+                }
+            });
     }
 
     [Fact]

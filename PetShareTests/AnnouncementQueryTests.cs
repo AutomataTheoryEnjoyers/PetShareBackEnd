@@ -115,6 +115,42 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         };
         _pets = _shelters.SelectMany(GeneratePets).ToList();
         _announcements = _pets.SelectMany(CreateManyAnnouncements).ToList();
+
+        _adopters = new[]
+        {
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-1",
+                Email = "69mr-destruction69@gmail.com",
+                PhoneNumber = "678456333",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Georgia",
+                    City = "Sarayevo",
+                    PostalCode = "69-420",
+                    Province = "South Park",
+                    Street = "Food"
+                }
+            },
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-2",
+                Email = "hhhhhhh@gmail.com",
+                PhoneNumber = "668099282",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Roman Empire",
+                    City = "Rome",
+                    PostalCode = "RO-MEE",
+                    Province = "Romania",
+                    Street = "Roman"
+                }
+            }
+        };
     }
 
     public async Task InitializeAsync()

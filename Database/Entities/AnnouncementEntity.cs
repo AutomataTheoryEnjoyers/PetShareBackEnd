@@ -36,4 +36,3 @@ public enum AnnouncementStatus
     Closed = 1,
     Deleted = 3
 }
-

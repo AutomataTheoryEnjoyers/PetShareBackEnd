@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShelterModule", "ShelterModule\ShelterModule.csproj", "{B337ED33-45BA-4165-86FE-5E0701CAA5F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetShare", "PetShare\PetShare.csproj", "{B337ED33-45BA-4165-86FE-5E0701CAA5F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShelterModuleTests", "ShelterModuleTests\ShelterModuleTests.csproj", "{3056493D-97F2-456D-8854-601A6BA466B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetShareTests", "PetShareTests\PetShareTests.csproj", "{3056493D-97F2-456D-8854-601A6BA466B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{FAE8AA21-CCF2-4304-8510-CAC69F6F83BF}"
 EndProject

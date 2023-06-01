@@ -49,12 +49,18 @@ public class AnnouncementController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [Route("announcements")]
-    [ProducesResponseType(typeof(IReadOnlyList<AnnouncementResponse>), StatusCodes.Status200OK)]
-    public async Task<IReadOnlyList<AnnouncementResponse>> GetAllFiltered(
+    [ProducesResponseType(typeof(IReadOnlyList<LikedAnnouncementResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<LikedAnnouncementResponse>>> GetAllFiltered(
         [FromQuery] GetAllAnnouncementsFilteredQueryRequest query)
     {
-        return (await _query.GetAllFilteredAsync(query, HttpContext.RequestAborted)).Select(s => s.ToResponse()).
-                                                                                     ToList();
+        if (User.IsAdopter() && !await _validator.ValidateClaims(User))
+            return Unauthorized();
+
+        return (await
+                _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
+                                           HttpContext.RequestAborted)).Select(s => s.ToResponse()).
+                                                                        ToList();
     }
 
     /// <summary>
@@ -128,5 +134,22 @@ public class AnnouncementController : ControllerBase
             return NotFound(NotFoundResponse.Announcement(id));
 
         return updated.ToResponse();
+    }
+
+    [HttpPut]
+    [Authorize(Roles = Roles.Adopter)]
+    [Route("announcements/{id:guid}/like")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Like(Guid id)
+    {
+        if (!await _validator.ValidateClaims(User))
+            return Unauthorized();
+
+        var result = await _command.LikeAsync(id, User.GetId());
+        return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 }

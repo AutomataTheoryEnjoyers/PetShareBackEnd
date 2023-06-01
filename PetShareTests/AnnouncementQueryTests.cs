@@ -11,6 +11,7 @@ namespace PetShareTests;
 [Trait("Category", "Unit")]
 public sealed class AnnouncementQueryTests : IAsyncLifetime
 {
+    private readonly IReadOnlyList<AdopterEntity> _adopters;
     private readonly IReadOnlyList<AnnouncementEntity> _announcements;
     private readonly TestDbConnectionString _connection;
     private readonly PetShareDbContext _context;
@@ -114,6 +115,42 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         };
         _pets = _shelters.SelectMany(GeneratePets).ToList();
         _announcements = _pets.SelectMany(CreateManyAnnouncements).ToList();
+
+        _adopters = new[]
+        {
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-1",
+                Email = "69mr-destruction69@gmail.com",
+                PhoneNumber = "678456333",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Georgia",
+                    City = "Sarayevo",
+                    PostalCode = "69-420",
+                    Province = "South Park",
+                    Street = "Food"
+                }
+            },
+            new AdopterEntity
+            {
+                Id = Guid.NewGuid(),
+                UserName = "adopter-2",
+                Email = "hhhhhhh@gmail.com",
+                PhoneNumber = "668099282",
+                Status = AdopterStatus.Active,
+                Address = new Address
+                {
+                    Country = "Roman Empire",
+                    City = "Rome",
+                    PostalCode = "RO-MEE",
+                    Province = "Romania",
+                    Street = "Roman"
+                }
+            }
+        };
     }
 
     public async Task InitializeAsync()
@@ -121,6 +158,20 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         _context.Shelters.AddRange(_shelters);
         _context.Pets.AddRange(_pets);
         _context.Announcements.AddRange(_announcements);
+        _context.Adopters.AddRange(_adopters);
+        _context.Likes.AddRange(new LikedAnnouncementEntity
+        {
+            AdopterId = _adopters[0].Id,
+            AnnouncementId = _announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).
+                                            First(a => a.PetId == _pets.First(p => p.Name == "Reginald").Id).
+                                            Id
+        }, new LikedAnnouncementEntity
+        {
+            AdopterId = _adopters[1].Id,
+            AnnouncementId = _announcements.Where(a => a.Status == (int)AnnouncementStatus.Open).
+                                            Last(a => a.PetId == _pets.First(p => p.Name == "Amy").Id).
+                                            Id
+        });
         await _context.SaveChangesAsync();
     }
 
@@ -128,6 +179,11 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     {
         _connection.Dispose();
         return Task.CompletedTask;
+    }
+
+    private static AnnouncementWithLike ToLikedAnnouncement(AnnouncementEntity entity)
+    {
+        return new AnnouncementWithLike(Announcement.FromEntity(entity), false);
     }
 
     private static IReadOnlyList<PetEntity> GeneratePets(ShelterEntity shelter)
@@ -233,10 +289,10 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     [Fact]
     public async Task ShouldReturnAllWithNoFilters()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest());
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters());
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -244,82 +300,106 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     public async Task ShouldFilterBySpecies()
     {
         var species = new[] { "Dog", "Cat" };
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Species = species
         });
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => species.Contains(a.Pet.Species)),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => species.Contains(a.Announcement.Pet.Species)),
                               options => options.WithoutStrictOrdering());
     }
 
     [Fact]
     public async Task ShouldFilterByBreed()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Breeds = new[] { "Grey" }
         });
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => a.Pet.Breed == "Grey"),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => a.Announcement.Pet.Breed == "Grey"),
                               options => options.WithoutStrictOrdering());
     }
 
     [Fact]
     public async Task ShouldFilterByAge()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             MinAge = 3,
             MaxAge = 50
         });
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => DateTime.Now.AddYears(-3) >= a.Pet.Birthday).
-                                             Where(a => DateTime.Now.AddYears(-50) <= a.Pet.Birthday),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => DateTime.Now.AddYears(-3) >= a.Announcement.Pet.Birthday).
+                                             Where(a => DateTime.Now.AddYears(-50) <= a.Announcement.Pet.Birthday),
                               options => options.WithoutStrictOrdering());
     }
 
     [Fact]
     public async Task ShouldFilterByCities()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             Cities = new[] { "Brazil" }
         });
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => a.Pet.Shelter.Address.City == "Brazil"),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => a.Announcement.Pet.Shelter.Address.City == "Brazil"),
                               options => options.WithoutStrictOrdering());
     }
 
     [Fact]
     public async Task ShouldFilterByShelterNames()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             ShelterNames = new[] { "Shelter 1" }
         });
         result.Should().
-               BeEquivalentTo(_announcements.Select(Announcement.FromEntity).
-                                             Where(a => a.Status is AnnouncementStatus.Open).
-                                             Where(a => a.Pet.Shelter.FullShelterName == "Shelter 1"),
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => a.Announcement.Pet.Shelter.FullShelterName == "Shelter 1"),
                               options => options.WithoutStrictOrdering());
     }
 
     [Fact]
     public async Task ShouldReturnEmptyListIfNothingMatches()
     {
-        var result = await _query.GetAllFilteredAsync(new GetAllAnnouncementsFilteredQueryRequest
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
         {
             ShelterNames = new[] { "Shelter 8" }
         });
         result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ShouldReturnInfoAboutLikes()
+    {
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
+        {
+            MarkLikedBy = _adopters[0].Id
+        });
+        result.Should().HaveCount(_announcements.Count(a => a.Status == AnnouncementStatus.Open));
+        result.Single(a => a.IsLiked).Announcement.Pet.Id.Should().Be(_pets[0].Id);
+    }
+
+    [Fact]
+    public async Task ShouldFilterByLiked()
+    {
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
+        {
+            MarkLikedBy = _adopters[0].Id,
+            IncludeOnlyLiked = true
+        });
+        result.Should().HaveCount(1);
+        result[0].Announcement.Pet.Id.Should().Be(_pets[0].Id);
+        result[0].IsLiked.Should().BeTrue();
     }
 }

@@ -15,6 +15,7 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class AnnouncementEndpointTests : IAsyncLifetime
 {
+    private readonly AdopterEntity _adopter;
     private readonly AnnouncementEntity _announcement;
     private readonly PetEntity _pet;
     private readonly ShelterEntity _shelter;
@@ -66,6 +67,23 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             AuthorId = _shelter.Id,
             PetId = _pet.Id
         };
+
+        _adopter = new AdopterEntity
+        {
+            Id = Guid.NewGuid(),
+            UserName = "adopter-1",
+            Email = "mail@mail.com",
+            PhoneNumber = "719302889",
+            Status = AdopterStatus.Active,
+            Address = new Address
+            {
+                Country = "test-country",
+                Province = "test-province",
+                City = "test-city",
+                Street = "test-street",
+                PostalCode = "test-postalCode"
+            }
+        };
     }
 
     public async Task InitializeAsync()
@@ -75,6 +93,12 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         context.Shelters.Add(_shelter);
         context.Pets.Add(_pet);
         context.Announcements.Add(_announcement);
+        context.Adopters.Add(_adopter);
+        context.Likes.Add(new LikedAnnouncementEntity
+        {
+            AnnouncementId = _announcement.Id,
+            AdopterId = _adopter.Id
+        });
         await context.SaveChangesAsync();
     }
 
@@ -89,11 +113,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements").GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -102,7 +126,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
+                              IsLiked = false
                           }
                       });
     }
@@ -156,11 +181,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -169,7 +194,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
+                              IsLiked = false
                           }
                       });
     }
@@ -184,11 +210,11 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
         announcements.Should().
                       BeEquivalentTo(new[]
                       {
-                          new AnnouncementResponse
+                          new LikedAnnouncementResponse
                           {
                               Id = _announcement.Id,
                               Title = _announcement.Title,
@@ -197,7 +223,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                               ClosingDate = _announcement.ClosingDate,
                               Status = _announcement.Status.ToString(),
                               LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
+                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
+                              IsLiked = false
                           }
                       });
     }
@@ -333,5 +360,26 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements", wrongAnnouncementId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task GetShouldIncludeInfoAboutLikes()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopter.Id);
+        var announcements =
+            await client.Request("announcements").GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
+        announcements.Should().
+                      ContainEquivalentOf(new LikedAnnouncementResponse
+                      {
+                          Id = _announcement.Id,
+                          Title = _announcement.Title,
+                          Description = _announcement.Description,
+                          CreationDate = _announcement.CreationDate,
+                          ClosingDate = _announcement.ClosingDate,
+                          Status = _announcement.Status.ToString(),
+                          LastUpdateDate = _announcement.LastUpdateDate,
+                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
+                          IsLiked = true
+                      });
     }
 }

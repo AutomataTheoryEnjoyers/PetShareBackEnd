@@ -58,16 +58,17 @@ public sealed class ApplicationQuery : IApplicationQuery
         return entity is not null ? Application.FromEntity(entity) : null;
     }
 
-    public async Task<IReadOnlyList<Application>?> GetAllForAnnouncementAsync(Guid announcementId, CancellationToken token = default)
+    public async Task<IReadOnlyList<Application>?> GetAllForAnnouncementAsync(Guid announcementId,
+        CancellationToken token = default)
     {
         if (!_context.Announcements.Any(announcement => announcement.Id == announcementId))
             return null;
 
         return await _context.Applications.
-            Include(app => app.Announcement.Pet.Shelter).
-            Include(app => app.Adopter).
-            Where(app => app.AnnouncementId == announcementId).
-            Select(app => Application.FromEntity(app)).
-            ToListAsync(token);
+                              Include(app => app.Announcement.Pet.Shelter).
+                              Include(app => app.Adopter).
+                              Where(app => app.AnnouncementId == announcementId).
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 }

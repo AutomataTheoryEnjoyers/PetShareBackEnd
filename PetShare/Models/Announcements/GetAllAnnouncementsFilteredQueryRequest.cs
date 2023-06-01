@@ -8,4 +8,5 @@ public sealed class GetAllAnnouncementsFilteredQueryRequest
     public int? MinAge { get; init; }
     public int? MaxAge { get; init; }
     public IReadOnlyList<string>? ShelterNames { get; init; }
+    public bool IsLiked { get; init; }
 }

@@ -77,3 +77,22 @@ public sealed class Announcement
         };
     }
 }
+
+public sealed record AnnouncementWithLike(Announcement Announcement, bool IsLiked)
+{
+    public LikedAnnouncementResponse ToResponse()
+    {
+        return new LikedAnnouncementResponse
+        {
+            Id = Announcement.Id,
+            Pet = Announcement.Pet.ToResponse(),
+            Title = Announcement.Title,
+            Description = Announcement.Description,
+            CreationDate = Announcement.CreationDate,
+            ClosingDate = Announcement.ClosingDate,
+            Status = Announcement.Status.ToString(),
+            LastUpdateDate = Announcement.LastUpdateDate,
+            IsLiked = IsLiked
+        };
+    }
+}

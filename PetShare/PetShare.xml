@@ -4,7 +4,7 @@
         <name>PetShare</name>
     </assembly>
     <members>
-        <member name="M:PetShare.Controllers.AdopterController.GetAll">
+        <member name="M:PetShare.Controllers.AdopterController.GetAll(PetShare.Models.PaginationQueryRequest)">
             <summary>
                 Returns all adopters. Requires admin role
             </summary>

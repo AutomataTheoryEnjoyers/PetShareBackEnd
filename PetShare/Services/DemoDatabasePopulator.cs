@@ -207,7 +207,7 @@ public sealed class DemoDatabasePopulator
             Name = pet.Name,
             Species = pet.Species,
             Breed = pet.Breed,
-            Description = pet.Breed,
+            Description = pet.Description,
             Photo = pet.Photo,
             Birthday = DateTime.Now - TimeSpan.FromDays(_random.Next(50 * 365) + 180),
             Shelter = shelter,

@@ -143,7 +143,7 @@ public sealed class DemoDatabasePopulator
         {
             Id = Guid.NewGuid(),
             UserName = username,
-            Email = $"{username}@testmail.test",
+            Email = $"{username}@yopmail.com",
             PhoneNumber = $"{_random.Next(900_000_000) + 100_000_000}",
             Status = AdopterStatus.Active,
             Address = GenerateAddress()
@@ -167,7 +167,7 @@ public sealed class DemoDatabasePopulator
             Id = Guid.NewGuid(),
             UserName = name.Short,
             FullShelterName = name.Long,
-            Email = $"{name.Short}@testmail.test",
+            Email = $"{name.Short}@yopmail.com",
             PhoneNumber = $"{_random.Next(900_000_000) + 100_000_000}",
             IsAuthorized = true,
             Address = GenerateAddress()

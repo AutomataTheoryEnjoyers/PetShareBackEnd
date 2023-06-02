@@ -12,12 +12,14 @@ using PetShare.Services.Implementations;
 using PetShare.Services.Implementations.Adopters;
 using PetShare.Services.Implementations.Announcements;
 using PetShare.Services.Implementations.Applications;
+using PetShare.Services.Implementations.Emails;
 using PetShare.Services.Implementations.Pets;
 using PetShare.Services.Implementations.Shelters;
 using PetShare.Services.Interfaces;
 using PetShare.Services.Interfaces.Adopters;
 using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
+using PetShare.Services.Interfaces.Emails;
 using PetShare.Services.Interfaces.Pets;
 using PetShare.Services.Interfaces.Shelters;
 
@@ -86,6 +88,7 @@ public class Program
         services.AddScoped<IApplicationCommand, ApplicationCommand>();
         services.AddScoped<IApplicationQuery, ApplicationQuery>();
         services.AddSingleton<IImageStorage, ImgurImageStorage>();
+        services.AddScoped<IEmailService,EmailService>();
         services.AddScoped<DemoDatabasePopulator>();
     }
 
@@ -102,6 +105,7 @@ public class Program
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(JwtConfiguration.SectionName));
         builder.Services.Configure<ImgurConfiguration>(builder.Configuration.
                                                                GetSection(ImgurConfiguration.SectionName));
+        builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection(EmailConfiguration.SectionName));
     }
 
     private static void ConfigureJwt(IServiceCollection services, IConfiguration config)

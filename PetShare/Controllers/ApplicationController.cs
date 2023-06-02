@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
@@ -6,6 +7,7 @@ using PetShare.Models.Applications;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
+using PetShare.Services.Interfaces.Emails;
 
 namespace PetShare.Controllers;
 
@@ -16,15 +18,17 @@ public sealed class ApplicationController : ControllerBase
     private readonly IAnnouncementQuery _announcementQuery;
     private readonly IApplicationCommand _command;
     private readonly IApplicationQuery _query;
+    private readonly IEmailService _emailService;
     private readonly TokenValidator _validator;
 
     public ApplicationController(IApplicationQuery query, IApplicationCommand command,
-        IAnnouncementQuery announcementQuery, TokenValidator validator)
+        IAnnouncementQuery announcementQuery, IEmailService emailService, TokenValidator validator)
     {
         _query = query;
         _announcementQuery = announcementQuery;
         _command = command;
         _validator = validator;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -130,7 +134,13 @@ public sealed class ApplicationController : ControllerBase
             return Forbid();
 
         var result = await _command.WithdrawAsync(id, HttpContext.RequestAborted);
-        return result.HasValue ? Ok() : result.State.ToActionResult();
+        if(result.HasValue)
+        {
+            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName, ApplicationState.Withdrawn.ToString());
+            return Ok();
+        }
+        else
+            return result.State.ToActionResult();
     }
 
     /// <summary>
@@ -156,11 +166,17 @@ public sealed class ApplicationController : ControllerBase
             return Forbid();
 
         var result = await _command.AcceptAsync(id, HttpContext.RequestAborted);
-        return result.HasValue ? Ok() : result.State.ToActionResult();
+        if (result.HasValue)
+        {
+            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName, ApplicationState.Accepted.ToString());
+            return Ok();
+        }
+        else
+            return result.State.ToActionResult();
     }
 
     /// <summary>
-    ///     Accepts an application. Requires shelter role
+    ///     Rejects an application. Requires shelter role
     /// </summary>
     [HttpPut]
     [Authorize(Roles = Roles.Shelter)]
@@ -182,6 +198,12 @@ public sealed class ApplicationController : ControllerBase
             return Forbid();
 
         var result = await _command.RejectAsync(id, HttpContext.RequestAborted);
-        return result.HasValue ? Ok() : result.State.ToActionResult();
+        if (result.HasValue)
+        {
+            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName, ApplicationState.Rejected.ToString());
+            return Ok();
+        }
+        else
+            return result.State.ToActionResult();
     }
 }

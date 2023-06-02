@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PetShare</name>
+    </assembly>
+    <members>
+        <member name="M:PetShare.Controllers.AdopterController.GetAll">
+            <summary>
+                Returns all adopters. Requires admin role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AdopterController.Post(PetShare.Models.Adopters.AdopterRequest)">
+            <summary>
+                Creates new adopter. Requires unassigned role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AdopterController.Get(System.Guid)">
+            <summary>
+                Returns an adopter with given ID. Requires admin role to fetch any ID, and adopter role to fetch their ID
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AdopterController.Put(System.Guid,PetShare.Models.Adopters.AdopterUpdateRequest)">
+            <summary>
+                Updates adopter. Requires admin role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AdopterController.Verify(System.Guid)">
+            <summary>
+                Verifies adopter with ID given in route for shelter which sent the request (whose ID is in JWT claims).
+                Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AdopterController.IsVerified(System.Guid)">
+            <summary>
+                Checks if adopter with ID given in route is verified for shelter whose ID is in JWT claims. Requires shelter
+                role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AnnouncementController.Get(System.Guid)">
+            <summary>
+                Returns an announcement with a given ID
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AnnouncementController.GetAllFiltered(PetShare.Models.Announcements.GetAllAnnouncementsFilteredQueryRequest)">
+            <summary>
+                Returns announcements based on filters
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AnnouncementController.GetFromShelter">
+            <summary>
+                Gets all announcements created by shelter specified in JWT claims. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AnnouncementController.Post(PetShare.Models.Announcements.AnnouncementCreationRequest)">
+            <summary>
+                Creates new announcement. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.AnnouncementController.Put(System.Guid,PetShare.Models.Announcements.AnnouncementPutRequest)">
+            <summary>
+                Updates specified announcement. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.GetAll">
+            <summary>
+                For admin, returns all applications.
+                For adopter, returns all applications created by them.
+                For shelter, returns all applications for announcements created by this shelter.
+                Requires any of these roles
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.Post(PetShare.Models.Applications.ApplicationRequest)">
+            <summary>
+                Creates an application. Requires adopter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.GetForAnnouncement(System.Guid)">
+            <summary>
+                Returns application with a given ID. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.Withdraw(System.Guid)">
+            <summary>
+                Withdraws an application. Requires adopter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.Accept(System.Guid)">
+            <summary>
+                Accepts an application. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ApplicationController.Reject(System.Guid)">
+            <summary>
+                Rejects an application. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.PetController.Get(System.Guid)">
+            <summary>
+                Returns a pet with a given ID
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.PetController.GetAll">
+            <summary>
+                Returns all pets from a given shelter. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.PetController.Post(PetShare.Models.Pets.PetCreationRequest)">
+            <summary>
+                Creates new pet. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.PetController.Put(System.Guid,PetShare.Models.Pets.PetUpdateRequest)">
+            <summary>
+                Updates pet with specified ID. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.PetController.PostPhoto(Microsoft.AspNetCore.Http.IFormFile,System.Guid)">
+            <summary>
+                Updates pet photo. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ShelterController.Get(System.Guid)">
+            <summary>
+                Returns a shelter with a given ID
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ShelterController.GetAll">
+            <summary>
+                Returns all shelters
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ShelterController.Post(PetShare.Models.Shelters.ShelterCreationRequest)">
+            <summary>
+                Creates new shelter. Requires unassigned role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.ShelterController.Put(System.Guid,PetShare.Models.Shelters.ShelterAuthorizationRequest)">
+            <summary>
+                Updates authorization status of a shelter with specified ID. Requires admin role
+            </summary>
+        </member>
+        <member name="M:PetShare.Services.TokenValidator.ValidateClaims(System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+                Performs additional validation on user claims, i.e. if the ID of user claiming to be shelter corresponds to
+                an existing shelter
+            </summary>
+            <param name="user"> <see cref="T:System.Security.Claims.ClaimsPrincipal" /> containing user claims </param>
+            <returns> <c> true </c> if token claims are valid, <c> false </c> otherwise </returns>
+        </member>
+    </members>
+</doc>

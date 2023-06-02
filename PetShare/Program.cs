@@ -105,7 +105,8 @@ public class Program
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(JwtConfiguration.SectionName));
         builder.Services.Configure<ImgurConfiguration>(builder.Configuration.
                                                                GetSection(ImgurConfiguration.SectionName));
-        builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection(EmailConfiguration.SectionName));
+        builder.Services.Configure<EmailConfiguration>(builder.Configuration.
+                                                               GetSection(EmailConfiguration.SectionName));
     }
 
     private static void ConfigureJwt(IServiceCollection services, IConfiguration config)

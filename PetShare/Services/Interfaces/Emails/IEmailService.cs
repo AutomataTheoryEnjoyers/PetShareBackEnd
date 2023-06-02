@@ -1,11 +1,9 @@
-﻿using SendGrid.Helpers.Mail;
-using SendGrid;
+﻿namespace PetShare.Services.Interfaces.Emails;
 
-namespace PetShare.Services.Interfaces.Emails
+public interface IEmailService
 {
-    public interface IEmailService
-    {
-        public Task SendEmailAsync(string recpientEmail, string recipientUsername, object dynamicTemplateData, string tempalteId);
-        public Task SendStatusUpdateEmail(string recpientEmail, string recipientUsername, string newStatus);
-    }
+    public Task SendEmailAsync(string recipientEmail, string recipientUsername, object dynamicTemplateData,
+        string templateId);
+
+    public Task SendStatusUpdateEmail(string recipientEmail, string recipientUsername, string newStatus);
 }

@@ -7,40 +7,123 @@ using PetShare.Models.Pets;
 using PetShare.Models.Shelters;
 using PetShare.Results;
 using PetShare.Services.Interfaces.Adopters;
+using PetShare.Services.Interfaces.Announcements;
+using PetShare.Services.Interfaces.Applications;
+using PetShare.Services.Interfaces.Pets;
 using PetShare.Services.Interfaces.Shelters;
 
 namespace PetShare.Services;
 
 public sealed class DemoDatabasePopulator
 {
-    private readonly PetShareDbContext _context;
-    private readonly IShelterCommand _shelterCommand;
-    private readonly IShelterQuery _shelterQuery;
     private readonly IAdopterCommand _adopterCommand;
     private readonly IAdopterQuery _adopterQuery;
+    private readonly IAnnouncementCommand _announcementCommand;
+    private readonly IAnnouncementQuery _announcementQuery;
+    private readonly IApplicationCommand _applicationCommand;
+    private readonly IPetCommand _petCommand;
     private readonly Random _random = new();
+    private readonly IShelterCommand _shelterCommand;
+    private readonly IShelterQuery _shelterQuery;
 
-    public DemoDatabasePopulator(PetShareDbContext context, IShelterCommand shelterCommand, IShelterQuery shelterQuery,
-        IAdopterCommand adopterCommand, IAdopterQuery adopterQuery)
+    public DemoDatabasePopulator(IShelterCommand shelterCommand, IShelterQuery shelterQuery,
+        IAdopterCommand adopterCommand, IAdopterQuery adopterQuery, IPetCommand petCommand,
+        IAnnouncementCommand announcementCommand, IAnnouncementQuery announcementQuery,
+        IApplicationCommand applicationCommand)
     {
-        _context = context;
         _shelterQuery = shelterQuery;
         _shelterCommand = shelterCommand;
         _adopterQuery = adopterQuery;
         _adopterCommand = adopterCommand;
+        _petCommand = petCommand;
+        _announcementCommand = announcementCommand;
+        _announcementQuery = announcementQuery;
+        _applicationCommand = applicationCommand;
     }
-    
-    public async Task<Result> Populate()
+
+    public async Task<Result> PopulateAsync()
     {
-        await _adopterCommand.AddAsync(new Adopter
+        await CreateNewSheltersAsync(3);
+        await CreateNewAdoptersAsync(3);
+
+        var result = await CreatePetsAndAnnouncementsAsync();
+        if (!result.HasValue)
+            return result;
+
+        var secondResult = await ApplyAndLikeAsync();
+        if (!secondResult.HasValue)
+            return secondResult;
+
+        return Result.Ok;
+    }
+
+    private async Task<Result> ApplyAndLikeAsync()
+    {
+        var allAnnouncements =
+            (await _announcementQuery.GetAllFilteredAsync(new AnnouncementFilters())).Select(l => l.Announcement).
+                                                                                      ToArray();
+        var allAdopters = await _adopterQuery.GetAllAsync();
+        foreach (var adopter in allAdopters)
         {
-            Id = Guid.NewGuid(),
-            UserName = "adopter-1",
-            Email = "mail1@email.com",
-            PhoneNumber = "123456789",
-            Status = AdopterStatus.Active,
-            Address = GenerateAddress()
-        });
+            foreach (var announcement in ChooseRandom(allAnnouncements, 5))
+            {
+                var result = await _applicationCommand.CreateAsync(announcement.Id, adopter.Id);
+                if (!result.HasValue)
+                    return result;
+            }
+
+            foreach (var announcement in ChooseRandom(allAnnouncements, 8))
+            {
+                var result = await _announcementCommand.LikeAsync(announcement.Id, adopter.Id);
+                if (!result.HasValue)
+                    return result;
+            }
+        }
+
+        return Result.Ok;
+    }
+
+    private async Task<Result> CreatePetsAndAnnouncementsAsync()
+    {
+        var allShelters = await _shelterQuery.GetAllAsync();
+        foreach (var shelter in allShelters)
+            for (var i = 0; i < 4; i++)
+            {
+                var pet = CreatePet(shelter);
+                await _petCommand.AddAsync(pet);
+
+                var result = await _announcementCommand.AddAsync(CreateAnnouncement(pet));
+                if (!result.HasValue)
+                    return result;
+            }
+
+        return Result.Ok;
+    }
+
+    private async Task CreateNewAdoptersAsync(int count)
+    {
+        for (var i = 0; i < count; i++)
+            await _adopterCommand.AddAsync(CreateAdopter());
+    }
+
+    private async Task CreateNewSheltersAsync(int count)
+    {
+        for (var i = 0; i < count; i++)
+            await _shelterCommand.AddAsync(CreateShelter());
+    }
+
+    private IEnumerable<Announcement> ChooseRandom(IReadOnlyList<Announcement> announcements, int count)
+    {
+        var chosen = new HashSet<int>();
+        while (chosen.Count < count)
+        {
+            var next = _random.Next(announcements.Count);
+            if (chosen.Contains(next))
+                continue;
+
+            chosen.Add(next);
+            yield return announcements[next];
+        }
     }
 
     private Adopter CreateAdopter()
@@ -69,7 +152,7 @@ public sealed class DemoDatabasePopulator
 
     public Shelter CreateShelter()
     {
-        var usernames = new(string Short, string Long)[]
+        var usernames = new (string Short, string Long)[]
         {
             ("shelter-1", "Shelter"),
             ("cat-spawn-point", "National cats reserve"),

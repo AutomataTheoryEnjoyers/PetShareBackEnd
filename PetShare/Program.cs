@@ -88,7 +88,7 @@ public class Program
         services.AddScoped<IApplicationCommand, ApplicationCommand>();
         services.AddScoped<IApplicationQuery, ApplicationQuery>();
         services.AddSingleton<IImageStorage, ImgurImageStorage>();
-        services.AddScoped<IEmailService,EmailService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<DemoDatabasePopulator>();
     }
 

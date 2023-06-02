@@ -134,7 +134,7 @@ public sealed class ApplicationController : ControllerBase
             return Forbid();
 
         var result = await _command.WithdrawAsync(id, HttpContext.RequestAborted);
-        if(result.HasValue)
+        if (result.HasValue)
         {
             await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName, ApplicationState.Withdrawn.ToString());
             return Ok();

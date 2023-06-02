@@ -61,7 +61,7 @@ public class AnnouncementController : ControllerBase
         if (User.IsAdopter() && !await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var likedAnnouncements =  (await _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
+        var likedAnnouncements = (await _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
                                            HttpContext.RequestAborted)).Select(s => s.ToResponse()).
                                                                         ToList();
 

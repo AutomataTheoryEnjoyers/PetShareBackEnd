@@ -131,7 +131,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             PageCount = 10,
             PageNumber = 10,
         };
-        var response = await client.Request("shelter","pets").SetQueryParams(query).GetAsync();
+        var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -144,7 +144,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             PageCount = 1,
             PageNumber = 0,
         };
-        var response = await client.Request("shelter","pets").SetQueryParams(query).GetAsync();
+        var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Count.Should().Be(2);

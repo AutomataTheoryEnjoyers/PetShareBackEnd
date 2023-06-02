@@ -6,7 +6,6 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
-using PetShare.Models;
 using PetShare.Models.Announcements;
 using PetShare.Models.Pets;
 using Xunit;
@@ -193,7 +192,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                         {
                             Announcements = _announcements.Select(a => Announcement.FromEntity(a).ToResponse()).ToList(),
                             PageNumber = 0,
-                            Count= 2,
+                            Count = 2,
                         });
     }
 

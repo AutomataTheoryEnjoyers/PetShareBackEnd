@@ -61,7 +61,7 @@
                 Updates specified announcement. Requires shelter role
             </summary>
         </member>
-        <member name="M:PetShare.Controllers.ApplicationController.GetAll">
+        <member name="M:PetShare.Controllers.ApplicationController.GetAll(PetShare.Models.PaginationQueryRequest)">
             <summary>
                 For admin, returns all applications.
                 For adopter, returns all applications created by them.
@@ -74,9 +74,9 @@
                 Creates an application. Requires adopter role
             </summary>
         </member>
-        <member name="M:PetShare.Controllers.ApplicationController.GetForAnnouncement(System.Guid)">
+        <member name="M:PetShare.Controllers.ApplicationController.GetForAnnouncement(System.Guid,PetShare.Models.PaginationQueryRequest)">
             <summary>
-                Returns application with a given ID. Requires shelter role
+                Returns applications for given announcement ID. Requires shelter role
             </summary>
         </member>
         <member name="M:PetShare.Controllers.ApplicationController.Withdraw(System.Guid)">

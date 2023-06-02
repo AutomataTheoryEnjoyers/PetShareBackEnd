@@ -12,12 +12,12 @@ namespace PetShare.Services.Implementations.Pagination
         {
             _config = config;
         }
-        
-        public PaginatedResult<T>? GetPage<T> (IEnumerable<T> collection, PaginationQueryRequest query)
+
+        public PaginatedResult<T>? GetPage<T>(IEnumerable<T> collection, PaginationQueryRequest query)
         {
             int pageSize = query.PageCount ?? _config.Value.DefaultPageSize;
             int pageNr = query.PageNumber ?? _config.Value.DefaultPageNumber;
-            
+
             if (pageNr != 0 && collection.Count() <= pageNr * pageSize)
                 return null;
 

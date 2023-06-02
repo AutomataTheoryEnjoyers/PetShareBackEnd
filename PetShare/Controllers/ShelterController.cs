@@ -51,7 +51,7 @@ public sealed class ShelterController : ControllerBase
     {
         var shelters = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
 
-        var paginatedShelters = _paginator.GetPage<ShelterResponse>(shelters,paginationQuery);
+        var paginatedShelters = _paginator.GetPage<ShelterResponse>(shelters, paginationQuery);
 
         if (paginatedShelters == null)
             return BadRequest("Wrong pagination parameters");

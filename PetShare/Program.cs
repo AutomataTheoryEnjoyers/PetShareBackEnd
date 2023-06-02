@@ -88,7 +88,7 @@ public class Program
         services.AddScoped<IApplicationCommand, ApplicationCommand>();
         services.AddScoped<IApplicationQuery, ApplicationQuery>();
         services.AddSingleton<IImageStorage, ImgurImageStorage>();
-        services.AddScoped<IPaginationService,PaginationService>();
+        services.AddScoped<IPaginationService, PaginationService>();
     }
 
     private static void ConfigureOptions(WebApplicationBuilder builder)

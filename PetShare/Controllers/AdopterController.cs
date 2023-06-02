@@ -42,7 +42,7 @@ public sealed class AdopterController : ControllerBase
         var adopters = (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
 
         var paginatedAdopters = _paginator.GetPage<AdopterResponse>(adopters, paginationQuery);
-        if(paginatedAdopters == null)
+        if (paginatedAdopters == null)
             return BadRequest("Wrong pagination parameters");
 
         return PaginatedAdoptersResponse.FromPaginatedResult(paginatedAdopters.Value);

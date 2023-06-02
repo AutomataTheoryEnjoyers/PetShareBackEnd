@@ -99,7 +99,7 @@
                 Returns a pet with a given ID
             </summary>
         </member>
-        <member name="M:PetShare.Controllers.PetController.GetAll">
+        <member name="M:PetShare.Controllers.PetController.GetAll(PetShare.Models.PaginationQueryRequest)">
             <summary>
                 Returns all pets from a given shelter. Requires shelter role
             </summary>

@@ -16,23 +16,6 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class ShelterEndpointTests : IAsyncLifetime
 {
-    //private readonly ShelterEntity _shelter = new[]
-    //{
-    //    Id = Guid.NewGuid(),
-    //    UserName = "test-shelter",
-    //    Email = "mail@mail.mail",
-    //    PhoneNumber = "123456789",
-    //    FullShelterName = "Test Shelter",
-    //    IsAuthorized = null,
-    //    Address = new Address
-    //    {
-    //        Country = "test-country",
-    //        Province = "test-province",
-    //        City = "test-city",
-    //        Street = "test-street",
-    //        PostalCode = "test-postalCode"
-    //    }
-    //};
     private readonly ShelterEntity[] _shelters = new ShelterEntity[]
     {
             new ()

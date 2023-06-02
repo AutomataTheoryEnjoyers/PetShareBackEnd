@@ -16,42 +16,79 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class PetEndpointTests : IAsyncLifetime
 {
-    private readonly PetEntity _pet;
-    private readonly ShelterEntity _shelter;
+    private readonly PetEntity[] _pets;
+    private readonly ShelterEntity[] _shelters;
 
     private readonly IntegrationTestSetup _testSetup = new();
 
     public PetEndpointTests()
     {
-        _shelter = new ShelterEntity
+        _shelters = new ShelterEntity[]
         {
-            Id = Guid.NewGuid(),
-            UserName = "test-shelter",
-            Email = "mail@mail.mail",
-            PhoneNumber = "123456789",
-            FullShelterName = "Test Shelter",
-            IsAuthorized = null,
-            Address = new Address
+            new ()
             {
-                Country = "test-country",
-                Province = "test-province",
-                City = "test-city",
-                Street = "test-street",
-                PostalCode = "test-postalCode"
+                Id = Guid.NewGuid(),
+                UserName = "shelter1",
+                Email = "mail1@mail.mail",
+                PhoneNumber = "123456789",
+                FullShelterName = "Shelter 1",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "country",
+                    Province = "province",
+                    City = "city",
+                    Street = "street",
+                    PostalCode = "12-345"
+                }
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                UserName = "shelter2",
+                Email = "mail2@mail.mail",
+                PhoneNumber = "123123123",
+                FullShelterName = "Shelter 2",
+                IsAuthorized = null,
+                Address = new Address
+                {
+                    Country = "country",
+                    Province = "province",
+                    City = "city",
+                    Street = "street",
+                    PostalCode = "54-321"
+                }
             }
         };
-        _pet = new PetEntity
+
+        _pets = new PetEntity[]
         {
-            Id = Guid.NewGuid(),
-            Name = "test-pet",
-            Breed = "test-breed",
-            Species = "test-species",
-            Birthday = DateTime.Now,
-            Description = "test-description",
-            Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
-            ShelterId = _shelter.Id,
-            Sex = PetSex.Unknown,
-            Status = PetStatus.Active
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test-pet1",
+                Breed = "test-breed",
+                Species = "test-species",
+                Birthday = DateTime.Now,
+                Description = "test-description1",
+                Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+                ShelterId = _shelters[0].Id,
+                Sex = PetSex.Unknown,
+                Status = PetStatus.Active
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test-pet2",
+                Breed = "test-breed",
+                Species = "test-species",
+                Birthday = DateTime.Now,
+                Description = "test-description2",
+                Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+                ShelterId = _shelters[0].Id,
+                Sex = PetSex.Unknown,
+                Status = PetStatus.Active
+            },
         };
     }
 
@@ -59,8 +96,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
     {
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Shelters.Add(_shelter);
-        context.Pets.Add(_pet);
+        context.Shelters.AddRange(_shelters);
+        context.Pets.AddRange(_pets);
         await context.SaveChangesAsync();
     }
 
@@ -72,27 +109,64 @@ public sealed class PetEndpointTests : IAsyncLifetime
     [Fact]
     public async Task GetShouldFetchPetsFromShelter()
     {
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
         var response = await client.Request("shelter", "pets").GetAsync();
         response.StatusCode.Should().Be(200);
-        var pets = await response.GetJsonAsync<IEnumerable<PetResponse>>();
+        var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Should().
-             BeEquivalentTo(new[]
+             BeEquivalentTo(new PaginatedPetsResponse
              {
-                 new PetResponse
-                 {
-                     Id = _pet.Id,
-                     Name = _pet.Name,
-                     Species = _pet.Species,
-                     Breed = _pet.Breed,
-                     Birthday = _pet.Birthday,
-                     Description = _pet.Description,
-                     PhotoUrl = _pet.Photo,
-                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                     Status = _pet.Status.ToString(),
-                     Sex = _pet.Sex.ToString()
-                 }
+                 Pets = _pets.Select(p => Pet.FromEntity(p).ToResponse()).ToList(),
+                 PageNumber = 0,
+                 Count = 2
              });
+    }
+
+    [Fact]
+    public async Task GetShouldFailWithWrongPaginationParams()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 10,
+            PageNumber = 10,
+        };
+        var response = await client.Request("shelter","pets").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 1,
+            PageNumber = 0,
+        };
+        var response = await client.Request("shelter","pets").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
+        pets.Count.Should().Be(2);
+        pets.PageNumber.Should().Be(0);
+        pets.Pets.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedEndFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var query = new PaginationQueryRequest
+        {
+            PageCount = 1,
+            PageNumber = 1,
+        };
+        var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
+        pets.Count.Should().Be(2);
+        pets.PageNumber.Should().Be(1);
+        pets.Pets.Count.Should().Be(1);
     }
 
     [Fact]
@@ -136,30 +210,31 @@ public sealed class PetEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, shelterId).AllowAnyHttpStatus();
         var response = await client.Request("shelter", "pets").GetAsync();
         response.StatusCode.Should().Be(200);
-        var pets = await response.GetJsonAsync<IEnumerable<PetResponse>>();
-        pets.Should().BeEmpty();
+        var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
+        pets.Pets.Should().BeEmpty();
+        pets.Count.Should().Be(0);
     }
 
     [Fact]
     public async Task GetShouldFetchPetById()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("pet", _pet.Id).GetAsync();
+        var response = await client.Request("pet", _pets[0].Id).GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PetResponse>();
         shelters.Should().
                  BeEquivalentTo(new PetResponse
                  {
-                     Id = _pet.Id,
-                     Name = _pet.Name,
-                     Species = _pet.Species,
-                     Breed = _pet.Breed,
-                     Birthday = _pet.Birthday,
-                     Description = _pet.Description,
-                     PhotoUrl = _pet.Photo,
-                     Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                     Status = _pet.Status.ToString(),
-                     Sex = _pet.Sex.ToString()
+                     Id = _pets[0].Id,
+                     Name = _pets[0].Name,
+                     Species = _pets[0].Species,
+                     Breed = _pets[0].Breed,
+                     Birthday = _pets[0].Birthday,
+                     Description = _pets[0].Description,
+                     PhotoUrl = _pets[0].Photo,
+                     Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
+                     Status = _pets[0].Status.ToString(),
+                     Sex = _pets[0].Sex.ToString()
                  });
     }
 
@@ -243,7 +318,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Sex = "Female",
             PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png"
         };
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
         var response = await client.Request("pet").PostJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
         var newPet = await response.GetJsonAsync<PetResponse>();
@@ -257,8 +332,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Birthday = request.Birthday,
                    Description = request.Description,
                    PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
-                   Shelter = Shelter.FromEntity(_shelter).ToResponse(),
-                   Status = _pet.Status.ToString(),
+                   Shelter = Shelter.FromEntity(_shelters[0]).ToResponse(),
+                   Status = _pets[0].Status.ToString(),
                    Sex = request.Sex
                }, options => options.Excluding(s => s.Id));
 
@@ -273,7 +348,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                     Species = request.Species,
                     Birthday = request.Birthday,
                     Description = request.Description,
-                    ShelterId = _shelter.Id,
+                    ShelterId = _shelters[0].Id,
                     Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
                     Sex = PetSex.Female,
                     Status = PetStatus.Active
@@ -289,41 +364,41 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Breed = "test-breed-updated",
             Description = "test-description-updated"
         };
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
-        var response = await client.Request("pet", _pet.Id).PutJsonAsync(request);
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("pet", _pets[0].Id).PutJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var updatedPet = await response.GetJsonAsync<PetResponse>();
         updatedPet.Should().
                    BeEquivalentTo(new PetResponse
                    {
-                       Id = _pet.Id,
+                       Id = _pets[0].Id,
                        Name = request.Name,
                        Breed = request.Breed,
-                       Species = _pet.Species,
-                       Birthday = _pet.Birthday,
+                       Species = _pets[0].Species,
+                       Birthday = _pets[0].Birthday,
                        Description = request.Description,
-                       Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
-                       Status = _pet.Status.ToString(),
-                       PhotoUrl = _pet.Photo,
-                       Sex = _pet.Sex.ToString()
+                       Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
+                       Status = _pets[0].Status.ToString(),
+                       PhotoUrl = _pets[0].Photo,
+                       Sex = _pets[0].Sex.ToString()
                    });
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Pets.Single(e => e.Id == _pet.Id).
+        context.Pets.Single(e => e.Id == _pets[0].Id).
                 Should().
                 BeEquivalentTo(new PetEntity
                 {
-                    Id = _pet.Id,
+                    Id = _pets[0].Id,
                     Name = request.Name,
                     Breed = request.Breed,
-                    Species = _pet.Species,
-                    Birthday = _pet.Birthday,
+                    Species = _pets[0].Species,
+                    Birthday = _pets[0].Birthday,
                     Description = request.Description,
-                    Photo = _pet.Photo,
-                    ShelterId = _shelter.Id,
-                    Sex = _pet.Sex,
-                    Status = _pet.Status
+                    Photo = _pets[0].Photo,
+                    ShelterId = _shelters[0].Id,
+                    Sex = _pets[0].Sex,
+                    Status = _pets[0].Status
                 });
     }
 
@@ -334,40 +409,40 @@ public sealed class PetEndpointTests : IAsyncLifetime
         {
             Status = "Deleted"
         };
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
-        var response = await client.Request("pet", _pet.Id).PutJsonAsync(request);
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("pet", _pets[0].Id).PutJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var updatedPet = await response.GetJsonAsync<PetResponse>();
         updatedPet.Should().
                    BeEquivalentTo(new PetResponse
                    {
-                       Id = _pet.Id,
-                       Name = _pet.Name,
-                       Breed = _pet.Breed,
-                       Species = _pet.Species,
-                       Birthday = _pet.Birthday,
-                       Description = _pet.Description,
-                       Shelter = Shelter.FromEntity(_pet.Shelter).ToResponse(),
+                       Id = _pets[0].Id,
+                       Name = _pets[0].Name,
+                       Breed = _pets[0].Breed,
+                       Species = _pets[0].Species,
+                       Birthday = _pets[0].Birthday,
+                       Description = _pets[0].Description,
+                       Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
                        Status = PetStatus.Deleted.ToString(),
-                       PhotoUrl = _pet.Photo,
-                       Sex = _pet.Sex.ToString()
+                       PhotoUrl = _pets[0].Photo,
+                       Sex = _pets[0].Sex.ToString()
                    });
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Pets.Single(e => e.Id == _pet.Id).
+        context.Pets.Single(e => e.Id == _pets[0].Id).
                 Should().
                 BeEquivalentTo(new PetEntity
                 {
-                    Id = _pet.Id,
-                    Name = _pet.Name,
-                    Breed = _pet.Breed,
-                    Species = _pet.Species,
-                    Birthday = _pet.Birthday,
-                    Description = _pet.Description,
-                    Photo = _pet.Photo,
-                    ShelterId = _shelter.Id,
-                    Sex = _pet.Sex,
+                    Id = _pets[0].Id,
+                    Name = _pets[0].Name,
+                    Breed = _pets[0].Breed,
+                    Species = _pets[0].Species,
+                    Birthday = _pets[0].Birthday,
+                    Description = _pets[0].Description,
+                    Photo = _pets[0].Photo,
+                    ShelterId = _shelters[0].Id,
+                    Sex = _pets[0].Sex,
                     Status = PetStatus.Deleted
                 });
     }
@@ -381,7 +456,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
             Name = "test-pet2",
             Breed = "test-breed2"
         };
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
         var response = await client.Request("pet", wrongId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
         var error = await response.GetJsonAsync<NotFoundResponse>();
@@ -397,13 +472,13 @@ public sealed class PetEndpointTests : IAsyncLifetime
     public async Task PostPhotoShouldUpdatePetPhoto()
     {
         var stream = new MemoryStream("photo content"u8.ToArray());
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id);
-        var response = await client.Request("pet", _pet.Id, "photo").
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
+        var response = await client.Request("pet", _pets[0].Id, "photo").
                                     PostMultipartAsync(mp => mp.AddFile("file", stream, "new-photo.jpg", "image/jpg"));
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Pets.Single(pet => pet.Id == _pet.Id).Photo.Should().Be("photo.jpg");
+        context.Pets.Single(pet => pet.Id == _pets[0].Id).Photo.Should().Be("photo.jpg");
     }
 }

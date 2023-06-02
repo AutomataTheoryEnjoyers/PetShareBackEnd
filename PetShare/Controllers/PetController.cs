@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
 using PetShare.Models.Pets;
 using PetShare.Services;
+using PetShare.Services.Interfaces.Pagination;
 using PetShare.Services.Interfaces.Pets;
 using PetShare.Services.Interfaces.Shelters;
 
@@ -14,13 +15,15 @@ public class PetController : ControllerBase
     private readonly IPetCommand _command;
     private readonly IPetQuery _query;
     private readonly IShelterQuery _shelterQuery;
+    private readonly IPaginationService _paginator;
     private readonly TokenValidator _validator;
 
-    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery, TokenValidator validator)
+    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery, IPaginationService paginator, TokenValidator validator)
     {
         _query = query;
         _command = command;
         _shelterQuery = shelterQuery;
+        _paginator = paginator;
         _validator = validator;
     }
 
@@ -47,17 +50,24 @@ public class PetController : ControllerBase
     [HttpGet]
     [Route("shelter/pets")]
     [Authorize(Roles = Roles.Shelter)]
-    [ProducesResponseType(typeof(IReadOnlyList<PetResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedPetsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<PetResponse>>> GetAll()
+    public async Task<ActionResult<PaginatedPetsResponse>> GetAll([FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        return (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
+        var pets = (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
                Select(s => s.ToResponse()).
                ToList();
+
+        var paginatedPets = _paginator.GetPage<PetResponse>(pets, paginationQuery);
+        if (paginatedPets == null)
+            return BadRequest("Wrong pagination parameters");
+
+        return PaginatedPetsResponse.FromPaginatedResult(paginatedPets.Value);
     }
 
     /// <summary>

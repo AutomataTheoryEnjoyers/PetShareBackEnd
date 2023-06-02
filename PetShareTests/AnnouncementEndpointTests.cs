@@ -6,6 +6,7 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
+using PetShare.Models;
 using PetShare.Models.Announcements;
 using PetShare.Models.Pets;
 using Xunit;
@@ -16,8 +17,8 @@ namespace PetShareTests;
 public sealed class AnnouncementEndpointTests : IAsyncLifetime
 {
     private readonly AdopterEntity _adopter;
-    private readonly AnnouncementEntity _announcement;
-    private readonly PetEntity _pet;
+    private readonly AnnouncementEntity[] _announcements;
+    private readonly PetEntity[] _pets;
     private readonly ShelterEntity _shelter;
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -42,30 +43,60 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             }
         };
 
-        _pet = new PetEntity
+        _pets = new PetEntity[]
         {
-            Id = Guid.NewGuid(),
-            Name = "test-pet",
-            Breed = "test-breed",
-            Species = "test-species",
-            Birthday = DateTime.Now,
-            Description = "test-description",
-            Photo = "test-photo",
-            ShelterId = _shelter.Id,
-            Sex = PetSex.Unknown,
-            Status = PetStatus.Active
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test-pet1",
+                Breed = "test-breed",
+                Species = "test-species",
+                Birthday = DateTime.Now,
+                Description = "test-description1",
+                Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+                ShelterId = _shelter.Id,
+                Sex = PetSex.Unknown,
+                Status = PetStatus.Active
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "test-pet2",
+                Breed = "test-breed",
+                Species = "test-species",
+                Birthday = DateTime.Now,
+                Description = "test-description2",
+                Photo = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
+                ShelterId = _shelter.Id,
+                Sex = PetSex.Unknown,
+                Status = PetStatus.Active
+            },
         };
 
-        _announcement = new AnnouncementEntity
+        _announcements = new AnnouncementEntity[]
         {
-            Id = Guid.NewGuid(),
-            Title = "test-announcement",
-            Description = "test-description",
-            CreationDate = DateTime.Now,
-            Status = 0,
-            LastUpdateDate = DateTime.Now,
-            AuthorId = _shelter.Id,
-            PetId = _pet.Id
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "test-announcement1",
+                Description = "test-description",
+                CreationDate = DateTime.Now,
+                Status = 0,
+                LastUpdateDate = DateTime.Now,
+                AuthorId = _shelter.Id,
+                PetId = _pets[0].Id
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "test-announcement2",
+                Description = "test-description",
+                CreationDate = DateTime.Now,
+                Status = 0,
+                LastUpdateDate = DateTime.Now,
+                AuthorId = _shelter.Id,
+                PetId = _pets[1].Id
+            },
         };
 
         _adopter = new AdopterEntity
@@ -91,12 +122,12 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Shelters.Add(_shelter);
-        context.Pets.Add(_pet);
-        context.Announcements.Add(_announcement);
+        context.Pets.AddRange(_pets);
+        context.Announcements.AddRange(_announcements);
         context.Adopters.Add(_adopter);
         context.Likes.Add(new LikedAnnouncementEntity
         {
-            AnnouncementId = _announcement.Id,
+            AnnouncementId = _announcements[0].Id,
             AdopterId = _adopter.Id
         });
         await context.SaveChangesAsync();
@@ -113,22 +144,39 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("announcements").GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         announcements.Should().
-                      BeEquivalentTo(new[]
+                      BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
                       {
-                          new LikedAnnouncementResponse
+                          Announcements = new LikedAnnouncementResponse[]
                           {
-                              Id = _announcement.Id,
-                              Title = _announcement.Title,
-                              Description = _announcement.Description,
-                              CreationDate = _announcement.CreationDate,
-                              ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status.ToString(),
-                              LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
-                              IsLiked = false
-                          }
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[0].Id,
+                                    Title = _announcements[0].Title,
+                                    Description = _announcements[0].Description,
+                                    CreationDate = _announcements[0].CreationDate,
+                                    ClosingDate = _announcements[0].ClosingDate,
+                                    Status = _announcements[0].Status.ToString(),
+                                    LastUpdateDate = _announcements[0].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[1].Id,
+                                    Title = _announcements[1].Title,
+                                    Description = _announcements[1].Description,
+                                    CreationDate = _announcements[1].CreationDate,
+                                    ClosingDate = _announcements[1].ClosingDate,
+                                    Status = _announcements[1].Status.ToString(),
+                                    LastUpdateDate = _announcements[1].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                          },
+                          PageNumber = 0,
+                          Count = 2
                       });
     }
 
@@ -138,36 +186,30 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("shelter", "announcements").GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<PaginatedAnnouncementsResponse>();
         announcements.Should().
-                      BeEquivalentTo(new[]
-                      {
-                          new AnnouncementResponse
-                          {
-                              Id = _announcement.Id,
-                              Title = _announcement.Title,
-                              Description = _announcement.Description,
-                              CreationDate = _announcement.CreationDate,
-                              ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status.ToString(),
-                              LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
-                          }
-                      });
+                      BeEquivalentTo(
+                        new PaginatedAnnouncementsResponse
+                        {
+                            Announcements = _announcements.Select(a => Announcement.FromEntity(a).ToResponse()).ToList(),
+                            PageNumber = 0,
+                            Count= 2,
+                        });
     }
 
     [Fact]
     public async Task GetAnnouncementsWithFiltersEmpty()
     {
-        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopter.Id).AllowAnyHttpStatus();
         var query = new GetAllAnnouncementsFilteredQueryRequest
         {
             MinAge = 1000
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var pets = await response.GetJsonAsync<IEnumerable<AnnouncementResponse>>();
-        pets.Should().BeEmpty();
+        var pets = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        pets.Announcements.Should().BeEmpty();
+        pets.Count.Should().Be(0);
     }
 
     [Fact]
@@ -181,23 +223,40 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         announcements.Should().
-                      BeEquivalentTo(new[]
-                      {
-                          new LikedAnnouncementResponse
+                     BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
+                     {
+                         Announcements = new LikedAnnouncementResponse[]
                           {
-                              Id = _announcement.Id,
-                              Title = _announcement.Title,
-                              Description = _announcement.Description,
-                              CreationDate = _announcement.CreationDate,
-                              ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status.ToString(),
-                              LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
-                              IsLiked = false
-                          }
-                      });
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[0].Id,
+                                    Title = _announcements[0].Title,
+                                    Description = _announcements[0].Description,
+                                    CreationDate = _announcements[0].CreationDate,
+                                    ClosingDate = _announcements[0].ClosingDate,
+                                    Status = _announcements[0].Status.ToString(),
+                                    LastUpdateDate = _announcements[0].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[1].Id,
+                                    Title = _announcements[1].Title,
+                                    Description = _announcements[1].Description,
+                                    CreationDate = _announcements[1].CreationDate,
+                                    ClosingDate = _announcements[1].ClosingDate,
+                                    Status = _announcements[1].Status.ToString(),
+                                    LastUpdateDate = _announcements[1].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                          },
+                         PageNumber = 0,
+                         Count = 2
+                     });
     }
 
     [Fact]
@@ -210,43 +269,108 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);
-        var announcements = await response.GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
+        var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         announcements.Should().
-                      BeEquivalentTo(new[]
-                      {
-                          new LikedAnnouncementResponse
+                     BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
+                     {
+                         Announcements = new LikedAnnouncementResponse[]
                           {
-                              Id = _announcement.Id,
-                              Title = _announcement.Title,
-                              Description = _announcement.Description,
-                              CreationDate = _announcement.CreationDate,
-                              ClosingDate = _announcement.ClosingDate,
-                              Status = _announcement.Status.ToString(),
-                              LastUpdateDate = _announcement.LastUpdateDate,
-                              Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
-                              IsLiked = false
-                          }
-                      });
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[0].Id,
+                                    Title = _announcements[0].Title,
+                                    Description = _announcements[0].Description,
+                                    CreationDate = _announcements[0].CreationDate,
+                                    ClosingDate = _announcements[0].ClosingDate,
+                                    Status = _announcements[0].Status.ToString(),
+                                    LastUpdateDate = _announcements[0].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                              new LikedAnnouncementResponse
+                              {
+                                    Id = _announcements[1].Id,
+                                    Title = _announcements[1].Title,
+                                    Description = _announcements[1].Description,
+                                    CreationDate = _announcements[1].CreationDate,
+                                    ClosingDate = _announcements[1].ClosingDate,
+                                    Status = _announcements[1].Status.ToString(),
+                                    LastUpdateDate = _announcements[1].LastUpdateDate,
+                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                    IsLiked = false
+                              },
+                          },
+                         PageNumber = 0,
+                         Count = 2
+                     });
+    }
+
+    [Fact]
+    public async Task GetPaginatedAnnouncementsWithFiltersNonEmpty()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new GetAllAnnouncementsFilteredQueryRequest
+        {
+            PageNumber = 0,
+            PageCount = 1,
+            MaxAge = 1000
+        };
+        var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        announcements.Announcements.Count.Should().Be(1);
+        announcements.PageNumber.Should().Be(0);
+        announcements.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetPaginatedAnnouncementsWithFiltersEmpty()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new GetAllAnnouncementsFilteredQueryRequest
+        {
+            PageNumber = 0,
+            PageCount = 1
+        };
+        var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        announcements.Announcements.Count.Should().Be(1);
+        announcements.PageNumber.Should().Be(0);
+        announcements.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetShouldFailWithWrongPaginationParams()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
+        var query = new GetAllAnnouncementsFilteredQueryRequest
+        {
+            PageCount = 10,
+            PageNumber = 10,
+        };
+        var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
     [Fact]
     public async Task GetShouldFetchAnnouncementById()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var response = await client.Request("announcements", _announcement.Id).GetAsync();
+        var response = await client.Request("announcements", _announcements[0].Id).GetAsync();
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<AnnouncementResponse>();
         announcements.Should().
                       BeEquivalentTo(new AnnouncementResponse
                       {
-                          Id = _announcement.Id,
-                          Title = _announcement.Title,
-                          Description = _announcement.Description,
-                          CreationDate = _announcement.CreationDate,
-                          ClosingDate = _announcement.ClosingDate,
-                          Status = _announcement.Status.ToString(),
-                          LastUpdateDate = _announcement.LastUpdateDate,
-                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse()
+                          Id = _announcements[0].Id,
+                          Title = _announcements[0].Title,
+                          Description = _announcements[0].Description,
+                          CreationDate = _announcements[0].CreationDate,
+                          ClosingDate = _announcements[0].ClosingDate,
+                          Status = _announcements[0].Status.ToString(),
+                          LastUpdateDate = _announcements[0].LastUpdateDate,
+                          Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse()
                       });
     }
 
@@ -266,7 +390,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         {
             Title = "test-annt2",
             Description = "test-de",
-            PetId = _pet.Id
+            PetId = _pets[0].Id
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements").PostJsonAsync(request);
@@ -282,7 +406,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
                             Status = AnnouncementStatus.Open.ToString(),
-                            Pet = Pet.FromEntity(_pet).ToResponse()
+                            Pet = Pet.FromEntity(_pets[0]).ToResponse()
                         },
                                        options => options.Excluding(s => s.Id).
                                                           Excluding(s => s.CreationDate).
@@ -315,25 +439,25 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
             Description = "test-description-updated"
         };
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
-        var response = await client.Request("announcements", _announcement.Id).PutJsonAsync(request);
+        var response = await client.Request("announcements", _announcements[0].Id).PutJsonAsync(request);
         response.StatusCode.Should().Be(200);
         var updatedAnnouncement = await response.GetJsonAsync<AnnouncementResponse>();
         updatedAnnouncement.Should().
                             BeEquivalentTo(new AnnouncementResponse
                             {
-                                Id = _announcement.Id,
-                                Title = _announcement.Title,
+                                Id = _announcements[0].Id,
+                                Title = _announcements[0].Title,
                                 Description = request.Description,
                                 Status = request.Status,
-                                Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
-                                CreationDate = _announcement.CreationDate,
+                                Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                CreationDate = _announcements[0].CreationDate,
                                 ClosingDate = null,
-                                LastUpdateDate = _announcement.LastUpdateDate
+                                LastUpdateDate = _announcements[0].LastUpdateDate
                             }, options => options.Excluding(s => s.LastUpdateDate));
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Announcements.Single(e => e.Id == _announcement.Id).
+        context.Announcements.Single(e => e.Id == _announcements[0].Id).
                 Should().
                 BeEquivalentTo(new AnnouncementEntity
                 {
@@ -366,19 +490,19 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
     public async Task GetShouldIncludeInfoAboutLikes()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopter.Id);
-        var announcements =
-            await client.Request("announcements").GetJsonAsync<IEnumerable<LikedAnnouncementResponse>>();
-        announcements.Should().
+        var response =
+            await client.Request("announcements").GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        response.Announcements.Should().
                       ContainEquivalentOf(new LikedAnnouncementResponse
                       {
-                          Id = _announcement.Id,
-                          Title = _announcement.Title,
-                          Description = _announcement.Description,
-                          CreationDate = _announcement.CreationDate,
-                          ClosingDate = _announcement.ClosingDate,
-                          Status = _announcement.Status.ToString(),
-                          LastUpdateDate = _announcement.LastUpdateDate,
-                          Pet = Pet.FromEntity(_announcement.Pet).ToResponse(),
+                          Id = _announcements[0].Id,
+                          Title = _announcements[0].Title,
+                          Description = _announcements[0].Description,
+                          CreationDate = _announcements[0].CreationDate,
+                          ClosingDate = _announcements[0].ClosingDate,
+                          Status = _announcements[0].Status.ToString(),
+                          LastUpdateDate = _announcements[0].LastUpdateDate,
+                          Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                           IsLiked = true
                       });
     }

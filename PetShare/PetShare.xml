@@ -46,7 +46,7 @@
                 Returns announcements based on filters
             </summary>
         </member>
-        <member name="M:PetShare.Controllers.AnnouncementController.GetFromShelter">
+        <member name="M:PetShare.Controllers.AnnouncementController.GetFromShelter(PetShare.Models.PaginationQueryRequest)">
             <summary>
                 Gets all announcements created by shelter specified in JWT claims. Requires shelter role
             </summary>

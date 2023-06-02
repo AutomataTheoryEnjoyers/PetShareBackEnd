@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PetShare.Services;
 
 namespace PetShare.Controllers;
@@ -19,6 +20,7 @@ public sealed class DemoController : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("populate")]
+    [AllowAnonymous]
     public async Task<ActionResult> Populate()
     {
         var result = await _populator.PopulateAsync();

@@ -91,12 +91,9 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task GetShouldFailWithWrongPaginationParams()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = -10,
-            PageNumber = -10,
-        };
-        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+        var response = await client.Request("shelter").
+            SetQueryParams(new { PageCount = -10, PageNumber = -10 }).
+            GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -104,12 +101,9 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchPaginatedFragmentOfShelters()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 0,
-        };
-        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+        var response = await client.Request("shelter").
+            SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+            GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Count.Should().Be(2);
@@ -121,12 +115,10 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchPaginatedEndFragmentOfShelters()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 1,
-        };
-        var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
+
+        var response = await client.Request("shelter").
+            SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+            GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Count.Should().Be(2);

@@ -257,12 +257,10 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldFAilWithWrongPaginationParameters()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = -10,
-            PageNumber = -10,
-        };
-        var response = await client.Request("applications").SetQueryParams(query).GetAsync();
+
+        var response = await client.Request("applications").
+            SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
+            GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -270,12 +268,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnPaginatedAppsForAdmin()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 0,
-        };
-        var apps = await client.Request("applications").SetQueryParams(query).GetJsonAsync<PaginatedApplicationsResponse>();
+        var apps = await client.Request("applications").SetQueryParams(new { PageCount = 1, PageNumber = 0 }).GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Applications.Count.Should().Be(1);
         apps.PageNumber.Should().Be(0);
         apps.Count.Should().Be(2);
@@ -285,12 +278,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnEndFragmentOfPaginatedAppsForAdmin()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 1,
-        };
-        var apps = await client.Request("applications").SetQueryParams(query).GetJsonAsync<PaginatedApplicationsResponse>();
+        var apps = await client.Request("applications").SetQueryParams(new { PageCount = 1, PageNumber = 1 }).GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Applications.Count.Should().Be(1);
         apps.PageNumber.Should().Be(1);
         apps.Count.Should().Be(2);

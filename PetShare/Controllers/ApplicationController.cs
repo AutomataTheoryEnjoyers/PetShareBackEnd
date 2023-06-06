@@ -24,7 +24,7 @@ public sealed class ApplicationController : ControllerBase
     private readonly TokenValidator _validator;
 
     public ApplicationController(IApplicationQuery query, IApplicationCommand command,
-        IAnnouncementQuery announcementQuery,  IEmailService emailService, IPaginationService paginator, TokenValidator validator)
+        IAnnouncementQuery announcementQuery, IEmailService emailService, IPaginationService paginator, TokenValidator validator)
     {
         _query = query;
         _announcementQuery = announcementQuery;

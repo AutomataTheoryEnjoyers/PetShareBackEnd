@@ -139,12 +139,10 @@ public sealed class PetEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchPaginatedFragmentOfShelters()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 0,
-        };
-        var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
+
+        var response = await client.Request("shelter", "pets").
+            SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+            GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Count.Should().Be(2);
@@ -156,12 +154,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
     public async Task GetShouldFetchPaginatedEndFragmentOfShelters()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
-        var query = new PaginationQueryRequest
-        {
-            PageCount = 1,
-            PageNumber = 1,
-        };
-        var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
+        var response = await client.Request("shelter", "pets").
+            SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+            GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Count.Should().Be(2);

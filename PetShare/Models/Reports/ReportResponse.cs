@@ -14,7 +14,7 @@ public sealed class ReportResponse
     public required string Message { get; init; }
 
     [Required]
-    public required string Type { get; init; }
+    public required string ReportType { get; init; }
 
     [Required]
     public required string State { get; init; }

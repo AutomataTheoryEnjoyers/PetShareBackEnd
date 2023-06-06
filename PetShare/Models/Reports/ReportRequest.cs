@@ -9,14 +9,15 @@ public sealed class ReportRequest : IValidatableObject
     public required Guid TargetId { get; init; }
 
     [Required]
-    public required string Type { get; init; }
+    public required string ReportType { get; init; }
 
     [Required]
     public required string Message { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!Enum.TryParse<ReportedEntityType>(Type, true, out _))
-            yield return new ValidationResult($"{Type} is not a valid report target type", new[] { nameof(Type) });
+        if (!Enum.TryParse<ReportedEntityType>(ReportType, true, out _))
+            yield return new ValidationResult($"{ReportType} is not a valid report target type",
+                                              new[] { nameof(ReportType) });
     }
 }

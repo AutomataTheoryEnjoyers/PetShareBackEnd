@@ -23,7 +23,7 @@ public sealed class Report
             Id = Guid.NewGuid(),
             TargetId = request.TargetId,
             Message = request.Message,
-            TargetType = Enum.Parse<ReportedEntityType>(request.Type, true),
+            TargetType = Enum.Parse<ReportedEntityType>(request.ReportType, true),
             State = ReportState.New,
             CreationTime = DateTime.Now
         };
@@ -36,7 +36,7 @@ public sealed class Report
             Id = Id,
             TargetId = TargetId,
             Message = Message,
-            Type = TargetType.ToString().ToLower(),
+            ReportType = TargetType.ToString().ToLower(),
             State = State.ToString().ToLower()
         };
     }

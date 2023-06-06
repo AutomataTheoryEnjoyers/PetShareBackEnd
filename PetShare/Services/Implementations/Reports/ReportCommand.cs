@@ -48,7 +48,8 @@ public sealed class ReportCommand : IReportCommand
 
     private async Task<Result> CheckAdopterAsync(Guid id, CancellationToken token)
     {
-        return await _context.Adopters.AnyAsync(adopter => adopter.Id == id, token)
+        return await _context.Adopters.Where(adopter => adopter.Status != AdopterStatus.Deleted).
+                              AnyAsync(adopter => adopter.Id == id, token)
             ? Result.Ok
             : new AdopterNotFound(id);
     }
@@ -62,7 +63,8 @@ public sealed class ReportCommand : IReportCommand
 
     private async Task<Result> CheckAnnouncementAsync(Guid id, CancellationToken token)
     {
-        return await _context.Shelters.AnyAsync(announcement => announcement.Id == id, token)
+        return await _context.Announcements.Where(announcement => announcement.Status != AnnouncementStatus.Deleted).
+                              AnyAsync(announcement => announcement.Id == id, token)
             ? Result.Ok
             : new AnnouncementNotFound(id);
     }

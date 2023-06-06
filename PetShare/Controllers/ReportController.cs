@@ -30,7 +30,7 @@ public class ReportController : ControllerBase
     public async Task<ActionResult<ReportPageResponse>> GetAll([FromQuery] ReportPageRequest request)
     {
         var result =
-            await _query.GetNewReportsPageAsync(request.PageNumber ?? 0, request.PageSize ?? 20,
+            await _query.GetNewReportsPageAsync(request.PageNumber ?? 0, request.PageCount ?? 20,
                                                 HttpContext.RequestAborted);
         return result.HasValue ? result.Value.ToResponse() : result.State.ToActionResult();
     }

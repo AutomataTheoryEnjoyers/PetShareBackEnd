@@ -2,7 +2,7 @@
 
 public sealed class ReportPageRequest
 {
-    public int? PageSize { get; init; }
+    public int? PageCount { get; init; }
 
     public int? PageNumber { get; init; }
 }

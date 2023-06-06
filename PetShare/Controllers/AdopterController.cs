@@ -45,7 +45,7 @@ public sealed class AdopterController : ControllerBase
         if (paginatedAdopters == null)
             return BadRequest("Wrong pagination parameters");
 
-        return PaginatedAdoptersResponse.FromPaginatedResult(paginatedAdopters.Value);
+        return PaginatedAdoptersResponse.FromPaginatedResult(paginatedAdopters);
     }
 
     /// <summary>

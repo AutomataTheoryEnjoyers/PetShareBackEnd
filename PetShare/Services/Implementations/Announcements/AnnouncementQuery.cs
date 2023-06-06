@@ -52,9 +52,9 @@ public class AnnouncementQuery : IAnnouncementQuery
         if (filters.IncludeOnlyLiked)
             announcementsWithLikes = announcementsWithLikes.Where(a => a.Liked);
 
-        return await announcementsWithLikes.
-                     Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.Liked)).
-                     ToListAsync(token);
+        return (await announcementsWithLikes.
+                     Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.Liked))
+                    .ToListAsync(token)).OrderBy(e => e.Announcement.Id).ToList();
     }
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
@@ -64,6 +64,7 @@ public class AnnouncementQuery : IAnnouncementQuery
                                Include(a => a.Pet.Shelter).
                                ToListAsync(token)).
                Select(Announcement.FromEntity).
+               OrderBy(e => e.Id).
                ToList();
     }
 

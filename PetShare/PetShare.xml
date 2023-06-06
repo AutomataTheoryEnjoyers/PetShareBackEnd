@@ -91,7 +91,12 @@
         </member>
         <member name="M:PetShare.Controllers.ApplicationController.Reject(System.Guid)">
             <summary>
-                Accepts an application. Requires shelter role
+                Rejects an application. Requires shelter role
+            </summary>
+        </member>
+        <member name="M:PetShare.Controllers.DemoController.Populate">
+            <summary>
+                Adds some data to database
             </summary>
         </member>
         <member name="M:PetShare.Controllers.PetController.Get(System.Guid)">

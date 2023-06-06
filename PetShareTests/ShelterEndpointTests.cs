@@ -93,8 +93,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var query = new PaginationQueryRequest
         {
-            PageCount = 10,
-            PageNumber = 10,
+            PageCount = -10,
+            PageNumber = -10,
         };
         var response = await client.Request("shelter").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);

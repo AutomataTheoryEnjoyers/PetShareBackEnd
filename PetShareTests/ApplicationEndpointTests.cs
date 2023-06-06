@@ -259,8 +259,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
         var query = new PaginationQueryRequest
         {
-            PageCount = 10,
-            PageNumber = 10,
+            PageCount = -10,
+            PageNumber = -10,
         };
         var response = await client.Request("applications").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);

@@ -18,14 +18,17 @@ namespace PetShare.Services.Implementations.Pagination
             int pageSize = query.PageCount ?? _config.Value.DefaultPageSize;
             int pageNr = query.PageNumber ?? _config.Value.DefaultPageNumber;
 
-            if (pageNr != 0 && collection.Count() <= pageNr * pageSize)
+            List<T> result = new();
+
+            if (pageNr < 0 || pageSize < 0)
                 return null;
 
-            int actualElementsCount = Math.Min(pageSize, collection.Count() - pageNr * pageSize);
+            if (collection.Count() > pageNr * pageSize)
+                result = collection.Skip(pageNr * pageSize).Take(pageSize).ToList();
 
             return new PaginatedResult<T>
             {
-                items = collection.Skip(pageNr * pageSize).Take(actualElementsCount),
+                items = result,
                 pageNr = pageNr,
                 pageSize = pageSize,
                 totalCount = collection.Count()

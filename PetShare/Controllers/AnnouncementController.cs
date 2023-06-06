@@ -67,9 +67,9 @@ public class AnnouncementController : ControllerBase
 
         var paginatedLikedAnnouncements = _paginator.GetPage<LikedAnnouncementResponse>(likedAnnouncements, query.GetPaginationQuery());
         if (paginatedLikedAnnouncements == null)
-            return BadRequest("Worng pagination parameters");
+            return BadRequest("Wrong pagination parameters");
 
-        return PaginatedLikedAnnouncementsResponse.FromPaginatedResult(paginatedLikedAnnouncements.Value);
+        return PaginatedLikedAnnouncementsResponse.FromPaginatedResult(paginatedLikedAnnouncements);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public class AnnouncementController : ControllerBase
         if (paginatedAnnouncemets == null)
             return BadRequest("Worng pagination parameters");
 
-        return PaginatedAnnouncementsResponse.FromPaginatedResult(paginatedAnnouncemets.Value);
+        return PaginatedAnnouncementsResponse.FromPaginatedResult(paginatedAnnouncemets);
     }
 
     /// <summary>

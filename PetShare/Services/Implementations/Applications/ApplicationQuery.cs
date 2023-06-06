@@ -17,10 +17,12 @@ public sealed class ApplicationQuery : IApplicationQuery
 
     public async Task<IReadOnlyList<Application>> GetAllAsync(CancellationToken token = default)
     {
-        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Select(app => Application.FromEntity(app)).
-                              ToListAsync(token);
+                              ToListAsync(token)).
+                              OrderBy(app => app.Id).
+                              ToList();
     }
 
     public async Task<IReadOnlyList<Application>?> GetAllForAdopterAsync(Guid adopterId,
@@ -29,11 +31,13 @@ public sealed class ApplicationQuery : IApplicationQuery
         if (!_context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).Any(adopter => adopter.Id == adopterId))
             return null;
 
-        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Adopter.Id == adopterId).
                               Select(app => Application.FromEntity(app)).
-                              ToListAsync(token);
+                              ToListAsync(token)).
+                              OrderBy(app => app.Id).
+                              ToList();
     }
 
     public async Task<IReadOnlyList<Application>?> GetAllForShelterAsync(Guid shelterId,
@@ -42,11 +46,13 @@ public sealed class ApplicationQuery : IApplicationQuery
         if (!_context.Shelters.Any(shelter => shelter.Id == shelterId))
             return null;
 
-        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Announcement.AuthorId == shelterId).
                               Select(app => Application.FromEntity(app)).
-                              ToListAsync(token);
+                              ToListAsync(token)).
+                              OrderBy(app => app.Id).
+                              ToList();
     }
 
     public async Task<Application?> GetByIdAsync(Guid id, CancellationToken token = default)
@@ -64,11 +70,13 @@ public sealed class ApplicationQuery : IApplicationQuery
         if (!_context.Announcements.Any(announcement => announcement.Id == announcementId))
             return null;
 
-        return await _context.Applications.
+        return (await _context.Applications.
                               Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.AnnouncementId == announcementId).
                               Select(app => Application.FromEntity(app)).
-                              ToListAsync(token);
+                              ToListAsync(token)).
+                              OrderBy(app => app.Id).
+                              ToList();
     }
 }

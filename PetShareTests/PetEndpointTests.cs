@@ -128,8 +128,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
         var query = new PaginationQueryRequest
         {
-            PageCount = 10,
-            PageNumber = 10,
+            PageCount = -10,
+            PageNumber = -10,
         };
         var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);

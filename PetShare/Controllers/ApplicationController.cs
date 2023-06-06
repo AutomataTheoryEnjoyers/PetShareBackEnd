@@ -72,7 +72,7 @@ public sealed class ApplicationController : ControllerBase
         if (paginatedApplications == null)
             return BadRequest("Wrong pagination parameters");
 
-        return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications.Value);
+        return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications);
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ public sealed class ApplicationController : ControllerBase
         if (paginatedApplications == null)
             return BadRequest("Wrong pagination parameters");
 
-        return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications.Value);
+        return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications);
     }
 
     /// <summary>

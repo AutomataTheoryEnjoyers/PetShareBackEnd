@@ -345,8 +345,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var query = new GetAllAnnouncementsFilteredQueryRequest
         {
-            PageCount = 10,
-            PageNumber = 10,
+            PageCount = -10,
+            PageNumber = -10,
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);

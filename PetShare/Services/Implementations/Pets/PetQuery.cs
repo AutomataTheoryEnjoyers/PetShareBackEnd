@@ -20,8 +20,10 @@ public sealed class PetQuery : IPetQuery
         return (await _context.Pets.Include(x => x.Shelter).
                                Where(e => e.Status != PetStatus.Deleted).
                                Where(pet => pet.ShelterId == shelterId).
-                               ToListAsync(token)).Select(Pet.FromEntity).
-                                                   ToList();
+                               ToListAsync(token)).
+                               Select(Pet.FromEntity).
+                               OrderBy(e => e.Id).
+                               ToList();
     }
 
     public async Task<Pet?> GetByIdAsync(Guid id, CancellationToken token = default)

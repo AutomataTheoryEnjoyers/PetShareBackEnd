@@ -4,14 +4,14 @@ namespace PetShare.Services.Interfaces.Pagination
 {
     public interface IPaginationService
     {
-        public PaginatedResult<T>? GetPage<T>(IEnumerable<T> collection, PaginationQueryRequest query);
-    }
+        PaginatedResult<T>? GetPage<T>(IEnumerable<T> collection, PaginationQueryRequest query);
+    } 
 
-    public struct PaginatedResult<T>
+    public record PaginatedResult<T>
     {
-        public IEnumerable<T> items;
-        public int pageSize;
-        public int pageNr;
-        public int totalCount;
+        public required IReadOnlyList<T> items;
+        public required int pageSize;
+        public required int pageNr;
+        public required int totalCount;
     }
 }

@@ -67,7 +67,7 @@ public class PetController : ControllerBase
         if (paginatedPets == null)
             return BadRequest("Wrong pagination parameters");
 
-        return PaginatedPetsResponse.FromPaginatedResult(paginatedPets.Value);
+        return PaginatedPetsResponse.FromPaginatedResult(paginatedPets);
     }
 
     /// <summary>

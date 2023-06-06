@@ -56,7 +56,7 @@ public sealed class ShelterController : ControllerBase
         if (paginatedShelters == null)
             return BadRequest("Wrong pagination parameters");
 
-        return PaginatedSheltersResponse.FromPaginatedResult(paginatedShelters.Value);
+        return PaginatedSheltersResponse.FromPaginatedResult(paginatedShelters);
     }
 
     /// <summary>

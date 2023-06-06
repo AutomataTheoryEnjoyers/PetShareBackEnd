@@ -5,5 +5,5 @@ namespace PetShare.Services.Interfaces.Reports;
 
 public interface IReportQuery
 {
-    Task<Result<ReportPage>> GetPageAsync(int pageNumber, int pageSize, CancellationToken token = default);
+    Task<Result<ReportPage>> GetNewReportsPageAsync(int pageNumber, int pageSize, CancellationToken token = default);
 }

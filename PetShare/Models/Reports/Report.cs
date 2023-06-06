@@ -14,6 +14,8 @@ public sealed class Report
 
     public required ReportState State { get; init; }
 
+    public required DateTime CreationTime { get; init; }
+
     public static Report FromRequest(ReportRequest request)
     {
         return new Report
@@ -22,7 +24,8 @@ public sealed class Report
             TargetId = request.TargetId,
             Message = request.Message,
             TargetType = Enum.Parse<ReportedEntityType>(request.Type, true),
-            State = ReportState.New
+            State = ReportState.New,
+            CreationTime = DateTime.Now
         };
     }
 
@@ -46,7 +49,8 @@ public sealed class Report
             TargetId = entity.TargetId,
             Message = entity.Message,
             State = entity.State,
-            TargetType = entity.TargetType
+            TargetType = entity.TargetType,
+            CreationTime = entity.CreationTime
         };
     }
 
@@ -58,7 +62,8 @@ public sealed class Report
             TargetId = TargetId,
             Message = Message,
             State = State,
-            TargetType = TargetType
+            TargetType = TargetType,
+            CreationTime = CreationTime
         };
     }
 }

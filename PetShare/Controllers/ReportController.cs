@@ -30,7 +30,8 @@ public class ReportController : ControllerBase
     public async Task<ActionResult<ReportPageResponse>> GetAll([FromQuery] ReportPageRequest request)
     {
         var result =
-            await _query.GetPageAsync(request.PageNumber ?? 0, request.PageSize ?? 20, HttpContext.RequestAborted);
+            await _query.GetNewReportsPageAsync(request.PageNumber ?? 0, request.PageSize ?? 20,
+                                                HttpContext.RequestAborted);
         return result.HasValue ? result.Value.ToResponse() : result.State.ToActionResult();
     }
 
@@ -43,9 +44,10 @@ public class ReportController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Post(ReportRequest request)
     {
-        var result = await _command.AddAsync(Report.FromRequest(request));
+        var report = Report.FromRequest(request);
+        var result = await _command.AddAsync(report);
         return result.HasValue
-            ? Created(new Uri(result.Value.Id.ToString(), UriKind.Relative), result.Value)
+            ? Created(new Uri(report.Id.ToString(), UriKind.Relative), report)
             : result.State.ToActionResult();
     }
 

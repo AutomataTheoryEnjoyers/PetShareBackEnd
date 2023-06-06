@@ -14,6 +14,8 @@ public sealed class ReportEntity
     public required ReportedEntityType TargetType { get; init; }
 
     public required ReportState State { get; set; }
+
+    public required DateTime CreationTime { get; init; }
 }
 
 public enum ReportedEntityType

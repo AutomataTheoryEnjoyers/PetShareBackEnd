@@ -17,6 +17,7 @@ public sealed class PetShareDbContext : DbContext
     public DbSet<AdopterVerificationEntity> Verifications => Set<AdopterVerificationEntity>();
     public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
     public DbSet<LikedAnnouncementEntity> Likes => Set<LikedAnnouncementEntity>();
+    public DbSet<ReportEntity> Reports => Set<ReportEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

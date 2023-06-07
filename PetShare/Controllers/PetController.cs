@@ -13,12 +13,13 @@ namespace PetShare.Controllers;
 public class PetController : ControllerBase
 {
     private readonly IPetCommand _command;
+    private readonly IPaginationService _paginator;
     private readonly IPetQuery _query;
     private readonly IShelterQuery _shelterQuery;
-    private readonly IPaginationService _paginator;
     private readonly TokenValidator _validator;
 
-    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery, IPaginationService paginator, TokenValidator validator)
+    public PetController(IPetQuery query, IPetCommand command, IShelterQuery shelterQuery, IPaginationService paginator,
+        TokenValidator validator)
     {
         _query = query;
         _command = command;
@@ -60,10 +61,10 @@ public class PetController : ControllerBase
             return Unauthorized();
 
         var pets = (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
-               Select(s => s.ToResponse()).
-               ToList();
+                   Select(s => s.ToResponse()).
+                   ToList();
 
-        var paginatedPets = _paginator.GetPage<PetResponse>(pets, paginationQuery);
+        var paginatedPets = _paginator.GetPage(pets, paginationQuery);
         if (paginatedPets == null)
             return BadRequest("Wrong pagination parameters");
 

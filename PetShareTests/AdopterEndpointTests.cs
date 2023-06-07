@@ -6,9 +6,7 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
-using PetShare.Models;
 using PetShare.Models.Adopters;
-using PetShare.Models.Shelters;
 using Xunit;
 
 namespace PetShareTests;
@@ -16,7 +14,7 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class AdopterEndpointTests : IAsyncLifetime
 {
-    private readonly AdopterEntity[] _adopters = new AdopterEntity[]
+    private readonly AdopterEntity[] _adopters =
     {
         new()
         {
@@ -49,45 +47,45 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
                 Street = "test-street",
                 PostalCode = "test-postalCode"
             }
-        },
+        }
     };
 
-    private readonly ShelterEntity[] _shelters = new ShelterEntity[]
+    private readonly ShelterEntity[] _shelters =
     {
-            new ()
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "shelter1",
+            Email = "mail1@mail.mail",
+            PhoneNumber = "123456789",
+            FullShelterName = "Shelter 1",
+            IsAuthorized = null,
+            Address = new Address
             {
-                Id = Guid.NewGuid(),
-                UserName = "shelter1",
-                Email = "mail1@mail.mail",
-                PhoneNumber = "123456789",
-                FullShelterName = "Shelter 1",
-                IsAuthorized = null,
-                Address = new Address
-                {
-                    Country = "country",
-                    Province = "province",
-                    City = "city",
-                    Street = "street",
-                    PostalCode = "12-345"
-                }
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserName = "shelter2",
-                Email = "mail2@mail.mail",
-                PhoneNumber = "123123123",
-                FullShelterName = "Shelter 2",
-                IsAuthorized = null,
-                Address = new Address
-                {
-                    Country = "country",
-                    Province = "province",
-                    City = "city",
-                    Street = "street",
-                    PostalCode = "54-321"
-                }
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "12-345"
             }
+        },
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "shelter2",
+            Email = "mail2@mail.mail",
+            PhoneNumber = "123123123",
+            FullShelterName = "Shelter 2",
+            IsAuthorized = null,
+            Address = new Address
+            {
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "54-321"
+            }
+        }
     };
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -116,7 +114,7 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
                  {
                      Adopters = _adopters.Select(a => Adopter.FromEntity(a).ToResponse()).ToList(),
                      PageNumber = 0,
-                     Count = 2,
+                     Count = 2
                  });
     }
 
@@ -124,7 +122,9 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     public async Task GetShouldFailWithWrongPaginationParams()
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus().WithAuth(Roles.Admin);
-        var response = await client.Request("adopter").SetQueryParams(new { PageCount = -1, PageNumber = -1 }).GetAsync();
+        var response = await client.Request("adopter").
+                                    SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 

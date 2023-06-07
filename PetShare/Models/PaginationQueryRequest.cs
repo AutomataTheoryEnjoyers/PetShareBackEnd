@@ -1,8 +1,7 @@
-﻿namespace PetShare.Models
+﻿namespace PetShare.Models;
+
+public sealed class PaginationQueryRequest
 {
-    public sealed class PaginationQueryRequest
-    {
-        public int? PageNumber { get; set; }
-        public int? PageCount { get; set; }
-    }
+    public int? PageNumber { get; init; }
+    public int? PageCount { get; init; }
 }

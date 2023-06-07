@@ -18,9 +18,10 @@ public sealed class AdopterQuery : IAdopterQuery
 
     public async Task<IReadOnlyList<Adopter>> GetAllAsync(CancellationToken token = default)
     {
-        return (await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
+        return await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
+                              OrderBy(e => e.Id).
                               Select(e => Adopter.FromEntity(e)).
-                              ToListAsync(token)).OrderBy(e => e.Id).ToList();
+                              ToListAsync(token);
     }
 
     public async Task<Adopter?> GetByIdAsync(Guid id, CancellationToken token = default)

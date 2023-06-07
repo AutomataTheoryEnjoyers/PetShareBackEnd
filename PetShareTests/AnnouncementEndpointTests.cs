@@ -69,7 +69,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                 ShelterId = _shelter.Id,
                 Sex = PetSex.Unknown,
                 Status = PetStatus.Active
-            },
+            }
         };
 
         _announcements = new AnnouncementEntity[]
@@ -95,7 +95,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                 LastUpdateDate = DateTime.Now,
                 AuthorId = _shelter.Id,
                 PetId = _pets[1].Id
-            },
+            }
         };
 
         _adopter = new AdopterEntity
@@ -147,32 +147,32 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         announcements.Should().
                       BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
                       {
-                          Announcements = new LikedAnnouncementResponse[]
+                          Announcements = new[]
                           {
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[0].Id,
-                                    Title = _announcements[0].Title,
-                                    Description = _announcements[0].Description,
-                                    CreationDate = _announcements[0].CreationDate,
-                                    ClosingDate = _announcements[0].ClosingDate,
-                                    Status = _announcements[0].Status.ToString(),
-                                    LastUpdateDate = _announcements[0].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
-                                    IsLiked = false
+                                  Id = _announcements[0].Id,
+                                  Title = _announcements[0].Title,
+                                  Description = _announcements[0].Description,
+                                  CreationDate = _announcements[0].CreationDate,
+                                  ClosingDate = _announcements[0].ClosingDate,
+                                  Status = _announcements[0].Status.ToString(),
+                                  LastUpdateDate = _announcements[0].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                  IsLiked = false
                               },
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[1].Id,
-                                    Title = _announcements[1].Title,
-                                    Description = _announcements[1].Description,
-                                    CreationDate = _announcements[1].CreationDate,
-                                    ClosingDate = _announcements[1].ClosingDate,
-                                    Status = _announcements[1].Status.ToString(),
-                                    LastUpdateDate = _announcements[1].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
-                                    IsLiked = false
-                              },
+                                  Id = _announcements[1].Id,
+                                  Title = _announcements[1].Title,
+                                  Description = _announcements[1].Description,
+                                  CreationDate = _announcements[1].CreationDate,
+                                  ClosingDate = _announcements[1].ClosingDate,
+                                  Status = _announcements[1].Status.ToString(),
+                                  LastUpdateDate = _announcements[1].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                  IsLiked = false
+                              }
                           },
                           PageNumber = 0,
                           Count = 2
@@ -187,13 +187,12 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<PaginatedAnnouncementsResponse>();
         announcements.Should().
-                      BeEquivalentTo(
-                        new PaginatedAnnouncementsResponse
-                        {
-                            Announcements = _announcements.Select(a => Announcement.FromEntity(a).ToResponse()).ToList(),
-                            PageNumber = 0,
-                            Count = 2,
-                        });
+                      BeEquivalentTo(new PaginatedAnnouncementsResponse
+                      {
+                          Announcements = _announcements.Select(a => Announcement.FromEntity(a).ToResponse()).ToList(),
+                          PageNumber = 0,
+                          Count = 2
+                      });
     }
 
     [Fact]
@@ -224,38 +223,38 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         announcements.Should().
-                     BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
-                     {
-                         Announcements = new LikedAnnouncementResponse[]
+                      BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
+                      {
+                          Announcements = new[]
                           {
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[0].Id,
-                                    Title = _announcements[0].Title,
-                                    Description = _announcements[0].Description,
-                                    CreationDate = _announcements[0].CreationDate,
-                                    ClosingDate = _announcements[0].ClosingDate,
-                                    Status = _announcements[0].Status.ToString(),
-                                    LastUpdateDate = _announcements[0].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
-                                    IsLiked = false
+                                  Id = _announcements[0].Id,
+                                  Title = _announcements[0].Title,
+                                  Description = _announcements[0].Description,
+                                  CreationDate = _announcements[0].CreationDate,
+                                  ClosingDate = _announcements[0].ClosingDate,
+                                  Status = _announcements[0].Status.ToString(),
+                                  LastUpdateDate = _announcements[0].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                  IsLiked = false
                               },
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[1].Id,
-                                    Title = _announcements[1].Title,
-                                    Description = _announcements[1].Description,
-                                    CreationDate = _announcements[1].CreationDate,
-                                    ClosingDate = _announcements[1].ClosingDate,
-                                    Status = _announcements[1].Status.ToString(),
-                                    LastUpdateDate = _announcements[1].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
-                                    IsLiked = false
-                              },
+                                  Id = _announcements[1].Id,
+                                  Title = _announcements[1].Title,
+                                  Description = _announcements[1].Description,
+                                  CreationDate = _announcements[1].CreationDate,
+                                  ClosingDate = _announcements[1].ClosingDate,
+                                  Status = _announcements[1].Status.ToString(),
+                                  LastUpdateDate = _announcements[1].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                  IsLiked = false
+                              }
                           },
-                         PageNumber = 0,
-                         Count = 2
-                     });
+                          PageNumber = 0,
+                          Count = 2
+                      });
     }
 
     [Fact]
@@ -270,38 +269,38 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var announcements = await response.GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         announcements.Should().
-                     BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
-                     {
-                         Announcements = new LikedAnnouncementResponse[]
+                      BeEquivalentTo(new PaginatedLikedAnnouncementsResponse
+                      {
+                          Announcements = new[]
                           {
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[0].Id,
-                                    Title = _announcements[0].Title,
-                                    Description = _announcements[0].Description,
-                                    CreationDate = _announcements[0].CreationDate,
-                                    ClosingDate = _announcements[0].ClosingDate,
-                                    Status = _announcements[0].Status.ToString(),
-                                    LastUpdateDate = _announcements[0].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
-                                    IsLiked = false
+                                  Id = _announcements[0].Id,
+                                  Title = _announcements[0].Title,
+                                  Description = _announcements[0].Description,
+                                  CreationDate = _announcements[0].CreationDate,
+                                  ClosingDate = _announcements[0].ClosingDate,
+                                  Status = _announcements[0].Status.ToString(),
+                                  LastUpdateDate = _announcements[0].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                                  IsLiked = false
                               },
                               new LikedAnnouncementResponse
                               {
-                                    Id = _announcements[1].Id,
-                                    Title = _announcements[1].Title,
-                                    Description = _announcements[1].Description,
-                                    CreationDate = _announcements[1].CreationDate,
-                                    ClosingDate = _announcements[1].ClosingDate,
-                                    Status = _announcements[1].Status.ToString(),
-                                    LastUpdateDate = _announcements[1].LastUpdateDate,
-                                    Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
-                                    IsLiked = false
-                              },
+                                  Id = _announcements[1].Id,
+                                  Title = _announcements[1].Title,
+                                  Description = _announcements[1].Description,
+                                  CreationDate = _announcements[1].CreationDate,
+                                  ClosingDate = _announcements[1].ClosingDate,
+                                  Status = _announcements[1].Status.ToString(),
+                                  LastUpdateDate = _announcements[1].LastUpdateDate,
+                                  Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                                  IsLiked = false
+                              }
                           },
-                         PageNumber = 0,
-                         Count = 2
-                     });
+                          PageNumber = 0,
+                          Count = 2
+                      });
     }
 
     [Fact]
@@ -346,7 +345,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var query = new GetAllAnnouncementsFilteredQueryRequest
         {
             PageCount = -10,
-            PageNumber = -10,
+            PageNumber = -10
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -492,17 +491,17 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         var response =
             await client.Request("announcements").GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
         response.Announcements.Should().
-                      ContainEquivalentOf(new LikedAnnouncementResponse
-                      {
-                          Id = _announcements[0].Id,
-                          Title = _announcements[0].Title,
-                          Description = _announcements[0].Description,
-                          CreationDate = _announcements[0].CreationDate,
-                          ClosingDate = _announcements[0].ClosingDate,
-                          Status = _announcements[0].Status.ToString(),
-                          LastUpdateDate = _announcements[0].LastUpdateDate,
-                          Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
-                          IsLiked = true
-                      });
+                 ContainEquivalentOf(new LikedAnnouncementResponse
+                 {
+                     Id = _announcements[0].Id,
+                     Title = _announcements[0].Title,
+                     Description = _announcements[0].Description,
+                     CreationDate = _announcements[0].CreationDate,
+                     ClosingDate = _announcements[0].ClosingDate,
+                     Status = _announcements[0].Status.ToString(),
+                     LastUpdateDate = _announcements[0].LastUpdateDate,
+                     Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
+                     IsLiked = true
+                 });
     }
 }

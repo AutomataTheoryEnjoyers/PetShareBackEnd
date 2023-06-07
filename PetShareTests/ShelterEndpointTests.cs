@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models;
-using PetShare.Models.Announcements;
 using PetShare.Models.Shelters;
 using Xunit;
 
@@ -16,42 +15,42 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class ShelterEndpointTests : IAsyncLifetime
 {
-    private readonly ShelterEntity[] _shelters = new ShelterEntity[]
+    private readonly ShelterEntity[] _shelters =
     {
-            new ()
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "shelter1",
+            Email = "mail1@mail.mail",
+            PhoneNumber = "123456789",
+            FullShelterName = "Shelter 1",
+            IsAuthorized = null,
+            Address = new Address
             {
-                Id = Guid.NewGuid(),
-                UserName = "shelter1",
-                Email = "mail1@mail.mail",
-                PhoneNumber = "123456789",
-                FullShelterName = "Shelter 1",
-                IsAuthorized = null,
-                Address = new Address
-                {
-                    Country = "country",
-                    Province = "province",
-                    City = "city",
-                    Street = "street",
-                    PostalCode = "12-345"
-                }
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserName = "shelter2",
-                Email = "mail2@mail.mail",
-                PhoneNumber = "123123123",
-                FullShelterName = "Shelter 2",
-                IsAuthorized = null,
-                Address = new Address
-                {
-                    Country = "country",
-                    Province = "province",
-                    City = "city",
-                    Street = "street",
-                    PostalCode = "54-321"
-                }
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "12-345"
             }
+        },
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "shelter2",
+            Email = "mail2@mail.mail",
+            PhoneNumber = "123123123",
+            FullShelterName = "Shelter 2",
+            IsAuthorized = null,
+            Address = new Address
+            {
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "54-321"
+            }
+        }
     };
 
     private readonly IntegrationTestSetup _testSetup = new();
@@ -79,12 +78,12 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Should().
-                BeEquivalentTo(new PaginatedSheltersResponse
-                {
-                    Shelters = _shelters.Select(s => Shelter.FromEntity(s).ToResponse()).ToArray(),
-                    PageNumber = 0,
-                    Count = 2
-                });
+                 BeEquivalentTo(new PaginatedSheltersResponse
+                 {
+                     Shelters = _shelters.Select(s => Shelter.FromEntity(s).ToResponse()).ToArray(),
+                     PageNumber = 0,
+                     Count = 2
+                 });
     }
 
     [Fact]
@@ -92,8 +91,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelter").
-            SetQueryParams(new { PageCount = -10, PageNumber = -10 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = -10, PageNumber = -10 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -102,8 +101,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
     {
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
         var response = await client.Request("shelter").
-            SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Count.Should().Be(2);
@@ -117,8 +116,8 @@ public sealed class ShelterEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus();
 
         var response = await client.Request("shelter").
-            SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(200);
         var shelters = await response.GetJsonAsync<PaginatedSheltersResponse>();
         shelters.Count.Should().Be(2);

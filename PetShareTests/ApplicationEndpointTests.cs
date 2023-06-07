@@ -8,10 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models;
-using PetShare.Models.Adopters;
 using PetShare.Models.Announcements;
 using PetShare.Models.Applications;
-using PetShare.Models.Pets;
 using Xunit;
 
 namespace PetShareTests;
@@ -249,7 +247,7 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
              {
                  Applications = _applications.Select(a => Application.FromEntity(a).ToResponse()).ToList(),
                  PageNumber = 0,
-                 Count = 2,
+                 Count = 2
              });
     }
 
@@ -259,8 +257,8 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
 
         var response = await client.Request("applications").
-            SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
     }
 
@@ -268,7 +266,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnPaginatedAppsForAdmin()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
-        var apps = await client.Request("applications").SetQueryParams(new { PageCount = 1, PageNumber = 0 }).GetJsonAsync<PaginatedApplicationsResponse>();
+        var apps = await client.Request("applications").
+                                SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+                                GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Applications.Count.Should().Be(1);
         apps.PageNumber.Should().Be(0);
         apps.Count.Should().Be(2);
@@ -278,7 +278,9 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnEndFragmentOfPaginatedAppsForAdmin()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
-        var apps = await client.Request("applications").SetQueryParams(new { PageCount = 1, PageNumber = 1 }).GetJsonAsync<PaginatedApplicationsResponse>();
+        var apps = await client.Request("applications").
+                                SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+                                GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Applications.Count.Should().Be(1);
         apps.PageNumber.Should().Be(1);
         apps.Count.Should().Be(2);
@@ -292,12 +294,12 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         apps.Should().
              BeEquivalentTo(new PaginatedApplicationsResponse
              {
-                 Applications = new ApplicationResponse[]
+                 Applications = new[]
                  {
-                     Application.FromEntity(_applications[0]).ToResponse(),
+                     Application.FromEntity(_applications[0]).ToResponse()
                  },
                  PageNumber = 0,
-                 Count = 1,
+                 Count = 1
              });
     }
 
@@ -309,12 +311,12 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
         apps.Should().
              BeEquivalentTo(new PaginatedApplicationsResponse
              {
-                 Applications = new ApplicationResponse[]
+                 Applications = new[]
                  {
-                     Application.FromEntity(_applications[0]).ToResponse(),
+                     Application.FromEntity(_applications[0]).ToResponse()
                  },
                  PageNumber = 0,
-                 Count = 1,
+                 Count = 1
              });
     }
 
@@ -412,17 +414,17 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
         var apps = await client.Request("applications", _announcements[0].Id).
-                               GetJsonAsync<PaginatedApplicationsResponse>();
+                                GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Should().
-            BeEquivalentTo(new PaginatedApplicationsResponse
-            {
-                Applications = new ApplicationResponse[]
-                {
-                     Application.FromEntity(_applications[0]).ToResponse(),
-                },
-                PageNumber = 0,
-                Count = 1,
-            });
+             BeEquivalentTo(new PaginatedApplicationsResponse
+             {
+                 Applications = new[]
+                 {
+                     Application.FromEntity(_applications[0]).ToResponse()
+                 },
+                 PageNumber = 0,
+                 Count = 1
+             });
     }
 
     [Fact]

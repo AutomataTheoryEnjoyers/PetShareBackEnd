@@ -7,8 +7,8 @@ using PetShare.Models.Applications;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
-using PetShare.Services.Interfaces.Pagination;
 using PetShare.Services.Interfaces.Emails;
+using PetShare.Services.Interfaces.Pagination;
 
 namespace PetShare.Controllers;
 
@@ -19,12 +19,13 @@ public sealed class ApplicationController : ControllerBase
     private readonly IAnnouncementQuery _announcementQuery;
     private readonly IApplicationCommand _command;
     private readonly IEmailService _emailService;
-    private readonly IApplicationQuery _query;
     private readonly IPaginationService _paginator;
+    private readonly IApplicationQuery _query;
     private readonly TokenValidator _validator;
 
     public ApplicationController(IApplicationQuery query, IApplicationCommand command,
-        IAnnouncementQuery announcementQuery, IEmailService emailService, IPaginationService paginator, TokenValidator validator)
+        IAnnouncementQuery announcementQuery, IEmailService emailService, IPaginationService paginator,
+        TokenValidator validator)
     {
         _query = query;
         _announcementQuery = announcementQuery;
@@ -46,30 +47,32 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PaginatedApplicationsResponse>> GetAll([FromQuery] PaginationQueryRequest paginationQuery)
+    public async Task<ActionResult<PaginatedApplicationsResponse>> GetAll(
+        [FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        List<ApplicationResponse> applications = new();
+        List<ApplicationResponse> applications;
 
         if (User.IsAdmin())
-            applications = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(app => app.ToResponse()).ToList();
+            applications = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(app => app.ToResponse()).
+                                                                                  ToList();
         else if (User.IsAdopter())
             applications = (await _query.GetAllForAdopterAsync(User.GetId(), HttpContext.RequestAborted)
-                    ?? throw new UnreachableException()).
-                   Select(app => app.ToResponse()).
-                   ToList();
+                            ?? throw new UnreachableException()).
+                           Select(app => app.ToResponse()).
+                           ToList();
         else if (User.IsShelter())
             applications = (await _query.GetAllForShelterAsync(User.GetId(), HttpContext.RequestAborted)
-                    ?? throw new UnreachableException()).
-                   Select(app => app.ToResponse()).
-                   ToList();
+                            ?? throw new UnreachableException()).
+                           Select(app => app.ToResponse()).
+                           ToList();
         else
             throw new UnreachableException();
 
-        var paginatedApplications = _paginator.GetPage<ApplicationResponse>(applications, paginationQuery);
-        if (paginatedApplications == null)
+        var paginatedApplications = _paginator.GetPage(applications, paginationQuery);
+        if (paginatedApplications is null)
             return BadRequest("Wrong pagination parameters");
 
         return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications);
@@ -106,8 +109,7 @@ public sealed class ApplicationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<PaginatedApplicationsResponse>> GetForAnnouncement(
-        Guid announcementId,
+    public async Task<ActionResult<PaginatedApplicationsResponse>> GetForAnnouncement(Guid announcementId,
         [FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
@@ -123,8 +125,8 @@ public sealed class ApplicationController : ControllerBase
 
         var allApplications = applications.Select(app => app.ToResponse()).ToList();
 
-        var paginatedApplications = _paginator.GetPage<ApplicationResponse>(allApplications, paginationQuery);
-        if (paginatedApplications == null)
+        var paginatedApplications = _paginator.GetPage(allApplications, paginationQuery);
+        if (paginatedApplications is null)
             return BadRequest("Wrong pagination parameters");
 
         return PaginatedApplicationsResponse.FromPaginatedResult(paginatedApplications);

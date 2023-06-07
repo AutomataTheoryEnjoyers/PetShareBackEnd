@@ -1,20 +1,20 @@
 ﻿using PetShare.Services.Interfaces.Pagination;
 
-namespace PetShare.Models.Applications
+namespace PetShare.Models.Applications;
+
+public class PaginatedApplicationsResponse
 {
-    public class PaginatedApplicationsResponse
+    public required IReadOnlyList<ApplicationResponse> Applications { get; init; }
+    public required int PageNumber { get; init; }
+    public required int Count { get; init; }
+
+    public static PaginatedApplicationsResponse FromPaginatedResult(PaginatedResult<ApplicationResponse> result)
     {
-        public required IReadOnlyList<ApplicationResponse> Applications { get; set; }
-        public required int PageNumber { get; set; }
-        public required int Count { get; set; }
-        public static PaginatedApplicationsResponse FromPaginatedResult(PaginatedResult<ApplicationResponse> result)
+        return new PaginatedApplicationsResponse
         {
-            return new PaginatedApplicationsResponse
-            {
-                Applications = result.items.ToList(),
-                Count = result.totalCount,
-                PageNumber = result.pageNr,
-            };
-        }
+            Applications = result.Items.ToList(),
+            Count = result.TotalCount,
+            PageNumber = result.PageNumber
+        };
     }
 }

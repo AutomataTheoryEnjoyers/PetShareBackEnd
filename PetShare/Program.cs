@@ -12,16 +12,16 @@ using PetShare.Services.Implementations;
 using PetShare.Services.Implementations.Adopters;
 using PetShare.Services.Implementations.Announcements;
 using PetShare.Services.Implementations.Applications;
-using PetShare.Services.Implementations.Pagination;
 using PetShare.Services.Implementations.Emails;
+using PetShare.Services.Implementations.Pagination;
 using PetShare.Services.Implementations.Pets;
 using PetShare.Services.Implementations.Shelters;
 using PetShare.Services.Interfaces;
 using PetShare.Services.Interfaces.Adopters;
 using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
-using PetShare.Services.Interfaces.Pagination;
 using PetShare.Services.Interfaces.Emails;
+using PetShare.Services.Interfaces.Pagination;
 using PetShare.Services.Interfaces.Pets;
 using PetShare.Services.Interfaces.Shelters;
 
@@ -106,8 +106,10 @@ public class Program
         }
 
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(JwtConfiguration.SectionName));
-        builder.Services.Configure<ImgurConfiguration>(builder.Configuration.GetSection(ImgurConfiguration.SectionName));
-        builder.Services.Configure<PaginationConfiguration>(builder.Configuration.GetSection(PaginationConfiguration.SectionName));
+        builder.Services.Configure<ImgurConfiguration>(builder.Configuration.
+                                                               GetSection(ImgurConfiguration.SectionName));
+        builder.Services.Configure<PaginationConfiguration>(builder.Configuration.GetSection(PaginationConfiguration.
+                                                                                                 SectionName));
         builder.Services.Configure<EmailConfiguration>(builder.Configuration.
                                                                GetSection(EmailConfiguration.SectionName));
     }

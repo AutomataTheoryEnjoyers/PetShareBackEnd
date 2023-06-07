@@ -25,7 +25,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
     {
         _shelters = new ShelterEntity[]
         {
-            new ()
+            new()
             {
                 Id = Guid.NewGuid(),
                 UserName = "shelter1",
@@ -88,7 +88,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
                 ShelterId = _shelters[0].Id,
                 Sex = PetSex.Unknown,
                 Status = PetStatus.Active
-            },
+            }
         };
     }
 
@@ -129,7 +129,7 @@ public sealed class PetEndpointTests : IAsyncLifetime
         var query = new PaginationQueryRequest
         {
             PageCount = -10,
-            PageNumber = -10,
+            PageNumber = -10
         };
         var response = await client.Request("shelter", "pets").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
@@ -141,8 +141,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
 
         var response = await client.Request("shelter", "pets").
-            SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Count.Should().Be(2);
@@ -155,8 +155,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
         var response = await client.Request("shelter", "pets").
-            SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
-            GetAsync();
+                                    SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+                                    GetAsync();
         response.StatusCode.Should().Be(200);
         var pets = await response.GetJsonAsync<PaginatedPetsResponse>();
         pets.Count.Should().Be(2);

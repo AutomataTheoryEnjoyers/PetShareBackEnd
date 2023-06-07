@@ -12,8 +12,8 @@ namespace PetShare.Controllers;
 public sealed class ShelterController : ControllerBase
 {
     private readonly IShelterCommand _command;
-    private readonly IShelterQuery _query;
     private readonly IPaginationService _paginator;
+    private readonly IShelterQuery _query;
 
     public ShelterController(IShelterQuery query, IShelterCommand command, IPaginationService paginator)
     {
@@ -47,13 +47,14 @@ public sealed class ShelterController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(PaginatedSheltersResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaginatedSheltersResponse>> GetAll([FromQuery] PaginationQueryRequest paginationQuery)
+    public async Task<ActionResult<PaginatedSheltersResponse>> GetAll(
+        [FromQuery] PaginationQueryRequest paginationQuery)
     {
         var shelters = (await _query.GetAllAsync(HttpContext.RequestAborted)).Select(s => s.ToResponse()).ToList();
 
-        var paginatedShelters = _paginator.GetPage<ShelterResponse>(shelters, paginationQuery);
+        var paginatedShelters = _paginator.GetPage(shelters, paginationQuery);
 
-        if (paginatedShelters == null)
+        if (paginatedShelters is null)
             return BadRequest("Wrong pagination parameters");
 
         return PaginatedSheltersResponse.FromPaginatedResult(paginatedShelters);

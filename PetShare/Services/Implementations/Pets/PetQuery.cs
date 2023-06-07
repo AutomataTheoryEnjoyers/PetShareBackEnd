@@ -17,13 +17,12 @@ public sealed class PetQuery : IPetQuery
 
     public async Task<IReadOnlyList<Pet>> GetAllForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Pets.Include(x => x.Shelter).
-                               Where(e => e.Status != PetStatus.Deleted).
-                               Where(pet => pet.ShelterId == shelterId).
-                               ToListAsync(token)).
-                               Select(Pet.FromEntity).
-                               OrderBy(e => e.Id).
-                               ToList();
+        return await _context.Pets.Include(x => x.Shelter).
+                              Where(e => e.Status != PetStatus.Deleted).
+                              Where(pet => pet.ShelterId == shelterId).
+                              OrderBy(pet => pet.Id).
+                              Select(pet => Pet.FromEntity(pet)).
+                              ToListAsync(token);
     }
 
     public async Task<Pet?> GetByIdAsync(Guid id, CancellationToken token = default)

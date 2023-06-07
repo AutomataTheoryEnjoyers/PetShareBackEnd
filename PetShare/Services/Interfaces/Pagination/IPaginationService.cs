@@ -1,17 +1,10 @@
 ﻿using PetShare.Models;
 
-namespace PetShare.Services.Interfaces.Pagination
-{
-    public interface IPaginationService
-    {
-        PaginatedResult<T>? GetPage<T>(IEnumerable<T> collection, PaginationQueryRequest query);
-    }
+namespace PetShare.Services.Interfaces.Pagination;
 
-    public record PaginatedResult<T>
-    {
-        public required IReadOnlyList<T> items;
-        public required int pageSize;
-        public required int pageNr;
-        public required int totalCount;
-    }
+public interface IPaginationService
+{
+    PaginatedResult<T>? GetPage<T>(IReadOnlyList<T> collection, PaginationQueryRequest query);
 }
+
+public record PaginatedResult<T>(IReadOnlyList<T> Items, int PageNumber, int TotalCount);

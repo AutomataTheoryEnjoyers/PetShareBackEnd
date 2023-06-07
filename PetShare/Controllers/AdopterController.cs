@@ -13,11 +13,12 @@ namespace PetShare.Controllers;
 public sealed class AdopterController : ControllerBase
 {
     private readonly IAdopterCommand _command;
-    private readonly IAdopterQuery _query;
     private readonly IPaginationService _paginator;
+    private readonly IAdopterQuery _query;
     private readonly TokenValidator _validator;
 
-    public AdopterController(IAdopterQuery query, IAdopterCommand command, IPaginationService paginator, TokenValidator validator)
+    public AdopterController(IAdopterQuery query, IAdopterCommand command, IPaginationService paginator,
+        TokenValidator validator)
     {
         _query = query;
         _command = command;
@@ -34,14 +35,15 @@ public sealed class AdopterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PaginatedAdoptersResponse>> GetAll([FromQuery] PaginationQueryRequest paginationQuery)
+    public async Task<ActionResult<PaginatedAdoptersResponse>> GetAll(
+        [FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
         var adopters = (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
 
-        var paginatedAdopters = _paginator.GetPage<AdopterResponse>(adopters, paginationQuery);
+        var paginatedAdopters = _paginator.GetPage(adopters, paginationQuery);
         if (paginatedAdopters == null)
             return BadRequest("Wrong pagination parameters");
 

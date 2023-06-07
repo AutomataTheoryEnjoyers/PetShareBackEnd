@@ -17,7 +17,7 @@ public sealed class GetAllAnnouncementsFilteredQueryRequest
         return new PaginationQueryRequest
         {
             PageNumber = PageNumber,
-            PageCount = PageCount,
+            PageCount = PageCount
         };
     }
 }

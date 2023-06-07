@@ -17,42 +17,40 @@ public sealed class ApplicationQuery : IApplicationQuery
 
     public async Task<IReadOnlyList<Application>> GetAllAsync(CancellationToken token = default)
     {
-        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
-                              Select(app => Application.FromEntity(app)).
-                              ToListAsync(token)).
                               OrderBy(app => app.Id).
-                              ToList();
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 
     public async Task<IReadOnlyList<Application>?> GetAllForAdopterAsync(Guid adopterId,
         CancellationToken token = default)
     {
-        if (!_context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).Any(adopter => adopter.Id == adopterId))
+        if (!await _context.Adopters.Where(e => e.Status != AdopterStatus.Deleted).
+                            AnyAsync(adopter => adopter.Id == adopterId, token))
             return null;
 
-        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Adopter.Id == adopterId).
-                              Select(app => Application.FromEntity(app)).
-                              ToListAsync(token)).
                               OrderBy(app => app.Id).
-                              ToList();
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 
     public async Task<IReadOnlyList<Application>?> GetAllForShelterAsync(Guid shelterId,
         CancellationToken token = default)
     {
-        if (!_context.Shelters.Any(shelter => shelter.Id == shelterId))
+        if (!await _context.Shelters.AnyAsync(shelter => shelter.Id == shelterId, token))
             return null;
 
-        return (await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
+        return await _context.Applications.Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.Announcement.AuthorId == shelterId).
-                              Select(app => Application.FromEntity(app)).
-                              ToListAsync(token)).
                               OrderBy(app => app.Id).
-                              ToList();
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 
     public async Task<Application?> GetByIdAsync(Guid id, CancellationToken token = default)
@@ -67,16 +65,15 @@ public sealed class ApplicationQuery : IApplicationQuery
     public async Task<IReadOnlyList<Application>?> GetAllForAnnouncementAsync(Guid announcementId,
         CancellationToken token = default)
     {
-        if (!_context.Announcements.Any(announcement => announcement.Id == announcementId))
+        if (!await _context.Announcements.AnyAsync(announcement => announcement.Id == announcementId, token))
             return null;
 
-        return (await _context.Applications.
+        return await _context.Applications.
                               Include(app => app.Announcement.Pet.Shelter).
                               Include(app => app.Adopter).
                               Where(app => app.AnnouncementId == announcementId).
-                              Select(app => Application.FromEntity(app)).
-                              ToListAsync(token)).
                               OrderBy(app => app.Id).
-                              ToList();
+                              Select(app => Application.FromEntity(app)).
+                              ToListAsync(token);
     }
 }

@@ -13,12 +13,13 @@ namespace PetShare.Controllers;
 public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementCommand _command;
+    private readonly IPaginationService _paginator;
     private readonly IPetQuery _petQuery;
     private readonly IAnnouncementQuery _query;
-    private readonly IPaginationService _paginator;
     private readonly TokenValidator _validator;
 
-    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery, IPaginationService paginator,
+    public AnnouncementController(IAnnouncementQuery query, IAnnouncementCommand command, IPetQuery petQuery,
+        IPaginationService paginator,
         TokenValidator validator)
     {
         _query = query;
@@ -61,12 +62,13 @@ public class AnnouncementController : ControllerBase
         if (User.IsAdopter() && !await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var likedAnnouncements = (await _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
-                                           HttpContext.RequestAborted)).Select(s => s.ToResponse()).
-                                                                        ToList();
+        var likedAnnouncements =
+            (await _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
+                                              HttpContext.RequestAborted)).Select(s => s.ToResponse()).
+                                                                           ToList();
 
-        var paginatedLikedAnnouncements = _paginator.GetPage<LikedAnnouncementResponse>(likedAnnouncements, query.GetPaginationQuery());
-        if (paginatedLikedAnnouncements == null)
+        var paginatedLikedAnnouncements = _paginator.GetPage(likedAnnouncements, query.GetPaginationQuery());
+        if (paginatedLikedAnnouncements is null)
             return BadRequest("Wrong pagination parameters");
 
         return PaginatedLikedAnnouncementsResponse.FromPaginatedResult(paginatedLikedAnnouncements);
@@ -82,20 +84,21 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PaginatedAnnouncementsResponse>> GetFromShelter([FromQuery] PaginationQueryRequest paginationQuery)
+    public async Task<ActionResult<PaginatedAnnouncementsResponse>> GetFromShelter(
+        [FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var annuoncemets = (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
-               Select(a => a.ToResponse()).
-               ToList();
+        var announcements = (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
+                           Select(a => a.ToResponse()).
+                           ToList();
 
-        var paginatedAnnouncemets = _paginator.GetPage<AnnouncementResponse>(annuoncemets, paginationQuery);
-        if (paginatedAnnouncemets == null)
-            return BadRequest("Worng pagination parameters");
+        var paginatedAnnouncements = _paginator.GetPage(announcements, paginationQuery);
+        if (paginatedAnnouncements is null)
+            return BadRequest("Wrong pagination parameters");
 
-        return PaginatedAnnouncementsResponse.FromPaginatedResult(paginatedAnnouncemets);
+        return PaginatedAnnouncementsResponse.FromPaginatedResult(paginatedAnnouncements);
     }
 
     /// <summary>

@@ -1,21 +1,20 @@
 ﻿using PetShare.Services.Interfaces.Pagination;
 
-namespace PetShare.Models.Shelters
-{
-    public sealed class PaginatedSheltersResponse
-    {
-        public required IReadOnlyList<ShelterResponse> Shelters { get; set; }
-        public required int PageNumber { get; set; }
-        public required int Count { get; set; }
+namespace PetShare.Models.Shelters;
 
-        public static PaginatedSheltersResponse FromPaginatedResult(PaginatedResult<ShelterResponse> result)
+public sealed class PaginatedSheltersResponse
+{
+    public required IReadOnlyList<ShelterResponse> Shelters { get; init; }
+    public required int PageNumber { get; init; }
+    public required int Count { get; init; }
+
+    public static PaginatedSheltersResponse FromPaginatedResult(PaginatedResult<ShelterResponse> result)
+    {
+        return new PaginatedSheltersResponse
         {
-            return new PaginatedSheltersResponse
-            {
-                Shelters = result.items.ToList(),
-                Count = result.totalCount,
-                PageNumber = result.pageNr,
-            };
-        }
+            Shelters = result.Items.ToList(),
+            Count = result.TotalCount,
+            PageNumber = result.PageNumber
+        };
     }
 }

@@ -1,38 +1,38 @@
 ﻿using PetShare.Services.Interfaces.Pagination;
 
-namespace PetShare.Models.Announcements
+namespace PetShare.Models.Announcements;
+
+public class PaginatedAnnouncementsResponse
 {
-    public class PaginatedAnnouncementsResponse
-    {
-        public required IReadOnlyList<AnnouncementResponse> Announcements { get; set; }
-        public required int PageNumber { get; set; }
-        public required int Count { get; set; }
+    public required IReadOnlyList<AnnouncementResponse> Announcements { get; init; }
+    public required int PageNumber { get; init; }
+    public required int Count { get; init; }
 
-        public static PaginatedAnnouncementsResponse FromPaginatedResult(PaginatedResult<AnnouncementResponse> result)
+    public static PaginatedAnnouncementsResponse FromPaginatedResult(PaginatedResult<AnnouncementResponse> result)
+    {
+        return new PaginatedAnnouncementsResponse
         {
-            return new PaginatedAnnouncementsResponse
-            {
-                Announcements = result.items.ToList(),
-                Count = result.totalCount,
-                PageNumber = result.pageNr,
-            };
-        }
+            Announcements = result.Items.ToList(),
+            Count = result.TotalCount,
+            PageNumber = result.PageNumber
+        };
     }
+}
 
-    public class PaginatedLikedAnnouncementsResponse
+public class PaginatedLikedAnnouncementsResponse
+{
+    public required IReadOnlyList<LikedAnnouncementResponse> Announcements { get; init; }
+    public required int PageNumber { get; init; }
+    public required int Count { get; init; }
+
+    public static PaginatedLikedAnnouncementsResponse FromPaginatedResult(
+        PaginatedResult<LikedAnnouncementResponse> result)
     {
-        public required IReadOnlyList<LikedAnnouncementResponse> Announcements { get; set; }
-        public required int PageNumber { get; set; }
-        public required int Count { get; set; }
-
-        public static PaginatedLikedAnnouncementsResponse FromPaginatedResult(PaginatedResult<LikedAnnouncementResponse> result)
+        return new PaginatedLikedAnnouncementsResponse
         {
-            return new PaginatedLikedAnnouncementsResponse
-            {
-                Announcements = result.items.ToList(),
-                Count = result.totalCount,
-                PageNumber = result.pageNr,
-            };
-        }
+            Announcements = result.Items.ToList(),
+            Count = result.TotalCount,
+            PageNumber = result.PageNumber
+        };
     }
 }

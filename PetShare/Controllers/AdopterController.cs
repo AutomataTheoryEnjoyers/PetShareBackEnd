@@ -4,6 +4,7 @@ using PetShare.Models;
 using PetShare.Models.Adopters;
 using PetShare.Services;
 using PetShare.Services.Interfaces.Adopters;
+using PetShare.Services.Interfaces.Pagination;
 
 namespace PetShare.Controllers;
 
@@ -12,13 +13,16 @@ namespace PetShare.Controllers;
 public sealed class AdopterController : ControllerBase
 {
     private readonly IAdopterCommand _command;
+    private readonly IPaginationService _paginator;
     private readonly IAdopterQuery _query;
     private readonly TokenValidator _validator;
 
-    public AdopterController(IAdopterQuery query, IAdopterCommand command, TokenValidator validator)
+    public AdopterController(IAdopterQuery query, IAdopterCommand command, IPaginationService paginator,
+        TokenValidator validator)
     {
         _query = query;
         _command = command;
+        _paginator = paginator;
         _validator = validator;
     }
 
@@ -27,15 +31,23 @@ public sealed class AdopterController : ControllerBase
     /// </summary>
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]
-    [ProducesResponseType(typeof(IReadOnlyList<AdopterResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedAdoptersResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<AdopterResponse>>> GetAll()
+    public async Task<ActionResult<PaginatedAdoptersResponse>> GetAll(
+        [FromQuery] PaginationQueryRequest paginationQuery)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        return (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
+        var adopters = (await _query.GetAllAsync()).Select(a => a.ToResponse()).ToList();
+
+        var paginatedAdopters = _paginator.GetPage(adopters, paginationQuery);
+        if (paginatedAdopters == null)
+            return BadRequest("Wrong pagination parameters");
+
+        return PaginatedAdoptersResponse.FromPaginatedResult(paginatedAdopters);
     }
 
     /// <summary>

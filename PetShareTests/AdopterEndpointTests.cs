@@ -14,38 +14,77 @@ namespace PetShareTests;
 [Trait("Category", "Integration")]
 public sealed class AdopterEndpointTests : IAsyncLifetime
 {
-    private readonly AdopterEntity _adopter = new()
+    private readonly AdopterEntity[] _adopters =
     {
-        Id = Guid.NewGuid(),
-        UserName = "test-adopter",
-        Email = "mail@mail.mail",
-        PhoneNumber = "123456789",
-        Status = AdopterStatus.Active,
-        Address = new Address
+        new()
         {
-            Country = "test-country",
-            Province = "test-province",
-            City = "test-city",
-            Street = "test-street",
-            PostalCode = "test-postalCode"
+            Id = Guid.NewGuid(),
+            UserName = "test-adopter1",
+            Email = "mail@mail.mail",
+            PhoneNumber = "123456789",
+            Status = AdopterStatus.Active,
+            Address = new Address
+            {
+                Country = "test-country",
+                Province = "test-province",
+                City = "test-city",
+                Street = "test-street",
+                PostalCode = "test-postalCode"
+            }
+        },
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "test-adopter2",
+            Email = "mail@mail.mail",
+            PhoneNumber = "123456789",
+            Status = AdopterStatus.Active,
+            Address = new Address
+            {
+                Country = "test-country",
+                Province = "test-province",
+                City = "test-city",
+                Street = "test-street",
+                PostalCode = "test-postalCode"
+            }
         }
     };
 
-    private readonly ShelterEntity _shelter = new()
+    private readonly ShelterEntity[] _shelters =
     {
-        Id = Guid.NewGuid(),
-        UserName = "test-shelter",
-        Email = "mail@mail.mail",
-        PhoneNumber = "123456789",
-        FullShelterName = "Test Shelter",
-        IsAuthorized = null,
-        Address = new Address
+        new()
         {
-            Country = "test-country",
-            Province = "test-province",
-            City = "test-city",
-            Street = "test-street",
-            PostalCode = "test-postalCode"
+            Id = Guid.NewGuid(),
+            UserName = "shelter1",
+            Email = "mail1@mail.mail",
+            PhoneNumber = "123456789",
+            FullShelterName = "Shelter 1",
+            IsAuthorized = null,
+            Address = new Address
+            {
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "12-345"
+            }
+        },
+        new()
+        {
+            Id = Guid.NewGuid(),
+            UserName = "shelter2",
+            Email = "mail2@mail.mail",
+            PhoneNumber = "123123123",
+            FullShelterName = "Shelter 2",
+            IsAuthorized = null,
+            Address = new Address
+            {
+                Country = "country",
+                Province = "province",
+                City = "city",
+                Street = "street",
+                PostalCode = "54-321"
+            }
         }
     };
 
@@ -55,8 +94,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     {
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Shelters.Add(_shelter);
-        context.Adopters.Add(_adopter);
+        context.Shelters.AddRange(_shelters);
+        context.Adopters.AddRange(_adopters);
         await context.SaveChangesAsync();
     }
 
@@ -69,39 +108,60 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnAllAdopters()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
-        var adopters = await client.Request("adopter").GetJsonAsync<IEnumerable<AdopterResponse>>();
+        var adopters = await client.Request("adopter").GetJsonAsync<PaginatedAdoptersResponse>();
         adopters.Should().
-                 BeEquivalentTo(new[]
+                 BeEquivalentTo(new PaginatedAdoptersResponse
                  {
-                     new AdopterResponse
-                     {
-                         Id = _adopter.Id,
-                         UserName = "test-adopter",
-                         Email = "mail@mail.mail",
-                         PhoneNumber = "123456789",
-                         Status = AdopterStatus.Active,
-                         Address = new Address
-                         {
-                             Country = "test-country",
-                             Province = "test-province",
-                             City = "test-city",
-                             Street = "test-street",
-                             PostalCode = "test-postalCode"
-                         }
-                     }
+                     Adopters = _adopters.Select(a => Adopter.FromEntity(a).ToResponse()).ToList(),
+                     PageNumber = 0,
+                     Count = 2
                  });
+    }
+
+    [Fact]
+    public async Task GetShouldFailWithWrongPaginationParams()
+    {
+        using var client = _testSetup.CreateFlurlClient().AllowAnyHttpStatus().WithAuth(Roles.Admin);
+        var response = await client.Request("adopter").
+                                    SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
+                                    GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
+        var response = await client.Request("adopter").SetQueryParams(new { PageCount = 1, PageNumber = 0 }).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var shelters = await response.GetJsonAsync<PaginatedAdoptersResponse>();
+        shelters.Count.Should().Be(2);
+        shelters.PageNumber.Should().Be(0);
+        shelters.Adopters.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetShouldFetchPaginatedEndFragmentOfShelters()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
+        var response = await client.Request("adopter").SetQueryParams(new { PageCount = 1, PageNumber = 1 }).GetAsync();
+        response.StatusCode.Should().Be(200);
+        var shelters = await response.GetJsonAsync<PaginatedAdoptersResponse>();
+        shelters.Count.Should().Be(2);
+        shelters.PageNumber.Should().Be(1);
+        shelters.Adopters.Count.Should().Be(1);
     }
 
     [Fact]
     public async Task GetShouldFetchAdopterById()
     {
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopter.Id);
-        var adopter = await client.Request("adopter", _adopter.Id).GetJsonAsync<AdopterResponse>();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id);
+        var adopter = await client.Request("adopter", _adopters[0].Id).GetJsonAsync<AdopterResponse>();
         adopter.Should().
                 BeEquivalentTo(new AdopterResponse
                 {
-                    Id = _adopter.Id,
-                    UserName = "test-adopter",
+                    Id = _adopters[0].Id,
+                    UserName = "test-adopter1",
                     Email = "mail@mail.mail",
                     PhoneNumber = "123456789",
                     Status = AdopterStatus.Active,
@@ -168,7 +228,7 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     public async Task PutShouldChangeAdopterStatus()
     {
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Admin);
-        var updatedAdopter = await (await client.Request("adopter", _adopter.Id).
+        var updatedAdopter = await (await client.Request("adopter", _adopters[0].Id).
                                                  PutJsonAsync(new
                                                  {
                                                      status = (int)AdopterStatus.Blocked
@@ -177,8 +237,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         updatedAdopter.Should().
                        BeEquivalentTo(new AdopterResponse
                        {
-                           Id = _adopter.Id,
-                           UserName = "test-adopter",
+                           Id = _adopters[0].Id,
+                           UserName = "test-adopter1",
                            Email = "mail@mail.mail",
                            PhoneNumber = "123456789",
                            Status = AdopterStatus.Blocked,
@@ -194,14 +254,14 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
 
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
-        context.Adopters.Single(e => e.Id == _adopter.Id).Status.Should().Be(AdopterStatus.Blocked);
+        context.Adopters.Single(e => e.Id == _adopters[0].Id).Status.Should().Be(AdopterStatus.Blocked);
     }
 
     [Fact]
     public async Task GetShouldCheckIfAdopterIsVerified()
     {
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id);
-        var response1 = await client.Request("adopter", _adopter.Id, "isVerified").
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
+        var response1 = await client.Request("adopter", _adopters[0].Id, "isVerified").
                                      GetJsonAsync<bool>();
         response1.Should().BeFalse();
 
@@ -209,12 +269,12 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Verifications.Add(new AdopterVerificationEntity
         {
-            AdopterId = _adopter.Id,
-            ShelterId = _shelter.Id
+            AdopterId = _adopters[0].Id,
+            ShelterId = _shelters[0].Id
         });
         await context.SaveChangesAsync();
 
-        var response2 = await client.Request("adopter", _adopter.Id, "isVerified").
+        var response2 = await client.Request("adopter", _adopters[0].Id, "isVerified").
                                      GetJsonAsync<bool>();
         response2.Should().BeTrue();
     }
@@ -222,8 +282,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
     [Fact]
     public async Task PutShouldVerifyAdopter()
     {
-        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
-        var response = await client.Request("adopter", _adopter.Id, "verify").PutAsync();
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id).AllowAnyHttpStatus();
+        var response = await client.Request("adopter", _adopters[0].Id, "verify").PutAsync();
         response.StatusCode.Should().Be(StatusCodes.Status200OK);
 
         using var scope = _testSetup.Services.CreateScope();
@@ -231,8 +291,8 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         context.Verifications.Should().
                 ContainEquivalentOf(new AdopterVerificationEntity
                 {
-                    AdopterId = _adopter.Id,
-                    ShelterId = _shelter.Id
+                    AdopterId = _adopters[0].Id,
+                    ShelterId = _shelters[0].Id
                 });
     }
 }

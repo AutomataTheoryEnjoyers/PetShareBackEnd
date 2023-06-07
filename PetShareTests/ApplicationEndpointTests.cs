@@ -8,10 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PetShare.Controllers;
 using PetShare.Models;
-using PetShare.Models.Adopters;
 using PetShare.Models.Announcements;
 using PetShare.Models.Applications;
-using PetShare.Models.Pets;
 using Xunit;
 
 namespace PetShareTests;
@@ -243,105 +241,65 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnAllAppsForAdmin()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
-        var apps = await client.Request("applications").GetJsonAsync<IEnumerable<ApplicationResponse>>();
+        var apps = await client.Request("applications").GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Should().
-             BeEquivalentTo(new ApplicationResponse[]
+             BeEquivalentTo(new PaginatedApplicationsResponse
              {
-                 new()
-                 {
-                     Id = _applications[0].Id,
-                     CreationDate = _now - TimeSpan.FromHours(13),
-                     LastUpdateDate = _now - TimeSpan.FromHours(13),
-                     ApplicationStatus = ApplicationState.Created.ToString(),
-                     Adopter = new AdopterResponse
-                     {
-                         Id = _adopters[0].Id,
-                         UserName = "adopter1",
-                         Email = "email1@mail.mail",
-                         PhoneNumber = "987654321",
-                         Status = AdopterStatus.Active,
-                         Address = _adopters[0].Address
-                     },
-                     AnnouncementId = _announcements[0].Id,
-                     Announcement = new AnnouncementResponse
-                     {
-                         Id = _announcements[0].Id,
-                         Title = "announcement1",
-                         Description = "description",
-                         CreationDate = _now - TimeSpan.FromDays(10),
-                         LastUpdateDate = _now - TimeSpan.FromDays(5),
-                         ClosingDate = null,
-                         Status = AnnouncementStatus.Open.ToString(),
-                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                     }
-                 },
-                 new()
-                 {
-                     Id = _applications[1].Id,
-                     CreationDate = _now - TimeSpan.FromHours(12),
-                     LastUpdateDate = _now - TimeSpan.FromHours(12),
-                     ApplicationStatus = ApplicationState.Created.ToString(),
-                     Adopter = new AdopterResponse
-                     {
-                         Id = _adopters[1].Id,
-                         UserName = "adopter2",
-                         Email = "email2@mail.mail",
-                         PhoneNumber = "987654321",
-                         Status = AdopterStatus.Active,
-                         Address = _adopters[1].Address
-                     },
-                     AnnouncementId = _announcements[1].Id,
-                     Announcement = new AnnouncementResponse
-                     {
-                         Id = _announcements[1].Id,
-                         Title = "announcement2",
-                         Description = "description",
-                         CreationDate = _now - TimeSpan.FromDays(2),
-                         LastUpdateDate = _now - TimeSpan.FromDays(1),
-                         ClosingDate = null,
-                         Status = AnnouncementStatus.Open.ToString(),
-                         Pet = Pet.FromEntity(_pets[1]).ToResponse()
-                     }
-                 }
+                 Applications = _applications.Select(a => Application.FromEntity(a).ToResponse()).ToList(),
+                 PageNumber = 0,
+                 Count = 2
              });
+    }
+
+    [Fact]
+    public async Task GetShouldFAilWithWrongPaginationParameters()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin).AllowAnyHttpStatus();
+
+        var response = await client.Request("applications").
+                                    SetQueryParams(new { PageCount = -1, PageNumber = -1 }).
+                                    GetAsync();
+        response.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task GetShouldReturnPaginatedAppsForAdmin()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
+        var apps = await client.Request("applications").
+                                SetQueryParams(new { PageCount = 1, PageNumber = 0 }).
+                                GetJsonAsync<PaginatedApplicationsResponse>();
+        apps.Applications.Count.Should().Be(1);
+        apps.PageNumber.Should().Be(0);
+        apps.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetShouldReturnEndFragmentOfPaginatedAppsForAdmin()
+    {
+        using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Admin);
+        var apps = await client.Request("applications").
+                                SetQueryParams(new { PageCount = 1, PageNumber = 1 }).
+                                GetJsonAsync<PaginatedApplicationsResponse>();
+        apps.Applications.Count.Should().Be(1);
+        apps.PageNumber.Should().Be(1);
+        apps.Count.Should().Be(2);
     }
 
     [Fact]
     public async Task GetShouldReturnAppsFromShelterForShelter()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
-        var apps = await client.Request("applications").GetJsonAsync<IEnumerable<ApplicationResponse>>();
+        var apps = await client.Request("applications").GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Should().
-             BeEquivalentTo(new ApplicationResponse[]
+             BeEquivalentTo(new PaginatedApplicationsResponse
              {
-                 new()
+                 Applications = new[]
                  {
-                     Id = _applications[0].Id,
-                     CreationDate = _now - TimeSpan.FromHours(13),
-                     LastUpdateDate = _now - TimeSpan.FromHours(13),
-                     ApplicationStatus = ApplicationState.Created.ToString(),
-                     Adopter = new AdopterResponse
-                     {
-                         Id = _adopters[0].Id,
-                         UserName = "adopter1",
-                         Email = "email1@mail.mail",
-                         PhoneNumber = "987654321",
-                         Status = AdopterStatus.Active,
-                         Address = _adopters[0].Address
-                     },
-                     AnnouncementId = _announcements[0].Id,
-                     Announcement = new AnnouncementResponse
-                     {
-                         Id = _announcements[0].Id,
-                         Title = "announcement1",
-                         Description = "description",
-                         CreationDate = _now - TimeSpan.FromDays(10),
-                         LastUpdateDate = _now - TimeSpan.FromDays(5),
-                         ClosingDate = null,
-                         Status = AnnouncementStatus.Open.ToString(),
-                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                     }
-                 }
+                     Application.FromEntity(_applications[0]).ToResponse()
+                 },
+                 PageNumber = 0,
+                 Count = 1
              });
     }
 
@@ -349,38 +307,16 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnAppsByAdopterForAdopter()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Adopter, _adopters[0].Id);
-        var apps = await client.Request("applications").GetJsonAsync<IEnumerable<ApplicationResponse>>();
+        var apps = await client.Request("applications").GetJsonAsync<PaginatedApplicationsResponse>();
         apps.Should().
-             BeEquivalentTo(new ApplicationResponse[]
+             BeEquivalentTo(new PaginatedApplicationsResponse
              {
-                 new()
+                 Applications = new[]
                  {
-                     Id = _applications[0].Id,
-                     CreationDate = _now - TimeSpan.FromHours(13),
-                     LastUpdateDate = _now - TimeSpan.FromHours(13),
-                     ApplicationStatus = ApplicationState.Created.ToString(),
-                     Adopter = new AdopterResponse
-                     {
-                         Id = _adopters[0].Id,
-                         UserName = "adopter1",
-                         Email = "email1@mail.mail",
-                         PhoneNumber = "987654321",
-                         Status = AdopterStatus.Active,
-                         Address = _adopters[0].Address
-                     },
-                     AnnouncementId = _announcements[0].Id,
-                     Announcement = new AnnouncementResponse
-                     {
-                         Id = _announcements[0].Id,
-                         Title = "announcement1",
-                         Description = "description",
-                         CreationDate = _now - TimeSpan.FromDays(10),
-                         LastUpdateDate = _now - TimeSpan.FromDays(5),
-                         ClosingDate = null,
-                         Status = AnnouncementStatus.Open.ToString(),
-                         Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                     }
-                 }
+                     Application.FromEntity(_applications[0]).ToResponse()
+                 },
+                 PageNumber = 0,
+                 Count = 1
              });
     }
 
@@ -477,40 +413,18 @@ public sealed class ApplicationEndpointTests : IAsyncLifetime
     public async Task GetShouldReturnApplicationByAnnouncementId()
     {
         using var client = _testSuite.CreateFlurlClient().WithAuth(Roles.Shelter, _shelters[0].Id);
-        var app = await client.Request("applications", _announcements[0].Id).
-                               GetJsonAsync<IEnumerable<ApplicationResponse>>();
-        app.Should().
-            BeEquivalentTo(new ApplicationResponse[]
-            {
-                new()
-                {
-                    Id = _applications[0].Id,
-                    CreationDate = _now - TimeSpan.FromHours(13),
-                    LastUpdateDate = _now - TimeSpan.FromHours(13),
-                    ApplicationStatus = ApplicationState.Created.ToString(),
-                    Adopter = new AdopterResponse
-                    {
-                        Id = _adopters[0].Id,
-                        UserName = "adopter1",
-                        Email = "email1@mail.mail",
-                        PhoneNumber = "987654321",
-                        Status = AdopterStatus.Active,
-                        Address = _adopters[0].Address
-                    },
-                    AnnouncementId = _announcements[0].Id,
-                    Announcement = new AnnouncementResponse
-                    {
-                        Id = _announcements[0].Id,
-                        Title = "announcement1",
-                        Description = "description",
-                        CreationDate = _now - TimeSpan.FromDays(10),
-                        LastUpdateDate = _now - TimeSpan.FromDays(5),
-                        ClosingDate = null,
-                        Status = AnnouncementStatus.Open.ToString(),
-                        Pet = Pet.FromEntity(_pets[0]).ToResponse()
-                    }
-                }
-            });
+        var apps = await client.Request("applications", _announcements[0].Id).
+                                GetJsonAsync<PaginatedApplicationsResponse>();
+        apps.Should().
+             BeEquivalentTo(new PaginatedApplicationsResponse
+             {
+                 Applications = new[]
+                 {
+                     Application.FromEntity(_applications[0]).ToResponse()
+                 },
+                 PageNumber = 0,
+                 Count = 1
+             });
     }
 
     [Fact]

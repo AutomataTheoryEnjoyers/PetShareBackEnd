@@ -1,5 +1,4 @@
-﻿using Database;
-using Database.Entities;
+﻿using Database.Entities;
 using Database.ValueObjects;
 using PetShare.Models.Adopters;
 using PetShare.Models.Announcements;

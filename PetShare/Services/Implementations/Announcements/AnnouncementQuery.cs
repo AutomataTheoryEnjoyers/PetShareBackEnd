@@ -53,18 +53,19 @@ public class AnnouncementQuery : IAnnouncementQuery
             announcementsWithLikes = announcementsWithLikes.Where(a => a.Liked);
 
         return await announcementsWithLikes.
+                     OrderBy(e => e.Entity.Id).
                      Select(e => new AnnouncementWithLike(Announcement.FromEntity(e.Entity), e.Liked)).
                      ToListAsync(token);
     }
 
     public async Task<IReadOnlyList<Announcement>> GetForShelterAsync(Guid shelterId, CancellationToken token = default)
     {
-        return (await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
-                               Where(a => a.AuthorId == shelterId).
-                               Include(a => a.Pet.Shelter).
-                               ToListAsync(token)).
-               Select(Announcement.FromEntity).
-               ToList();
+        return await _context.Announcements.Where(a => a.Status != AnnouncementStatus.Deleted).
+                              Where(a => a.AuthorId == shelterId).
+                              Include(a => a.Pet.Shelter).
+                              OrderBy(a => a.Id).
+                              Select(a => Announcement.FromEntity(a)).
+                              ToListAsync(token);
     }
 
     public async Task<Announcement?> GetByIdAsync(Guid id, CancellationToken token = default)

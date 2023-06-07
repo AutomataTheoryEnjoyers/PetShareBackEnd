@@ -16,7 +16,7 @@ public sealed class ShelterQuery : IShelterQuery
 
     public async Task<IReadOnlyList<Shelter>> GetAllAsync(CancellationToken token = default)
     {
-        return (await _context.Shelters.ToListAsync(token)).Select(Shelter.FromEntity).ToList();
+        return await _context.Shelters.OrderBy(e => e.Id).Select(e => Shelter.FromEntity(e)).ToListAsync(token);
     }
 
     public async Task<Shelter?> GetByIdAsync(Guid id, CancellationToken token = default)

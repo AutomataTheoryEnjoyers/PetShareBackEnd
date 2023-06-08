@@ -67,16 +67,3 @@ public sealed class Report
         };
     }
 }
-
-public sealed record ReportPage(IReadOnlyList<Report> Reports, int PageNumber, int Count)
-{
-    public ReportPageResponse ToResponse()
-    {
-        return new ReportPageResponse
-        {
-            Reports = Reports.Select(report => report.ToResponse()).ToList(),
-            PageNumber = PageNumber,
-            Count = Count
-        };
-    }
-}

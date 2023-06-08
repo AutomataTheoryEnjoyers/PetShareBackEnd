@@ -17,7 +17,7 @@ public sealed class ReportRequest : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (!Enum.TryParse<ReportedEntityType>(ReportType, true, out _))
-            yield return new ValidationResult($"{ReportType} is not a valid report target type",
+            yield return new ValidationResult($"'{ReportType}' is not a valid report target type",
                                               new[] { nameof(ReportType) });
     }
 }

@@ -11,6 +11,6 @@ public sealed class ReportUpdateRequest : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (!Enum.TryParse<ReportState>(State, true, out _))
-            yield return new ValidationResult($"{State} is not a valid enum state", new[] { nameof(State) });
+            yield return new ValidationResult($"'{State}' is not a valid report state", new[] { nameof(State) });
     }
 }

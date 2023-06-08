@@ -24,3 +24,5 @@ public sealed record PetNotFound(Guid Id) : NotFound(Id, "Pet");
 public sealed record ApplicationNotFound(Guid Id) : NotFound(Id, "Application");
 
 public sealed record AnnouncementNotFound(Guid Id) : NotFound(Id, "Announcement");
+
+public sealed record ReportNotFound(Guid Id) : NotFound(Id, "Report");

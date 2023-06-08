@@ -15,6 +15,7 @@ using PetShare.Services.Implementations.Applications;
 using PetShare.Services.Implementations.Emails;
 using PetShare.Services.Implementations.Pagination;
 using PetShare.Services.Implementations.Pets;
+using PetShare.Services.Implementations.Reports;
 using PetShare.Services.Implementations.Shelters;
 using PetShare.Services.Interfaces;
 using PetShare.Services.Interfaces.Adopters;
@@ -23,6 +24,7 @@ using PetShare.Services.Interfaces.Applications;
 using PetShare.Services.Interfaces.Emails;
 using PetShare.Services.Interfaces.Pagination;
 using PetShare.Services.Interfaces.Pets;
+using PetShare.Services.Interfaces.Reports;
 using PetShare.Services.Interfaces.Shelters;
 
 namespace PetShare;
@@ -89,6 +91,8 @@ public class Program
         services.AddScoped<IAdopterQuery, AdopterQuery>();
         services.AddScoped<IApplicationCommand, ApplicationCommand>();
         services.AddScoped<IApplicationQuery, ApplicationQuery>();
+        services.AddScoped<IReportCommand, ReportCommand>();
+        services.AddScoped<IReportQuery, ReportQuery>();
         services.AddSingleton<IImageStorage, ImgurImageStorage>();
         services.AddScoped<IPaginationService, PaginationService>();
         services.AddScoped<IEmailService, EmailService>();

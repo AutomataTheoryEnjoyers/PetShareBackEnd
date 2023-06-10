@@ -4,6 +4,7 @@ public sealed class GetAllAnnouncementsFilteredQueryRequest
 {
     public int? PageNumber { get; init; }
     public int? PageCount { get; init; }
+    public string? Status { get; init; }
     public IReadOnlyList<string>? Species { get; init; }
     public IReadOnlyList<string>? Breeds { get; init; }
     public IReadOnlyList<string>? Cities { get; init; }

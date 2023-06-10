@@ -95,6 +95,9 @@ public sealed class ApplicationCommand : IApplicationCommand
 
         entity.State = ApplicationState.Accepted;
         entity.LastUpdateTime = DateTime.Now;
+        entity.Announcement.Status = AnnouncementStatus.Closed;
+        entity.Announcement.LastUpdateDate = DateTime.Now;
+        entity.Announcement.ClosingDate = DateTime.Now;
         await _context.SaveChangesAsync(token);
 
         await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName, ApplicationState.Accepted.ToString());

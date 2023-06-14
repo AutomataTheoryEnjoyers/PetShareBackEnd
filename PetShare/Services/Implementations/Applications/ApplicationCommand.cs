@@ -72,7 +72,8 @@ public sealed class ApplicationCommand : IApplicationCommand
         entity.LastUpdateTime = DateTime.Now;
         await _context.SaveChangesAsync(token);
 
-        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName, ApplicationState.Withdrawn.ToString());
+        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName,
+                                                  ApplicationState.Withdrawn.ToString());
 
         return Application.FromEntity(entity);
     }
@@ -93,23 +94,36 @@ public sealed class ApplicationCommand : IApplicationCommand
         if (await _context.Verifications.AnyAsync(e => e.AdopterId == id && e.ShelterId == entity.Announcement.AuthorId, token))
             return new InvalidOperation("Adopter is not verified");
 
+        var now = DateTime.Now;
         entity.State = ApplicationState.Accepted;
-        entity.LastUpdateTime = DateTime.Now;
+        entity.LastUpdateTime = now;
         entity.Announcement.Status = AnnouncementStatus.Closed;
-        entity.Announcement.LastUpdateDate = DateTime.Now;
-        entity.Announcement.ClosingDate = DateTime.Now;
-        await _context.SaveChangesAsync(token);
+        entity.Announcement.LastUpdateDate = now;
+        entity.Announcement.ClosingDate = now;
 
-        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName, ApplicationState.Accepted.ToString());
+        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName,
+                                                  ApplicationState.Accepted.ToString());
 
-        var otherApplications = await _context.Applications.
-            Include(app => app.Announcement).
-            Where(app => app.Announcement.Id == entity.AnnouncementId && app.State == ApplicationState.Created).
-            ToListAsync();
+        var otherApplications = await _context.Applications.Include(app => app.Adopter).
+                                               Where(app => app.AnnouncementId == entity.AnnouncementId
+                                                            && app.State == ApplicationState.Created).
+                                               Where(app => app.Id != id).
+                                               ToListAsync(token);
+
         foreach (var app in otherApplications)
         {
-            await RejectAsync(app.Id, token);
+            app.State = ApplicationState.Rejected;
+            app.LastUpdateTime = now;
         }
+
+        await _context.SaveChangesAsync(token);
+
+        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName,
+                                                  ApplicationState.Accepted.ToString());
+
+        foreach (var app in otherApplications)
+            await _emailService.SendStatusUpdateEmail(app.Adopter.Email, app.Adopter.UserName,
+                                                      ApplicationState.Rejected.ToString());
 
         return Application.FromEntity(entity);
     }
@@ -131,7 +145,8 @@ public sealed class ApplicationCommand : IApplicationCommand
         entity.State = ApplicationState.Rejected;
         entity.LastUpdateTime = DateTime.Now;
         await _context.SaveChangesAsync(token);
-        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName, ApplicationState.Rejected.ToString());
+        await _emailService.SendStatusUpdateEmail(entity.Adopter.Email, entity.Adopter.UserName,
+                                                  ApplicationState.Rejected.ToString());
 
         return Application.FromEntity(entity);
     }

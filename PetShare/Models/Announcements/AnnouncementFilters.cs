@@ -18,7 +18,7 @@ public sealed class AnnouncementFilters
     {
         return new AnnouncementFilters
         {
-            Status = Enum.TryParse<AnnouncementStatus>(request.Status, out var outStatus) ? outStatus : null,
+            Status = request.Status is not null ? Enum.Parse<AnnouncementStatus>(request.Status, true) : null,
             Species = request.Species,
             Breeds = request.Breeds,
             Cities = request.Cities,

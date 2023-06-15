@@ -55,7 +55,7 @@ public sealed class AdopterController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = Roles.Unassigned)]
-    [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AdopterResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -63,7 +63,7 @@ public sealed class AdopterController : ControllerBase
     {
         var adopter = Adopter.FromRequest(request);
         await _command.AddAsync(adopter);
-        return adopter.ToResponse();
+        return Created(new Uri(adopter.Id.ToString(), UriKind.Relative), adopter.ToResponse());
     }
 
     /// <summary>

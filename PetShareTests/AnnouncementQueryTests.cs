@@ -291,8 +291,24 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
     {
         var result = await _query.GetAllFilteredAsync(new AnnouncementFilters());
         result.Should().
+               BeEquivalentTo(_announcements.Select(ToLikedAnnouncement),
+                              options => options.WithoutStrictOrdering());
+    }
+
+    [Fact]
+    public async Task ShouldFilterByStatus()
+    {
+        var result = await _query.GetAllFilteredAsync(new AnnouncementFilters
+        {
+            MinAge = 3,
+            MaxAge = 50,
+            Status = AnnouncementStatus.Open
+        });
+        result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open),
+                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
+                                             Where(a => DateTime.Now.AddYears(-3) >= a.Announcement.Pet.Birthday).
+                                             Where(a => DateTime.Now.AddYears(-50) <= a.Announcement.Pet.Birthday),
                               options => options.WithoutStrictOrdering());
     }
 
@@ -306,7 +322,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         });
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
                                              Where(a => species.Contains(a.Announcement.Pet.Species)),
                               options => options.WithoutStrictOrdering());
     }
@@ -320,7 +335,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         });
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
                                              Where(a => a.Announcement.Pet.Breed == "Grey"),
                               options => options.WithoutStrictOrdering());
     }
@@ -335,7 +349,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         });
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
                                              Where(a => DateTime.Now.AddYears(-3) >= a.Announcement.Pet.Birthday).
                                              Where(a => DateTime.Now.AddYears(-50) <= a.Announcement.Pet.Birthday),
                               options => options.WithoutStrictOrdering());
@@ -350,7 +363,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         });
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
                                              Where(a => a.Announcement.Pet.Shelter.Address.City == "Brazil"),
                               options => options.WithoutStrictOrdering());
     }
@@ -364,7 +376,6 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         });
         result.Should().
                BeEquivalentTo(_announcements.Select(ToLikedAnnouncement).
-                                             Where(a => a.Announcement.Status is AnnouncementStatus.Open).
                                              Where(a => a.Announcement.Pet.Shelter.FullShelterName == "Shelter 1"),
                               options => options.WithoutStrictOrdering());
     }
@@ -386,7 +397,7 @@ public sealed class AnnouncementQueryTests : IAsyncLifetime
         {
             MarkLikedBy = _adopters[0].Id
         });
-        result.Should().HaveCount(_announcements.Count(a => a.Status == AnnouncementStatus.Open));
+        result.Should().HaveCount(_announcements.Count());
         result.Single(a => a.IsLiked).Announcement.Pet.Id.Should().Be(_pets[0].Id);
     }
 

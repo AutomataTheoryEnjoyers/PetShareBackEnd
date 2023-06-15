@@ -311,7 +311,8 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         {
             PageNumber = 0,
             PageCount = 1,
-            MaxAge = 1000
+            MaxAge = 1000,
+            Status = "open"
         };
         var response = await client.Request("announcements").SetQueryParams(query).GetAsync();
         response.StatusCode.Should().Be(200);

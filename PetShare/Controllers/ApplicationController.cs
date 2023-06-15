@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using PetShare.Models;
 using PetShare.Models.Applications;
 using PetShare.Services;
+using PetShare.Services.Interfaces.Adopters;
 using PetShare.Services.Interfaces.Announcements;
 using PetShare.Services.Interfaces.Applications;
 using PetShare.Services.Interfaces.Emails;
@@ -18,21 +19,21 @@ public sealed class ApplicationController : ControllerBase
 {
     private readonly IAnnouncementQuery _announcementQuery;
     private readonly IApplicationCommand _command;
-    private readonly IEmailService _emailService;
     private readonly IPaginationService _paginator;
     private readonly IApplicationQuery _query;
+    private readonly IAdopterQuery _adopterQuery;
     private readonly TokenValidator _validator;
 
     public ApplicationController(IApplicationQuery query, IApplicationCommand command,
-        IAnnouncementQuery announcementQuery, IEmailService emailService, IPaginationService paginator,
+        IAnnouncementQuery announcementQuery, IPaginationService paginator, IAdopterQuery adopterQuery,
         TokenValidator validator)
     {
         _query = query;
         _announcementQuery = announcementQuery;
         _command = command;
         _paginator = paginator;
+        _adopterQuery = adopterQuery;
         _validator = validator;
-        _emailService = emailService;
     }
 
     /// <summary>
@@ -157,8 +158,6 @@ public sealed class ApplicationController : ControllerBase
         var result = await _command.WithdrawAsync(id, HttpContext.RequestAborted);
         if (result.HasValue)
         {
-            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName,
-                                                      ApplicationState.Withdrawn.ToString());
             return Ok();
         }
 
@@ -190,8 +189,6 @@ public sealed class ApplicationController : ControllerBase
         var result = await _command.AcceptAsync(id, HttpContext.RequestAborted);
         if (result.HasValue)
         {
-            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName,
-                                                      ApplicationState.Accepted.ToString());
             return Ok();
         }
 
@@ -223,8 +220,6 @@ public sealed class ApplicationController : ControllerBase
         var result = await _command.RejectAsync(id, HttpContext.RequestAborted);
         if (result.HasValue)
         {
-            await _emailService.SendStatusUpdateEmail(application.Adopter.Email, application.Adopter.UserName,
-                                                      ApplicationState.Rejected.ToString());
             return Ok();
         }
 

@@ -19,9 +19,9 @@ public class AnnouncementQuery : IAnnouncementQuery
         CancellationToken token = default)
     {
         var filteredAnnouncements = _context.Announcements.Include(a => a.Pet.Shelter).
-                                             Where(a => a.Status == AnnouncementStatus.Open).
                                              AsQueryable();
-
+        if (filters.Status is not null)
+            filteredAnnouncements = filteredAnnouncements.Where(a => filters.Status == a.Status);
         if (filters.Species is not null)
             filteredAnnouncements = filteredAnnouncements.Where(a => filters.Species.Contains(a.Pet.Species));
         if (filters.Breeds is not null)

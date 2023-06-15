@@ -5,6 +5,8 @@ namespace PetShare.Models.Pets;
 
 public class Pet
 {
+    private const string DefaultPhotoUrl = "https://cdn.onlinewebfonts.com/svg/img_233291.png";
+
     public Guid Id { get; init; }
     public required Shelter Shelter { get; init; }
     public required string Name { get; init; }
@@ -60,7 +62,7 @@ public class Pet
             Breed = request.Breed,
             Birthday = request.Birthday,
             Description = request.Description,
-            Photo = request.PhotoUrl,
+            Photo = request.PhotoUrl ?? DefaultPhotoUrl,
             Shelter = shelter,
             Sex = Enum.Parse<PetSex>(request.Sex),
             Status = PetStatus.Active

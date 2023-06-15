@@ -12,6 +12,7 @@ public sealed class AdopterEntity
     public required string Email { get; init; }
     public required Address Address { get; init; }
     public required AdopterStatus Status { get; set; }
+    public DateTime? DeletionTime { get; set; }
 }
 
 public enum AdopterStatus

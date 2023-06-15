@@ -97,6 +97,7 @@ public class Program
         services.AddScoped<IPaginationService, PaginationService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<DemoDatabasePopulator>();
+        services.AddHostedService<PeriodicAdopterDeletion>();
     }
 
     private static void ConfigureOptions(WebApplicationBuilder builder)
@@ -116,6 +117,10 @@ public class Program
                                                                                                  SectionName));
         builder.Services.Configure<EmailConfiguration>(builder.Configuration.
                                                                GetSection(EmailConfiguration.SectionName));
+
+        builder.Services.
+                Configure<AdopterDeletionConfiguration>(builder.Configuration.GetSection(AdopterDeletionConfiguration.
+                                                                                             SectionName));
     }
 
     private static void ConfigureJwt(IServiceCollection services, IConfiguration config)

@@ -31,6 +31,10 @@ public sealed class AdopterCommand : IAdopterCommand
             return null;
 
         entity.Status = status;
+
+        if (status == AdopterStatus.Deleted)
+            entity.DeletionTime = DateTime.Now;
+
         await _context.SaveChangesAsync(token);
 
         return Adopter.FromEntity(entity);
@@ -57,5 +61,13 @@ public sealed class AdopterCommand : IAdopterCommand
         });
         await _context.SaveChangesAsync(token);
         return Result.Ok;
+    }
+
+    public Task RemoveDeletedAsync(DateTime limit, CancellationToken token = default)
+    {
+        // Verifications, applications and likes will be auto-deleted by the db
+        return _context.Adopters.Where(a => a.Status == AdopterStatus.Deleted).
+                        Where(a => a.DeletionTime < limit).
+                        ExecuteDeleteAsync(token);
     }
 }

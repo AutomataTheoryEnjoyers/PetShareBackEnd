@@ -195,8 +195,12 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         };
 
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Unassigned);
-        var newAdopter =
-            await (await client.Request("adopter").PostJsonAsync(request)).GetJsonAsync<AdopterResponse>();
+        var response = await client.Request("adopter").PostJsonAsync(request);
+        response.StatusCode.Should().Be(StatusCodes.Status201Created);
+        response.Headers.Should().ContainSingle(p => p.Name == "Location");
+        var id = Guid.Parse(response.Headers.First(p => p.Name == "Location").Value);
+
+        var newAdopter = await response.GetJsonAsync<AdopterResponse>();
         newAdopter.Should().
                    BeEquivalentTo(new AdopterResponse
                    {
@@ -211,7 +215,7 @@ public sealed class AdopterEndpointTests : IAsyncLifetime
         using var scope = _testSetup.Services.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
         context.Adopters.Should().
-                ContainSingle(e => e.Id == newAdopter.Id).
+                ContainSingle(e => e.Id == id).
                 Which.Should().
                 BeEquivalentTo(new AdopterEntity
                 {

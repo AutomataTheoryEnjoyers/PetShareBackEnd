@@ -81,7 +81,7 @@ public class Pet
             Description = Description,
             PhotoUrl = Photo,
             Shelter = Shelter.ToResponse(),
-            Sex = Sex.ToString(),
+            Sex = Sex.ToString().ToLower(),
             Status = Status.ToString()
         };
     }

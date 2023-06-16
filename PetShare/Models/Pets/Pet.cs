@@ -82,7 +82,7 @@ public class Pet
             PhotoUrl = Photo,
             Shelter = Shelter.ToResponse(),
             Sex = Sex.ToString().ToLower(),
-            Status = Status.ToString()
+            Status = Status.ToString().ToLower()
         };
     }
 }

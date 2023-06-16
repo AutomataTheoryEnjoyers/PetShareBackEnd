@@ -110,24 +110,24 @@ public sealed class ReportEndpointTests : IAsyncLifetime
                          {
                              Id = _reports[0].Id,
                              TargetId = _reports[0].TargetId,
-                             ReportType = "shelter",
-                             State = "new",
+                             ReportType = "Shelter",
+                             State = "New",
                              Message = _reports[0].Message
                          },
                          new ReportResponse
                          {
                              Id = _reports[1].Id,
                              TargetId = _reports[1].TargetId,
-                             ReportType = "shelter",
-                             State = "new",
+                             ReportType = "Shelter", 
+                             State = "New",
                              Message = _reports[1].Message
                          },
                          new ReportResponse
                          {
                              Id = _reports[2].Id,
                              TargetId = _reports[2].TargetId,
-                             ReportType = "shelter",
-                             State = "new",
+                             ReportType = "Shelter", 
+                             State = "New",
                              Message = _reports[2].Message
                          }
                      },
@@ -153,8 +153,8 @@ public sealed class ReportEndpointTests : IAsyncLifetime
                          {
                              Id = _reports[2].Id,
                              TargetId = _reports[2].TargetId,
-                             ReportType = "shelter",
-                             State = "new",
+                             ReportType = "Shelter",
+                             State = "New",
                              Message = _reports[2].Message
                          }
                      },
@@ -191,7 +191,7 @@ public sealed class ReportEndpointTests : IAsyncLifetime
         var request = new ReportRequest
         {
             TargetId = _shelter.Id,
-            ReportType = "shelter",
+            ReportType = "Shelter",
             Message = "new message"
         };
 
@@ -264,8 +264,8 @@ public sealed class ReportEndpointTests : IAsyncLifetime
                {
                    Id = _reports[0].Id,
                    TargetId = _reports[0].TargetId,
-                   ReportType = "shelter",
-                   State = "accepted",
+                   ReportType = "Shelter",
+                   State = "Accepted",
                    Message = _reports[0].Message
                });
 

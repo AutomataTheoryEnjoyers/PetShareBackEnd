@@ -57,7 +57,7 @@ public sealed class Announcement
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = Status.ToString().ToLower(),
+            Status = Status.ToString(),
             LastUpdateDate = LastUpdateDate
         };
     }
@@ -90,7 +90,7 @@ public sealed record AnnouncementWithLike(Announcement Announcement, bool IsLike
             Description = Announcement.Description,
             CreationDate = Announcement.CreationDate,
             ClosingDate = Announcement.ClosingDate,
-            Status = Announcement.Status.ToString().ToLower(),
+            Status = Announcement.Status.ToString(),
             LastUpdateDate = Announcement.LastUpdateDate,
             IsLiked = IsLiked
         };

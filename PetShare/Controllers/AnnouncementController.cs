@@ -63,9 +63,10 @@ public class AnnouncementController : ControllerBase
             return Unauthorized();
 
         var likedAnnouncements =
-            (await _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
-                                              HttpContext.RequestAborted)).Select(s => s.ToResponse()).
-                                                                           ToList();
+            (await
+                _query.GetAllFilteredAsync(AnnouncementFilters.FromRequest(query, User.IsAdopter() ? User.GetId() : null),
+                                           HttpContext.RequestAborted)).Select(s => s.ToResponse()).
+                                                                        ToList();
 
         var paginatedLikedAnnouncements = _paginator.GetPage(likedAnnouncements, query.GetPaginationQuery());
         if (paginatedLikedAnnouncements is null)
@@ -91,8 +92,8 @@ public class AnnouncementController : ControllerBase
             return Unauthorized();
 
         var announcements = (await _query.GetForShelterAsync(User.GetId(), HttpContext.RequestAborted)).
-                           Select(a => a.ToResponse()).
-                           ToList();
+                            Select(a => a.ToResponse()).
+                            ToList();
 
         var paginatedAnnouncements = _paginator.GetPage(announcements, paginationQuery);
         if (paginatedAnnouncements is null)
@@ -163,12 +164,12 @@ public class AnnouncementController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(NotFoundResponse), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> Like(Guid id)
+    public async Task<ActionResult> Like(Guid id, [FromQuery] bool isLiked)
     {
         if (!await _validator.ValidateClaims(User))
             return Unauthorized();
 
-        var result = await _command.LikeAsync(id, User.GetId());
+        var result = await _command.LikeAsync(id, User.GetId(), isLiked, HttpContext.RequestAborted);
         return result.HasValue ? Ok() : result.State.ToActionResult();
     }
 }

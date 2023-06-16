@@ -64,7 +64,7 @@ public class Pet
             Description = request.Description,
             Photo = request.PhotoUrl ?? DefaultPhotoUrl,
             Shelter = shelter,
-            Sex = Enum.Parse<PetSex>(request.Sex),
+            Sex = Enum.Parse<PetSex>(request.Sex,true),
             Status = PetStatus.Active
         };
     }
@@ -81,8 +81,8 @@ public class Pet
             Description = Description,
             PhotoUrl = Photo,
             Shelter = Shelter.ToResponse(),
-            Sex = Sex.ToString(),
-            Status = Status.ToString()
+            Sex = Sex.ToString().ToLower(),
+            Status = Status.ToString().ToLower()
         };
     }
 }

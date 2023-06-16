@@ -156,7 +156,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[0].Description,
                                   CreationDate = _announcements[0].CreationDate,
                                   ClosingDate = _announcements[0].ClosingDate,
-                                  Status = _announcements[0].Status.ToString(),
+                                  Status = _announcements[0].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[0].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                                   IsLiked = false
@@ -168,7 +168,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[1].Description,
                                   CreationDate = _announcements[1].CreationDate,
                                   ClosingDate = _announcements[1].ClosingDate,
-                                  Status = _announcements[1].Status.ToString(),
+                                  Status = _announcements[1].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[1].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
                                   IsLiked = false
@@ -234,7 +234,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[0].Description,
                                   CreationDate = _announcements[0].CreationDate,
                                   ClosingDate = _announcements[0].ClosingDate,
-                                  Status = _announcements[0].Status.ToString(),
+                                  Status = _announcements[0].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[0].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                                   IsLiked = false
@@ -246,7 +246,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[1].Description,
                                   CreationDate = _announcements[1].CreationDate,
                                   ClosingDate = _announcements[1].ClosingDate,
-                                  Status = _announcements[1].Status.ToString(),
+                                  Status = _announcements[1].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[1].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
                                   IsLiked = false
@@ -280,7 +280,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[0].Description,
                                   CreationDate = _announcements[0].CreationDate,
                                   ClosingDate = _announcements[0].ClosingDate,
-                                  Status = _announcements[0].Status.ToString(),
+                                  Status = _announcements[0].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[0].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                                   IsLiked = false
@@ -292,7 +292,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                   Description = _announcements[1].Description,
                                   CreationDate = _announcements[1].CreationDate,
                                   ClosingDate = _announcements[1].ClosingDate,
-                                  Status = _announcements[1].Status.ToString(),
+                                  Status = _announcements[1].Status.ToString().ToLower(),
                                   LastUpdateDate = _announcements[1].LastUpdateDate,
                                   Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
                                   IsLiked = false
@@ -367,7 +367,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                           Description = _announcements[0].Description,
                           CreationDate = _announcements[0].CreationDate,
                           ClosingDate = _announcements[0].ClosingDate,
-                          Status = _announcements[0].Status.ToString(),
+                          Status = _announcements[0].Status.ToString().ToLower(),
                           LastUpdateDate = _announcements[0].LastUpdateDate,
                           Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse()
                       });
@@ -404,7 +404,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                             CreationDate = DateTime.Now,
                             ClosingDate = null,
                             LastUpdateDate = DateTime.Now,
-                            Status = AnnouncementStatus.Open.ToString(),
+                            Status = AnnouncementStatus.Open.ToString().ToLower(),
                             Pet = Pet.FromEntity(_pets[0]).ToResponse()
                         },
                                        options => options.Excluding(s => s.Id).
@@ -423,7 +423,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     CreationDate = newAnnouncement.CreationDate,
                     ClosingDate = newAnnouncement.ClosingDate,
                     LastUpdateDate = newAnnouncement.LastUpdateDate,
-                    Status = Enum.Parse<AnnouncementStatus>(newAnnouncement.Status),
+                    Status = Enum.Parse<AnnouncementStatus>(newAnnouncement.Status,true),
                     AuthorId = _shelter.Id,
                     PetId = request.PetId
                 });
@@ -447,7 +447,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                                 Id = _announcements[0].Id,
                                 Title = _announcements[0].Title,
                                 Description = request.Description,
-                                Status = request.Status,
+                                Status = request.Status.ToLower(),
                                 Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                                 CreationDate = _announcements[0].CreationDate,
                                 ClosingDate = null,
@@ -463,7 +463,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                     Id = updatedAnnouncement.Id,
                     Title = updatedAnnouncement.Title,
                     Description = updatedAnnouncement.Description,
-                    Status = Enum.Parse<AnnouncementStatus>(updatedAnnouncement.Status),
+                    Status = Enum.Parse<AnnouncementStatus>(updatedAnnouncement.Status,true),
                     PetId = updatedAnnouncement.Pet.Id,
                     CreationDate = updatedAnnouncement.CreationDate,
                     LastUpdateDate = updatedAnnouncement.LastUpdateDate,
@@ -499,7 +499,7 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
                      Description = _announcements[0].Description,
                      CreationDate = _announcements[0].CreationDate,
                      ClosingDate = _announcements[0].ClosingDate,
-                     Status = _announcements[0].Status.ToString(),
+                     Status = _announcements[0].Status.ToString().ToLower(),
                      LastUpdateDate = _announcements[0].LastUpdateDate,
                      Pet = Pet.FromEntity(_announcements[0].Pet).ToResponse(),
                      IsLiked = true

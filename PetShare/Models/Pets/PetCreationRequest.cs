@@ -23,8 +23,7 @@ public sealed class PetCreationRequest : IValidatableObject
     [Required]
     public required string Sex { get; init; }
 
-    [Required]
-    public required string PhotoUrl { get; init; }
+    public string? PhotoUrl { get; init; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

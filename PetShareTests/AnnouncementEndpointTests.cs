@@ -1,4 +1,5 @@
-﻿using Database;
+﻿using Azure.Core;
+using Database;
 using Database.Entities;
 using Database.ValueObjects;
 using FluentAssertions;
@@ -483,6 +484,57 @@ public sealed class AnnouncementEndpointTests : IAsyncLifetime
         using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Shelter, _shelter.Id).AllowAnyHttpStatus();
         var response = await client.Request("announcements", wrongAnnouncementId).PutJsonAsync(request);
         response.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task PutShouldLikeTheAnnouncement()
+    {
+        using var client = _testSetup.CreateFlurlClient().WithAuth(Roles.Adopter, _adopter.Id);
+
+        var response =
+           await client.Request("announcements").GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        response.Announcements.Should().
+                 ContainEquivalentOf(new LikedAnnouncementResponse
+                 {
+                     Id = _announcements[1].Id,
+                     Title = _announcements[1].Title,
+                     Description = _announcements[1].Description,
+                     CreationDate = _announcements[1].CreationDate,
+                     ClosingDate = _announcements[1].ClosingDate,
+                     Status = _announcements[1].Status.ToString(),
+                     LastUpdateDate = _announcements[1].LastUpdateDate,
+                     Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                     IsLiked = false
+                 });
+
+        var likeResponse = await client.Request($"announcements/{_announcements[1].Id}/like").PutAsync();
+
+        likeResponse.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+        var getLikedResponse =
+           await client.Request("announcements").GetJsonAsync<PaginatedLikedAnnouncementsResponse>();
+        getLikedResponse.Announcements.Should().
+                 ContainEquivalentOf(new LikedAnnouncementResponse
+                 {
+                     Id = _announcements[1].Id,
+                     Title = _announcements[1].Title,
+                     Description = _announcements[1].Description,
+                     CreationDate = _announcements[1].CreationDate,
+                     ClosingDate = _announcements[1].ClosingDate,
+                     Status = _announcements[1].Status.ToString(),
+                     LastUpdateDate = _announcements[1].LastUpdateDate,
+                     Pet = Pet.FromEntity(_announcements[1].Pet).ToResponse(),
+                     IsLiked = true
+                 });
+       
+        using var scope = _testSetup.Services.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<PetShareDbContext>();
+        context.Likes.Should().
+                ContainEquivalentOf(new LikedAnnouncementEntity
+                {
+                    AdopterId = _adopter.Id,
+                    AnnouncementId = _announcements[1].Id
+                });
     }
 
     [Fact]

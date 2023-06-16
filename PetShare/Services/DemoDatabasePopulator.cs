@@ -73,7 +73,7 @@ public sealed class DemoDatabasePopulator
 
             foreach (var announcement in ChooseRandom(allAnnouncements, 8))
             {
-                var result = await _announcementCommand.LikeAsync(announcement.Id, adopter.Id);
+                var result = await _announcementCommand.LikeAsync(announcement.Id, adopter.Id, true);
                 if (!result.HasValue)
                     return result;
             }

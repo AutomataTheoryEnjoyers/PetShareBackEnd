@@ -53,7 +53,12 @@ public class AnnouncementCommand : IAnnouncementCommand
         return Announcement.FromEntity(entityToUpdate);
     }
 
-    public async Task<Result> LikeAsync(Guid id, Guid adopterId, CancellationToken token = default)
+    public Task<Result> LikeAsync(Guid id, Guid adopterId, bool isLiked, CancellationToken token = default)
+    {
+        return isLiked ? AddLikeAsync(id, adopterId, token) : RemoveLikeAsync(id, adopterId, token);
+    }
+
+    private async Task<Result> AddLikeAsync(Guid id, Guid adopterId, CancellationToken token = default)
     {
         if (!await _dbContext.Announcements.AnyAsync(announcement => announcement.Id == id, token))
             return new AnnouncementNotFound(id);
@@ -69,6 +74,26 @@ public class AnnouncementCommand : IAnnouncementCommand
             AdopterId = adopterId,
             AnnouncementId = id
         });
+        await _dbContext.SaveChangesAsync(token);
+
+        return Result.Ok;
+    }
+
+    private async Task<Result> RemoveLikeAsync(Guid id, Guid adopterId, CancellationToken token = default)
+    {
+        if (!await _dbContext.Announcements.AnyAsync(announcement => announcement.Id == id, token))
+            return new AnnouncementNotFound(id);
+
+        if (!await _dbContext.Adopters.AnyAsync(adopter => adopter.Id == adopterId, token))
+            return new AdopterNotFound(adopterId);
+
+        var entity =
+            await _dbContext.Likes.FirstOrDefaultAsync(like => like.AdopterId == adopterId && like.AnnouncementId == id,
+                                                       token);
+        if (entity is null)
+            return new InvalidOperation("Announcement is not liked");
+
+        _dbContext.Likes.Remove(entity);
         await _dbContext.SaveChangesAsync(token);
 
         return Result.Ok;

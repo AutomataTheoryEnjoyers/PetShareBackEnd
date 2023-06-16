@@ -20,7 +20,7 @@ public sealed class Application
             Id = Id,
             CreationDate = CreationTime,
             LastUpdateDate = LastUpdateTime,
-            ApplicationStatus = State.ToString().ToLower(),
+            ApplicationStatus = State.ToString(),
             AnnouncementId = Announcement.Id,
             Announcement = Announcement.ToResponse(),
             Adopter = Adopter.ToResponse()

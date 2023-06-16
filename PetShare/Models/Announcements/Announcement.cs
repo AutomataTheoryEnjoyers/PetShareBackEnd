@@ -57,7 +57,7 @@ public sealed class Announcement
             Description = Description,
             CreationDate = CreationDate,
             ClosingDate = ClosingDate,
-            Status = Status.ToString().ToLower(),
+            Status = Status.ToString(),
             LastUpdateDate = LastUpdateDate
         };
     }

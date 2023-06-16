@@ -228,8 +228,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                      Description = _pets[0].Description,
                      PhotoUrl = _pets[0].Photo,
                      Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
-                     Status = _pets[0].Status.ToString().ToLower(),
-                     Sex = _pets[0].Sex.ToString().ToLower()
+                     Status = _pets[0].Status.ToString(),
+                     Sex = _pets[0].Sex.ToString()
                  });
     }
 
@@ -328,8 +328,8 @@ public sealed class PetEndpointTests : IAsyncLifetime
                    Description = request.Description,
                    PhotoUrl = "https://www.londrinatur.com.br/wp-content/uploads/2020/04/pets-header.png",
                    Shelter = Shelter.FromEntity(_shelters[0]).ToResponse(),
-                   Status = _pets[0].Status.ToString().ToLower(),
-                   Sex = request.Sex.ToLower()
+                   Status = _pets[0].Status.ToString(),
+                   Sex = request.Sex
                }, options => options.Excluding(s => s.Id));
 
         using var scope = _testSetup.Services.CreateScope();
@@ -373,9 +373,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Birthday = _pets[0].Birthday,
                        Description = request.Description,
                        Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
-                       Status = _pets[0].Status.ToString().ToLower(),
+                       Status = _pets[0].Status.ToString(),
                        PhotoUrl = _pets[0].Photo,
-                       Sex = _pets[0].Sex.ToString().ToLower()
+                       Sex = _pets[0].Sex.ToString()
                    });
 
         using var scope = _testSetup.Services.CreateScope();
@@ -418,9 +418,9 @@ public sealed class PetEndpointTests : IAsyncLifetime
                        Birthday = _pets[0].Birthday,
                        Description = _pets[0].Description,
                        Shelter = Shelter.FromEntity(_pets[0].Shelter).ToResponse(),
-                       Status = PetStatus.Deleted.ToString().ToLower(),
+                       Status = PetStatus.Deleted.ToString(),
                        PhotoUrl = _pets[0].Photo,
-                       Sex = _pets[0].Sex.ToString().ToLower()
+                       Sex = _pets[0].Sex.ToString()
                    });
 
         using var scope = _testSetup.Services.CreateScope();

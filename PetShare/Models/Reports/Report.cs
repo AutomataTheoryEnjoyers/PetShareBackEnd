@@ -36,8 +36,8 @@ public sealed class Report
             Id = Id,
             TargetId = TargetId,
             Message = Message,
-            ReportType = TargetType.ToString().ToLower(),
-            State = State.ToString().ToLower()
+            ReportType = TargetType.ToString(),
+            State = State.ToString()
         };
     }
 
